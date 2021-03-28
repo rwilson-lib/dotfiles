@@ -1,0 +1,90 @@
+{
+  "codeLens.enable": true,
+  "codeLens.separator": "‣",
+  "suggest.maxCompleteItemCount": 20,
+  "diagnostic.enable": true,
+  "diagnostic.virtualText": true,
+  "diagnostic.infoSign": "ღ",
+  "diagnostic.hintSign": "ஐ",
+  "diagnostic.warningSign": "⚠",
+  "diagnostic.errorSign": "✖",
+  "diagnostic.highlightOffset": 9999999,
+  "diagnostic.refreshOnInsertMode": true,
+  "suggest.completionItemKindLabels": {
+    "keyword": "\uf1de",
+    "variable": "\ue79b",
+    "value": "\uf89f",
+    "operator": "\u03a8",
+    "function": "\u0192",
+    "reference": "\ufa46",
+    "constant": "\uf8fe",
+    "method": "\uf09a",
+    "struct": "\ufb44",
+    "class": "\uf0e8",
+    "interface": "\uf417",
+    "text": "\ue612",
+    "enum": "\uf435",
+    "enumMember": "\uf02b",
+    "module": "\uf40d",
+    "color": "\ue22b",
+    "property": "\ue624",
+    "field": "\uf9be",
+    "unit": "\uf475",
+    "event": "\ufacd",
+    "file": "\uf723",
+    "folder": "\uf114",
+    "snippet": "\ue60b",
+    "typeParameter": "\uf728",
+    "default": "\uf29c"
+  },
+  "coc.preferences.formatOnSaveFiletypes": [
+    "css",
+    "markdown",
+    "javascript",
+    "graphql",
+    "html",
+    "yaml",
+    "json",
+    "python"
+  ],
+  // css
+  "cssmodules.hintName": "cssmodules",
+  // python
+  "python.pythonPath": "python3",
+  "python.venvFolders": [
+    "envs",
+    "virtualenvs",
+    ".pyenv",
+    ".direnv"
+  ],
+  // jedi
+  "python.jediPath": "~/venvs/jedi/lib/python3.8/site-packages/",
+  "python.jediEnabled": false,
+  "suggest.timeout": 5000,
+  //formatting
+  "python.formatting.provider": "black",
+  "python.formatting.blackPath": "~/Library/Python/3.9/bin/black",
+  "python.formatting.blackArgs": [
+    "--fast"
+  ],
+
+  //linting
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": true,
+  "python.linting.pylintCategorySeverity.error": "Error",
+  "python.linting.pylintCategorySeverity.warning": "Warning",
+  "python.linting.pylintCategorySeverity.fatal": "Error",
+  "python.linting.pylintCategorySeverity.convention": "Warning",
+  "python.linting.pylintCategorySeverity.refactor": "Hint",
+  "python.linting.pylintUseMinimalCheckers": false,
+
+  //"python.linting.flake8Enabled": true,
+
+  //"python.linting.prospectorEnabled": true,
+
+  "cSpell.userWords": [
+    "Ramus",
+    "Jabee",
+    "djmoney"
+  ]
+}
