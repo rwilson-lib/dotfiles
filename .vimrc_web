@@ -1,0 +1,9 @@
+
+augroup WEB 
+  " Remove all vimrc autocommands
+  autocmd!
+  autocmd Filetype html,css,less,scss setlocal expandtab tabstop=2 shiftwidth=2 softtabstop=2
+  autocmd Filetype html nnoremap <Leader>rf :Bracey<cr>
+  autocmd Filetype html nnoremap <Leader>sr :BraceyStop<cr>
+  autocmd Filetype html nnoremap <Leader>rs :BraceyRestart<cr>
+augroup END

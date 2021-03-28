@@ -1,0 +1,11 @@
+augroup Python
+  " Remove all vimrc autocommands
+  autocmd!
+  if filereadable("manage.py")
+      nnoremap <Leader>r :call VimuxRunCommand("clear; ./manage.py shell")<CR>
+  else
+    autocmd Filetype python nnoremap <Leader>rp :call VimuxRunCommand("clear; python3")<CR>
+    autocmd Filetype python nnoremap <Leader>rf :call VimuxRunCommand("clear; python3 " . bufname("%"))<CR>
+  endif
+
+augroup END
