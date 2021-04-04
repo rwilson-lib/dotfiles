@@ -150,6 +150,8 @@ call plug#begin('~/.vim/plugged')
     Plug 'liuchengxu/vista.vim'
     Plug 'ludovicchabant/vim-gutentags'
 
+    Plug 'mg979/vim-visual-multi', {'branch': 'master'}
+
     Plug 'scrooloose/nerdcommenter'
 
     Plug 'morhetz/gruvbox'
