@@ -1,6 +1,7 @@
 # If you come from bash you might have to change your $PATH.
-
-export PATH=$HOME/bin:/usr/local/bin:$HOME/Library/Python/3.8/bin:/Users/rwilson/Library/Python/3.9/bin:$PATH
+#
+# alias python=/usr/local/bin/python3
+export PATH=$HOME/bin:/usr/local/bin:$HOME/Library/Python/3.8/bin:$HOME/Library/Python/3.9/bin:/Library/PostgreSQL/13/bin:/usr/local/opt/mysql-client/bin:$HOME/go/bin:./node_modules/.bin:$PATH 
 
 # Path to your oh-my-zsh installation.
 export ZSH=$HOME/.oh-my-zsh
@@ -8,6 +9,10 @@ export TERM=xterm-256color
 export EDITOR=/usr/local/bin/vim
 export VISUAL=/usr/local/bin/vim
 
+export HISTTIMEFORMAT="%F %T "
+
+export WORKON_HOME=~/.virtualenvs
+#
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
@@ -73,7 +78,7 @@ ZSH_THEME="cloud"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git git-prompt docker web-search autoswitch_virtualenv pip genpass)
+plugins=(git zsh-autosuggestions zsh-syntax-highlighting git-prompt docker web-search autoswitch_virtualenv pip pipenv genpass z)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -106,6 +111,7 @@ source $ZSH/oh-my-zsh.sh
 # alias
 alias tmux="TERM=screen-256color-bce tmux"
 alias gls="gls --hyperlink=auto --color"
+alias l="ls -d $PWD/*"
 alias n="nvim"
 
 ctags='/usr/local /bin/ctags'
@@ -136,3 +142,14 @@ unset __conda_setup
 #export WORKON_HOME=$HOME/.virtualenvs
 #export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3
 #source /usr/local/bin/virtualenvwrapper.sh
+
+# # This allows running `shell` properly within Emacs
+# if [ -n "$INSIDE_EMACS" ]; then
+#   export TERM=dumb
+# else
+#   export TERM=xterm-256color
+# fi
+
+GPG_TTY=`tty`
+
+export GPG_TTY

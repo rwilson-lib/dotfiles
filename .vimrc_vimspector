@@ -1,6 +1,22 @@
 
-nnoremap <leader>dr :call vimspector#Lunch()<CR>
-nnoremap <leader>dx :VimspectorReset<CR>
-nnoremap <leader>de :VimspectorEval
-nnoremap <leader>dw :VimspectorWatch
-nnoremap <leader>do :VimspectorShowOutput
+nmap <space>dl :call vimspector#Lunch()<CR>
+nmap <space>dx :VimspectorEval 
+nmap <space>do :VimspectorShowOutput
+nmap <space>db :call vimspector#ToggleBreakpoint()<CR>
+
+nmap <space>dc <Plug>VimspectorContinue
+nmap <space>ds <Plug>VimspectorStop
+nmap <space>dr <Plug>VimspectorRestart
+nmap <space>dp <Plug>VimspectorPause
+nmap <space>dc <Plug>VimspectorToggleConditionalBreakpoint
+nmap <space>dn <Plug>VimspectorStepOver
+nmap <space>de <Plug>VimspectorStepInto
+nmap <space>do <Plug>VimspectorStepOut
+nmap <space>dh <Plug>VimspectorRunToCursor
+
+" for normal mode - the word under the cursor
+nmap <space>di <Plug>VimspectorBalloonEval
+" for visual mode, the visually selected text
+xmap <space>di <Plug>VimspectorBalloonEval
+
+nmap <space>dw :VimspectorWatch  

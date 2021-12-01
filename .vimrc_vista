@@ -60,3 +60,11 @@ let g:vista#renderer#icons = {
 \   "typeParameter": "\uf728",
 \   "default": "\uf29c"
 \  }
+
+
+nmap <silent> <leader>tt :Vista!!<CR>
+nmap <silent> <leader>tc :Vista coc<CR>
+nmap <silent> <leader>tx :Vista ctags<CR>
+nmap <silent> <leader>tf :Vista focus<cr>
+nmap <silent> <leader>t :Vista finder<CR>
+

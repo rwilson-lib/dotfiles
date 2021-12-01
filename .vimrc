@@ -1,19 +1,25 @@
 syntax on
+"
+" enable all Python syntax highlighting features
+let python_highlight_all = 1
 
-let mapleader = ","
-let maplocalleader = ";"
+let g:mapleader = "\<Space>"
+let g:maplocalleader = ';'
 
-set mouse=a
+" set mouse=a
+set termguicolors 
 set background=dark
 set fileencodings=utf-8,default
 set history=1000
+set cursorline
+
 set incsearch
+set smartcase
 set ruler
 set scrolloff=5
 set showcmd
 set wildmenu
 set number
-
 
 set smartindent
 set autoindent
@@ -24,19 +30,27 @@ set softtabstop=4
 set shiftwidth=4
 
 set path+=**
+set wildignore+=**/node_modules/**
 
 set splitbelow
 set splitright
 
+set timeoutlen=500
+
+autocmd BufRead,BufNewFile * setlocal signcolumn=auto
+
+
 if has('gui_running')
+    set guioptions=gm " Remove right and left scrolling bar
+
     if has('win32')
         set guifont=Consolas:h16   " Win32.
     elseif has('gui_macvim')
         set guifont=FiraCodeNerdFontCompleteM-Retina:h16 " OSX.
+        set macligatures
     else
         set guifont=Monospace\ 16  " Linux.
     endif
-    set guioptions-=rL " Remove right and left scrolling bar
 endif
 if has('nvim')
     " start terminal in insert mode
@@ -70,6 +84,7 @@ if has('vim')
             \ | endif
     augroup end
 endif
+
 " Let's save undo info!
 if !isdirectory($HOME."/.vim")
     call mkdir($HOME."/.vim", "", 0770)
@@ -85,7 +100,7 @@ if !isdirectory($HOME."/.vim/backup-dir")
 endif
 
 if !isdirectory($HOME."/.vim/swap-dir")
-    call mkdr($HOME."/.vim/swap-dir", "", 0700)
+    call mkdir($HOME."/.vim/swap-dir", "", 0700)
 endif
 
 set directory=~/.vim/swap-dir
@@ -98,36 +113,33 @@ set undodir=~/.vim/undo-dir
 set undofile
 
 
-inoremap <silent> jj <ESC>
+inoremap <silent> <C-g> <ESC>
 nnoremap <silent> j gj
 nnoremap <silent> k gk
 nnoremap <silent> <leader>gf :e <cfile><cr>
 nnoremap <silent> <localleader><localleader> :set relativenumber!<CR>
 nnoremap <silent> <localleader><space> :set hls!<CR>
 
-" Splits
-nmap <silent> <C-k> :winc k<cr>
-nmap <silent> <C-h> :winc h<cr>
-nmap <silent> <C-l> :winc l<cr>
-nmap <silent> <C-j> :winc j<cr>
+inoremap <C-h> <Left>
+inoremap <C-j> <Down>
+inoremap <C-k> <Up>
+inoremap <C-l> <Right>
+cnoremap <C-h> <Left>
+cnoremap <C-j> <Down>
+cnoremap <C-k> <Up>
+cnoremap <C-l> <Right>
 
+nnoremap <silent> <c-w>t :tabnew<cr>
+ 
 " Tabs
 nmap <silent> <S-H> :tabprev<cr>
 nmap <silent> <S-L> :tabnext<cr>
 
-" Vista
-nmap <silent> <leader>bx :Vista!!<CR>
-nmap <silent> <leader>bc :Vista coc<CR>
-nmap <silent> <leader>bt :Vista ctags<CR>
-nmap <silent> <leader>b<space> :Vista finder<CR>
-
 " ZFZ
-nmap <silent> <space><space> :ZTags<CR>
-nmap <silent> <space>a :ZAg<CR>
-nmap <silent> <space>f :ZFiles<CR>
-nmap <silent> <space>w :ZWindows<CR>
-nmap <silent> <space>b :ZBuffers<CR>
-
+nmap <silent><nowait> <leader><space>t :ZTags<CR>
+nmap <silent><nowait> <leader><space>f :ZFiles<CR>
+nmap <silent><nowait> <leader><space>w :ZWindows<CR>
+nmap <silent><nowait> <leader><space>b :ZBuffers<CR>
 
 " Specify a directory for plugins
 " - For Neovim: stdpath('data') . '/plugged'
@@ -135,10 +147,21 @@ nmap <silent> <space>b :ZBuffers<CR>
 
 call plug#begin('~/.vim/plugged')
 
+    Plug 'farmergreg/vim-lastplace'
+
     Plug 'vim-airline/vim-airline'
     Plug 'vim-airline/vim-airline-themes'
+
     Plug 'ryanoasis/vim-devicons'
     Plug 'xuyuanp/nerdtree-git-plugin'
+
+    Plug 'APZelos/blamer.nvim'
+    Plug 'freitass/todo.txt-vim'
+
+    Plug 'plytophogy/vim-virtualenv'
+    
+    " Docker 
+    Plug 'ekalinin/Dockerfile.vim'
 
     Plug 'puremourning/vimspector'
     Plug 'tpope/vim-surround'
@@ -146,17 +169,16 @@ call plug#begin('~/.vim/plugged')
     Plug 'benmills/vimux'
     Plug 'yggdroot/indentline'
 
+    Plug 'easymotion/vim-easymotion'
+
     Plug 'mileszs/ack.vim'
     Plug 'liuchengxu/vista.vim'
     Plug 'ludovicchabant/vim-gutentags'
-
-    Plug 'mg979/vim-visual-multi', {'branch': 'master'}
 
     Plug 'scrooloose/nerdcommenter'
 
     Plug 'morhetz/gruvbox'
     Plug 'nlknguyen/papercolor-theme'
-
 
     Plug 'peitalin/vim-jsx-typescript'
     Plug 'honza/vim-snippets'
@@ -165,12 +187,15 @@ call plug#begin('~/.vim/plugged')
     Plug 'airblade/vim-gitgutter'
     Plug 'tpope/vim-fugitive'
 
-    Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
-    Plug 'turbio/bracey.vim', {'do': 'npm install --prefix server'}
+    Plug 'jamessan/vim-gnupg'
 
-    Plug 'ap/vim-css-color'
+    " Plug 'liuchengxu/vim-which-key'
+    Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
+
+    " Webdev
     Plug 'hail2u/vim-css3-syntax'
     Plug 'mattn/emmet-vim'
+    Plug 'rrethy/vim-hexokinase', { 'do': 'make hexokinase' }
 
     Plug 'airblade/vim-rooter'
     Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
@@ -195,7 +220,8 @@ source ~/.vimrc_web
 source ~/.vimrc_vimspector
 source ~/.vimrc_vista
 
-nnoremap <leader>n :NERDTreeToggle<cr>
+nnoremap <silent> <leader>bn :NERDTreeToggle<cr>
+nnoremap <silent> <leader>bf :NERDTreeFocus<cr>
 
 
 augroup VIM 
@@ -209,6 +235,9 @@ colorscheme gruvbox
 " air-line
 let g:airline_powerline_fonts = 1
 
+" gitgutter
+let g:gitgutter_max_signs = -1
+
 " " Configure error/warning section to use coc.nvim
 let g:airline_section_error = '%{airline#util#wrap(airline#extensions#coc#get_error(),0)}'
 let g:airline_section_warning = '%{airline#util#wrap(airline#extensions#coc#get_warning(),0)}'
@@ -216,26 +245,62 @@ let g:airline_theme='papercolor'
 
 let g:vimspector_enable_mappings='HUMAN'
 
-let g:bracey_server_port=8000
+" let g:gutentags_ctags_tagfile '.vim/tags'
 
 let g:user_emmet_leader_key='<C-Z>'
 
 let g:fzf_command_prefix = 'Z'
 
 " Prompt for a command to run
-nnoremap <Leader>vp :VimuxPromptCommand<CR>
+nnoremap <LocalLeader>vp :VimuxPromptCommand<CR>
 
 " Run last command executed by VimuxRunCommand
-nnoremap <Leader>vl :VimuxRunLastCommand<CR>
+nnoremap <LocalLeader>vl :VimuxRunLastCommand<CR>
 
 " Inspect runner pane
-nnoremap <Leader>vi :VimuxInspectRunner<CR>
+nnoremap <LocalLeader>vi :VimuxInspectRunner<CR>
 
 " Close vim tmux runner opened by VimuxRunCommand
-nnoremap <Leader>vq :VimuxCloseRunner<CR>
+nnoremap <LocalLeader>vq :VimuxCloseRunner<CR>
 
 " Interrupt any command running in the runner pane
-nnoremap <Leader>vx :VimuxInterruptRunner<CR>
+nnoremap <LocalLeader>vx :VimuxInterruptRunner<CR>
 
 " Zoom the runner pane (use <bind-key> z to restore runner pane)
-nnoremap <Leader>vz :call VimuxZoomRunner()<CR>
+nnoremap <LocalLeader>vz :call VimuxZoomRunner()<CR>
+
+" Blame
+" let g:blamer_enabled = 1
+"
+" let g:airline_section_y = '%{bufnr("%")} %{winnr()}'
+" let g:airline_section_z = airline#section#create_right(['%{getcwd()}'])
+function! StatusLineBuffWinNum()
+    let bufferNumber = bufnr("%")
+    let splitNumber = winnr()
+    return bufferNumber . "." . splitNumber
+endfunction
+
+call airline#parts#define_function('BufandSplitNum', 'StatusLineBuffWinNum')
+
+let g:airline#extensions#default#layout = [
+  \ [ 'a', 'b', 'c' ],
+  \ [ 'x', 'y', 'z', 'warning', 'error', 'u']
+\ ]
+
+let g:airline_section_u = airline#section#create_right(['BufandSplitNum'])
+
+" Easymotion
+" <Leader>f{char} to move to {char}
+map  <Leader>f <Plug>(easymotion-bd-f)
+nmap <Leader>f <Plug>(easymotion-overwin-f)
+
+" s{char}{char} to move to {char}{char}
+nmap s <Plug>(easymotion-overwin-f2)
+
+" Move to line
+map <Leader>L <Plug>(easymotion-bd-jk)
+nmap <Leader>L <Plug>(easymotion-overwin-line)
+
+" Move to word
+map  <Leader>w <Plug>(easymotion-bd-w)
+nmap <Leader>w <Plug>(easymotion-overwin-w)
