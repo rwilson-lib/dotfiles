@@ -183,6 +183,7 @@
         "; x" (general-simulate-key "C-x")
         "; s" (general-simulate-key "C-x")
         "; w" (general-simulate-key "C-w")
+        "; h" (general-simulate-key "C-h")
         "C-w a" 'ace-window)
 
     ;;   (general-create-definer rune/leader-keys
@@ -199,7 +200,7 @@
 
     ;; (rune/leader-keys
     ;;   "m" '(hydra-mail/body :which-key "mail")))
-     )
+    )
 
 #+end_src
 
@@ -783,8 +784,11 @@
 
 ** Ace Windows
 #+begin_src emacs-lisp
-  (use-package ace-window)
-  (setq aw-dispatch-always t)
+  (use-package ace-window
+    :config
+    (setq aw-dispatch-always t
+            aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
+
 #+end_src
 * Email
 ** Email Global Variables
