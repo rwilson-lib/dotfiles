@@ -1,4 +1,4 @@
-#+Title: Emacs Configuation
+#+TITLE: Emacs Configuation
 #+PROPERTY: header-args:emacs-lisp :tangle ~/.emacs.d/init.el
 
 * Utils
@@ -12,6 +12,30 @@
   ;; (buffer-file-name) get name
 #+end_src
 * Enviroment
+** Custom File
+#+begin_src emacs-lisp
+  (setq custom-file (concat user-emacs-directory "custom.el"))
+  (when (file-exists-p custom-file)
+    (load custom-file))
+#+end_src
+** Use Package
+#+begin_src emacs-lisp
+  (require 'package)
+
+  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                           ("melpa-stable" . "https://stable.melpa.org/packages/")
+                           ("org" . "https://orgmode.org/elpa/")
+                           ("elpa" . "https://elpa.gnu.org/packages/")))
+  (package-initialize)
+  (unless package-archive-contents
+    (package-refresh-contents))
+  (unless (package-installed-p 'use-package)
+    (package-install 'use-package))
+
+  (require 'use-package)
+
+  (setq use-package-always-ensure t)
+#+end_src
 ** Encoding
 #+begin_src emacs-lisp
   ;; (setq mac-option-modifier 'meta)
@@ -35,6 +59,22 @@
 
   (setq read-mail-command 'mu4e)
   (setq mail-user-agent 'mu4e-user-agent)
+#+end_src
+** Font and Windows
+#+begin_src emacs-lisp
+ ;; (set-frame-parameter nil 'fullscreen 'fullboth)
+ (setq visible-bell t)
+  (set-face-attribute 'default nil :font "FiraCode Nerd Font" :height 160)
+  (scroll-bar-mode -1)
+  (tool-bar-mode -1)
+  (tooltip-mode -1)
+  (set-fringe-mode 10)
+  (menu-bar-mode -1)
+  (display-battery-mode 1)
+  (setq tab-bar-tab-hints t)
+  (setq inhibit-startup-message t)
+  (column-number-mode)
+  (set-window-fringes nil 0 0)
 #+end_src
 ** Shell
 #+begin_src emacs-lisp
@@ -70,11 +110,24 @@
 
 #+end_src
 
-** Misc
+** Global Settings
 #+begin_src emacs-lisp
+  (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
   (global-auto-revert-mode)
-  (display-battery-mode 1)
-  (setq tab-bar-tab-hints t)
+  ;; (global-set-key (kbd "C-W") 'ace-window)
+#+end_src
+** Line Number
+  #+begin_src emacs-lisp
+    ;; disable line number for some mode
+    ;; (dolist (mode '(org-mode-hook
+    ;;                 term-mode-hook
+    ;;                 treemacs-mode-hook
+    ;;                 vterm-mode-hook
+    ;;                 lsp-ui-imenu
+    ;;                 tab-bar-mode-hook
+    ;;                 eshell-mode-hook))
+    ;;   (add-hook mode (lambda () (display-line-numbers-mode 0))))
+
 #+end_src
 * Key Binding
 ** Evil
@@ -113,38 +166,43 @@
     :config
     (global-evil-surround-mode 1))
 
-#+end_src
+  (use-package evil-multiedit
+    :after evil)
 
+#+end_src
 ** General
 #+begin_src emacs-lisp
-  (use-package general
-    :config
-    (general-evil-setup t)
-    (general-nvmap
-      "; c" (general-simulate-key "C-c")
-      "; x" (general-simulate-key "C-x")
-      ;; "M-'" 'evil-goto-mark
-      ;; "M-b" 'ivy-switch-buffer
-      )
+    (use-package general
+      :config
+      (general-evil-setup t)
 
-    (general-create-definer rune/leader-keys
-      :keymaps '(normal insert visual emacs)
-      ;; :prefix "SPC"
-      :global-prefix "C-SPC")
-    (rune/leader-keys
-      "t" '(:ignore t :which-key "toggles")
-      "tt" '(consult-theme :which-key "choose theme")))
+      (general-nvmap
+        "; c" (general-simulate-key "C-c")
+        "; a" (general-simulate-key "C-c")
+        "; x" (general-simulate-key "C-x")
+        "; s" (general-simulate-key "C-x")
+        "; w" (general-simulate-key "C-w")
+        "C-w a" 'ace-window)
 
-  (rune/leader-keys
-    "ts" '(hydra-text-scale/body :which-key "scale text"))
+    ;;   (general-create-definer rune/leader-keys
+    ;;     :keymaps '(normal insert visual emacs)
+    ;;     ;; :prefix "SPC"
+    ;;     :global-prefix "C-SPC"
 
-  (rune/leader-keys
-    "m" '(hydra-mail/body :which-key "mail"))
+    ;;   (rune/leader-keys
+    ;;     "t" '(:ignore t :which-key "toggles")
+    ;;     "tt" '(consult-theme :which-key "choose theme"))
+
+    ;; (rune/leader-keys
+    ;;   "ts" '(hydra-text-scale/body :which-key "scale text"))
+
+    ;; (rune/leader-keys
+    ;;   "m" '(hydra-mail/body :which-key "mail")))
+     )
 
 #+end_src
 
 ** Hydra
-
 #+begin_src emacs-lisp
   (use-package hydra)
 
@@ -155,76 +213,28 @@
     ("f" nil "finish"))
 
   (defhydra hydra-mail (:timeout 4)
-    "text scale"
+    "mail"
     ("o" mu4e "Open Mail")
     ("c" mu4e-compose-new "Compose New Mail")
     ("f" nil "finish"))
 
 #+end_src
 
+* UI Improvement 
+** All Icons
 #+begin_src emacs-lisp
-  (setq custom-file (concat user-emacs-directory "custom.el"))
-  (when (file-exists-p custom-file)
-    (load custom-file))
-
-  (setq inhibit-startup-message t)
-  (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
-  (column-number-mode)
-  (global-display-line-numbers-mode t)
-  (set-window-fringes nil 0 0)
-
-  ;; disable line number for some mode
-  (dolist (mode '(org-mode-hook
-                  term-mode-hook
-                  treemacs-mode-hook
-                  vterm-mode-hook
-                  lsp-ui-imenu
-                  tab-bar-mode-hook
-                  eshell-mode-hook))
-    (add-hook mode (lambda () (display-line-numbers-mode 0))))
-  (scroll-bar-mode -1)
-  (tool-bar-mode -1)
-  (tooltip-mode -1)
-  (set-fringe-mode 10)
-  (menu-bar-mode -1)
-
-  ;; (set-frame-parameter nil 'fullscreen 'fullboth)
-
-
-  (setq visible-bell t)
-
-  (set-face-attribute 'default nil :font "FiraCode Nerd Font" :height 160)
-
-  (require 'package)
-  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                           ("melpa-stable" . "https://stable.melpa.org/packages/")
-                           ("org" . "https://orgmode.org/elpa/")
-                           ("elpa" . "https://elpa.gnu.org/packages/")))
-  (package-initialize)
-  (unless package-archive-contents
-    (package-refresh-contents))
-  (unless (package-installed-p 'use-package)
-    (package-install 'use-package))
-
-  (require 'use-package)
-
-  (setq use-package-always-ensure t)
-
-  (use-package rainbow-delimiters
-    :hook (prog-mode . rainbow-delimiters-mode))
-
   (use-package all-the-icons)
-
+#+end_src
+** Doom Themes and Modeline
+#+begin_src emacs-lisp
   (use-package doom-modeline
     :init (doom-modeline-mode 1)
     :custom ((doom-modeline-height 15)))
 
   (use-package doom-themes
     :init (load-theme 'doom-dracula t))
-
 #+end_src
 
-* UI Improvement 
 ** Counsel Ivy
 #+begin_src emacs-lisp
       ;; (use-package counsel
@@ -320,23 +330,46 @@
       :bind (("C-s" . consult-line)))
 
     (use-package consult-lsp)
-
     (use-package consult-flycheck)
-
     (use-package consult-yasnippet)
+    (use-package consult-company)
+    (use-package consult-projectile)
 
      #+End_src
 ** Embark
 #+begin_src emacs-lisp
   (use-package embark
+    :ensure t
+
     :bind
-    (("C-;" . embark-act)
-     ("M-;" . embark-dwim)
-     ("C-h B" . embark-bindings))
+    (("M-o" . embark-act)         ;; pick some comfortable binding
+     ("M-O" . embark-dwim)        ;; good alternative: M-.
+     ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
 
     :init
-    (setq prefix-help-command #'embark-prefix-help-command))
-    ;; use C-u to perform multiple action
+
+    ;; Optionally replace the key help with a completing-read interface
+    (setq prefix-help-command #'embark-prefix-help-command)
+
+    :config
+
+    ;; Hide the mode line of the Embark live/completions buffers
+    (add-to-list 'display-buffer-alist
+                 '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                   nil
+                   (window-parameters (mode-line-format . none)))))
+     ;; use C-u to perform multiple action
+
+  ;; Consult users will also want the embark-consult package.
+  (use-package embark-consult
+    :ensure t
+    :after (embark consult)
+    :demand t ; only necessary if you have the hook below
+    ;; if you want to have consult previews as you move around an
+    ;; auto-updating embark collect buffer
+    :hook
+    (embark-collect-mode . consult-preview-at-point-mode))
+
 #+end_src
 ** Treemacs
 #+begin_src emacs-lisp
@@ -345,18 +378,26 @@
   (use-package treemacs-icons-dired
     :hook (dired-mode . treemacs-icons-dired-enable-once))
 
-  (use-package treemacs-projectile
-    :after treemacs projectile)
 
   (use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
     :after (treemacs persp-mode) ;;or perspective vs. persp-mode
     :ensure t
     :config (treemacs-set-scope-type 'Perspectives))
+
+  (use-package treemacs-projectile
+    :after treemacs projectile)
+
+  (use-package treemacs-magit)
+
+  (use-package treemacs-evil)
+
+  (use-package treemacs-all-the-icons)
+
+  (treemacs-load-theme "all-the-icons")
 #+end_src
 
 ** Keycast
 #+begin_src emacs-lisp
-
   (use-package keycast
     :config
     ;; This works with doom-modeline, inspired by this comment:
@@ -407,21 +448,29 @@
                      (sql-database ""))))
 #+end_src
 * Terminal
-** Terminals
+** Eshell
 #+begin_src emacs-lisp
-  (use-package eshell)
+    (use-package eshell)
 
-  (use-package term
-    :config
-    (setq explicit-shell-file-name "bash")
-    (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *"))
+  #+end_src
+** Term
+  #+begin_src emacs-lisp
 
-  (use-package eterm-256color
-    :hook (term-mode . eterm-256color-mode))
+    (use-package term
+      :config
+      (setq explicit-shell-file-name "bash")
+      (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *"))
 
-  (use-package multi-term
-    :config
-    (setq multi-term-program "/bin/bash"))
+    (use-package eterm-256color
+      :hook (term-mode . eterm-256color-mode))
+
+    (use-package multi-term
+      :config
+      (setq multi-term-program "/bin/bash"))
+
+  #+end_src
+** Vterm
+  #+begin_src emacs-lisp
 
   (use-package vterm
     :commands vterm
@@ -435,7 +484,12 @@
 * Developer Packages
 ** Programing
 #+begin_src emacs-lisp
-      (use-package prog-mode)
+  (use-package prog-mode
+    :ensure nil
+    :hook (prog-mode lambda () (display-line-numbers-mode 1)))
+
+  (use-package rainbow-delimiters
+    :hook (prog-mode . rainbow-delimiters-mode))
 #+end_src
 ** LSP
 #+begin_src emacs-lisp
@@ -458,8 +512,6 @@
            lsp-enable-symbol-highlighting t
            lsp-enable-snippet nil)  ;; Not supported by company capf, which is the recommended company backend
      (lsp-enable-which-key-integration t))
-
-
   #+end_src
 ** LSP-UI
   #+begin_src emacs-lisp
@@ -491,9 +543,17 @@
 #+begin_src emacs-lisp
   (use-package dap-mode
     :after lsp-mode
+    :config
+    (require 'dap-ui)
+    (dap-mode t)
+    (dap-ui-mode t)
+    ;; enables mouse hover support
+    (dap-tooltip-mode t)
+    ;; if it is not enabled `dap-mode' will use the minibuffer.
+    (tooltip-mode t)
     :commands dap-debug
     :custom
-    (dap-python-executable "python3")
+    ;; (dap-python-executable "python3")
     (dap-python-debugger 'debugpy)
     (dap-auto-configure-features '(sessions locals controls tooltip)))
 
@@ -520,9 +580,9 @@
   (use-package python-mode
     ;;:mode "\\.py\\'"
     :hook (python-mode . lsp-deferred)
-    :custom
-    (dap-python-executable "python3")
-    (dap-python-debugger 'debugpy)
+    ;; :custom
+    ;; (dap-python-executable "python3")
+    ;; (dap-python-debugger 'debugpy)
     :config
     (setq python-indent-level 4)
     (setq python-shell-interpreter "python3")
@@ -575,81 +635,106 @@
 #+end_src
 ** Emmet
 #+begin_src emacs-lisp
-  (use-package emmet-mode
-    :defer t
-    :init
-    (setq
-     emmet-indentation 2
-     emmet-move-cursor-between-quotes t)
-    :config
-    (add-hook 'sgml-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
-    (add-hook 'web-mode-hook  'emmet-mode)
-    (add-hook 'html-mode-hook 'emmet-mode)
-    (add-hook 'css-mode-hook  'emmet-mode)) ;; enable Emmet's css abbreviation.
-  ;; expand with ctrl-enter
+   (use-package emmet-mode
+     :defer t
+     :init
+     (setq
+      emmet-indentation 2
+      emmet-move-cursor-between-quotes t)
+     :config
+     (add-hook 'sgml-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
+     (add-hook 'web-mode-hook  'emmet-mode)
+     (add-hook 'html-mode-hook 'emmet-mode)
+     (add-hook 'css-mode-hook  'emmet-mode)) ;; enable Emmet's css abbreviation.
+   ;; expand with ctrl-enter
 
-  (use-package flymake-python-pyflakes)
+  #+end_src
 
-  (use-package projectile
-    :diminish projectile-mode
-    :config (projectile-mode t)
-    :custom ((projectile-completion-system 'default))
-    :bind-keymap
-    ("C-c p" . projectile-command-map)
-    :init
-    (when (file-directory-p "~/Projects")
-      (setq projectile-project-search-path '("~/Projects")))
-    (setq projectile-switch-project-action
-          '(lambda ()
-             (projectile-dired))))
+  #+begin_src emacs-lisp
+   (use-package flymake-python-pyflakes)
+  #+end_src
 
-  ;; (use-package counsel-projectile
-  ;;   :config (counsel-projectile-mode))
+** Projectile
+  #+begin_src emacs-lisp
 
-  (use-package magit
-    :custom (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+   (use-package projectile
+     :diminish projectile-mode
+     :config (projectile-mode t)
+     :custom ((projectile-completion-system 'default))
+     :bind-keymap
+     ("C-c p" . projectile-command-map)
+     :init
+     (when (file-directory-p "~/Projects")
+       (setq projectile-project-search-path '("~/Projects")))
+     (setq projectile-switch-project-action
+           '(lambda ()
+              (projectile-dired))))
 
-  (use-package git-gutter
-    :init (global-git-gutter-mode +1))
+   ;; (use-package counsel-projectile
+   ;;   :config (counsel-projectile-mode))
 
-  (use-package git-timemachine)
-  (use-package forge)
+  #+end_src
+** Magit
+  #+begin_src emacs-lisp
 
+    (use-package magit
+      :custom (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
-  (use-package company
-    :after lsp-mode
-    :hook (prog-mode . company-mode)
-    :bind (:map company-active-map
-                ("<tab>" . company-complete-selection))
-    (:map lsp-mode-map
-          ("<tab>" . company-indent-or-complete-common))
-    :custom
-    (company-minimum-prefix-length 1)
-    (company-idle-delay 0.0))
+    (use-package git-gutter
+      :init (global-git-gutter-mode +1))
 
-
-  (use-package company-tabnine
-    :config
-    (setq company-idle-delay 0)
-    ;;(add-to-list 'company-backends #'company-tabnine)
-    )
-
-  (use-package company-box
-    :hook (company-mode . company-box-mode))
+    (use-package git-timemachine)
+    (use-package forge)
 
 
-  (use-package yasnippet
-    ;; :bind
-    ;; ("C-c y s" . yas-insert-snippet)
-    ;; ("C-c y v" . yas-visit-snippet-file)
-    :config
-    (add-hook 'yas-minor-mode-hook (lambda ()
-                                     (yas-activate-extra-mode 'fundamental-mode)))
-    (add-to-list 'yas-snippet-dirs "~/.emacs.d/snippets")
-    (yas-global-mode 1))
+  #+end_src
 
-  (use-package yasnippet-snippets)
+** Company
+  #+begin_src emacs-lisp
 
+    (use-package company
+      :after lsp-mode
+      :hook (prog-mode . company-mode)
+      :bind (:map company-active-map
+                  ("<tab>" . company-complete-selection))
+      (:map lsp-mode-map
+            ("<tab>" . company-indent-or-complete-common))
+      :custom
+      (company-minimum-prefix-length 1)
+      (company-idle-delay 0.0))
+
+
+    (use-package company-tabnine
+      :config
+      (setq company-idle-delay 0)
+      ;;(add-to-list 'company-backends #'company-tabnine)
+      )
+
+    (use-package company-box
+      :hook (company-mode . company-box-mode))
+  #+end_src
+
+** Yasnippet
+  #+begin_src emacs-lisp
+    (use-package yasnippet
+      ;; :bind
+      ;; ("C-c y s" . yas-insert-snippet)
+      ;; ("C-c y v" . yas-visit-snippet-file)
+      :config
+      (add-hook 'yas-minor-mode-hook (lambda ()
+                                       (yas-activate-extra-mode 'fundamental-mode)))
+      (add-to-list 'yas-snippet-dirs "~/.emacs.d/snippets")
+      (yas-global-mode 1))
+
+    (define-key yas-minor-mode-map (kbd "<tab>") nil)
+    (define-key yas-minor-mode-map (kbd "TAB") nil)
+    ;; Bind `SPC' to `yas-expand' when snippet expansion available (it
+    ;; will still call `self-insert-command' otherwise).
+    (define-key yas-minor-mode-map (kbd "SPC") yas-maybe-expand)
+    ;; Bind `C-c y' to `yas-expand' ONLY.
+    (define-key yas-minor-mode-map (kbd "C-c y") #'yas-expand)
+
+    (use-package yasnippet-snippets)
 #+end_src
 
 ** LaTex
@@ -685,6 +770,7 @@
     :init
     (setq sqlformat-command 'pgformatter
           sqlformat-args '("-s2" "-g" "-u1")))
+
 #+end_src
 * Windows Management
 ** Winum Mode
@@ -694,6 +780,11 @@
     (winum-mode))
 #+end_src
 
+** Ace Windows
+#+begin_src emacs-lisp
+  (use-package ace-window)
+  (setq aw-dispatch-always t)
+#+end_src
 * Email
 ** Email Global Variables
 #+begin_src emacs-lisp
@@ -1083,8 +1174,8 @@
 #+begin_src emacs-lisp
   (org-babel-do-load-languages
    'org-babel-load-languages
-   '((emacs-lisp . t)
-     (python . t)))
+    '((emacs-lisp . t)
+      (python . t)))
 #+end_src
 ** Org Bullets
 #+begin_src emacs-lisp
@@ -1126,8 +1217,8 @@
 #+begin_src emacs-lisp
   (require 'org-tempo)
   (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-  (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
   (add-to-list 'org-structure-template-alist '("py" . "src python"))
+  (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
   (add-to-list 'org-structure-template-alist '("np" . "src napkin"))
   (add-to-list 'org-structure-template-alist '("npp". "napkin-puml"))
 #+end_src
@@ -1158,6 +1249,13 @@
           org-alert-notification-title "Org Alert Reminder")
     (org-alert-enable))
 #+end_src
+* Music
+#+begin_src emacs-lisp
+  (use-package simple-mpc)
+#+end_src
+
+* Pretty Symbols
+** Org Symbols
 #+begin_src emacs-lisp
   (defun my/org-mode/load-prettify-symbols ()
     (interactive)
@@ -1192,4 +1290,9 @@
 
   (add-hook 'org-mode-hook 'my/org-mode/load-prettify-symbols)
 
+#+end_src
+
+* Misc
+#+begin_src emacs-lisp
+  (global-display-line-numbers-mode 0)
 #+end_src
