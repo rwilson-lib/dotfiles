@@ -112,9 +112,11 @@
 
 ** Global Settings
 #+begin_src emacs-lisp
+  ;; change all prompts to y or n
+  (fset 'yes-or-no-p 'y-or-n-p)
+
   (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
   (global-auto-revert-mode)
-  ;; (global-set-key (kbd "C-W") 'ace-window)
 #+end_src
 ** Line Number
   #+begin_src emacs-lisp
@@ -452,16 +454,15 @@
 * Terminal
 ** Eshell
 #+begin_src emacs-lisp
-    (use-package eshell)
-
-  #+end_src
+(use-package eshell)
+#+end_src
 ** Term
   #+begin_src emacs-lisp
-
     (use-package term
       :config
       (setq explicit-shell-file-name "bash")
       (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *"))
+
 
     (use-package eterm-256color
       :hook (term-mode . eterm-256color-mode))
@@ -1278,6 +1279,7 @@
                                    ("#+BEGIN_SRC" . "")
                                    ("#+END_SRC" . "―")
                                    (":PROPERTIES:" . "")
+                                   ("#+PROPERTY:" . "")
                                    (":END:" . "― ")
                                    ("#+STARTUP:" . "")
                                    ("#+TITLE: " . "")
