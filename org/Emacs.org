@@ -147,6 +147,7 @@
     (define-key evil-normal-state-map (kbd "; ;") 'embark-act)
     (define-key evil-normal-state-map (kbd "; /") 'evilnc-comment-or-uncomment-lines)
     (define-key evil-normal-state-map (kbd "-") 'avy-goto-char)
+    (define-key evil-normal-state-map (kbd "|") 'avy-goto-line)
     (define-key evil-normal-state-map (kbd "; :") 'execute-extended-command)
     (evil-mode 1))
 
