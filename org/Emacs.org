@@ -1,5 +1,6 @@
 #+TITLE: Emacs Configuation
 #+PROPERTY: header-args:emacs-lisp :tangle ~/.emacs.d/init.el
+#+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-bigblow-local.setup
 
 * Utils
 #+begin_src emacs-lisp
@@ -10,6 +11,17 @@
              (+ (if (bolp) 1 0) (count-lines 1 (point)))
              (shell-quote-argument buffer-file-name))))
   ;; (buffer-file-name) get name
+
+  ;; Check os type
+  (pcase system-type
+    ('gnu/linux "Its Linux")
+    ('darwin "Its MacOs")
+    ('windows-nt "Its Windows"))
+
+  ;; Check emacs is runing in a daemon
+  (if (daemonp)
+      (message "Loading in the daemond")
+      (message "Loading in regular Emacs!"))
 #+end_src
 * Enviroment
 ** Custom File
@@ -62,9 +74,29 @@
 #+end_src
 ** Font and Windows
 #+begin_src emacs-lisp
- ;; (set-frame-parameter nil 'fullscreen 'fullboth)
- (setq visible-bell t)
+(defun efs/set-font-faces ()
+  (message "Setting faces!")
   (set-face-attribute 'default nil :font "FiraCode Nerd Font" :height 160)
+
+  ;; Set the fixed pitch face
+  (set-face-attribute 'fixed-pitch nil :font "FiraCode Nerd Font" :height 160)
+
+  ;; Set the variable pitch face
+  (set-face-attribute 'variable-pitch nil :font "Cantarell" :height 160 :weight 'regular))
+
+(if (daemonp)
+    (add-hook 'after-make-frame-functions
+              (lambda (frame)
+                ;; (setq doom-modeline-icon t)
+                (with-selected-frame frame
+                  (efs/set-font-faces))))
+    (efs/set-font-faces))
+#+end_src
+
+#+begin_src emacs-lisp
+ ;; (set-frame-parameter nil 'fullscreen 'fullboth)
+  (setq visible-bell t)
+  ;; (set-face-attribute 'default nil :font "FiraCode Nerd Font" :height 160)
   (scroll-bar-mode -1)
   (tool-bar-mode -1)
   (tooltip-mode -1)
@@ -208,19 +240,19 @@
 
 ** Hydra
 #+begin_src emacs-lisp
-  (use-package hydra)
+  (use-package hydra
+    :config
+    (defhydra hydra-text-scale (:timeout 4)
+      "text scale"
+      ("j" text-scale-increase "in")
+      ("k" text-scale-decrease "out")
+      ("f" nil "finish"))
 
-  (defhydra hydra-text-scale (:timeout 4)
-    "text scale"
-    ("j" text-scale-increase "in")
-    ("k" text-scale-decrease "out")
-    ("f" nil "finish"))
-
-  (defhydra hydra-mail (:timeout 4)
-    "mail"
-    ("o" mu4e "Open Mail")
-    ("c" mu4e-compose-new "Compose New Mail")
-    ("f" nil "finish"))
+    (defhydra hydra-mail (:timeout 4)
+      "mail"
+      ("o" mu4e "Open Mail")
+      ("c" mu4e-compose-new "Compose New Mail")
+      ("f" nil "finish")))
 
 #+end_src
 
@@ -487,12 +519,14 @@
 * Developer Packages
 ** Programing
 #+begin_src emacs-lisp
-  (use-package prog-mode
-    :ensure nil
-    :hook (prog-mode lambda () (display-line-numbers-mode 1)))
+      (use-package prog-mode
+        :ensure nil
+        :hook (prog-mode lambda ()
+                         (display-line-numbers-mode 1)
+                         (flyspell-prog-mode)))
 
-  (use-package rainbow-delimiters
-    :hook (prog-mode . rainbow-delimiters-mode))
+      (use-package rainbow-delimiters
+        :hook (prog-mode . rainbow-delimiters-mode))
 #+end_src
 ** LSP
 #+begin_src emacs-lisp
@@ -775,6 +809,16 @@
           sqlformat-args '("-s2" "-g" "-u1")))
 
 #+end_src
+
+* Writing
+#+begin_src emacs-lisp
+ ;; (use-package keytar)
+ ;; (use-package lsp-grammarly
+ ;;    :ensure t
+ ;;    :hook (text-mode . (lambda ()
+ ;;                         (require 'lsp-grammarly)
+ ;;                         (lsp))))  ; or lsp-deferred
+#+end_src
 * Windows Management
 ** Winum Mode
 #+begin_src emacs-lisp
@@ -796,7 +840,7 @@
 #+begin_src emacs-lisp
   (setq
    user-full-name               "Ramus Jabee Lloyd Wilson"
-   user-mail-address            "ramus_wilson@icloud.com"
+   user-mail-address            "ramus@rjlwjr.com"
    send-mail-function		'smtpmail-send-it
 
    message-send-mail-function	'smtpmail-send-it
@@ -828,7 +872,7 @@
 
     (setq mu4e-compose-format-flowed t)
     (setq shr-color-visible-luminance-min 80)
-    ;; (setq message-kill-buffer-on-exit t)
+    (setq message-kill-buffer-on-exit t)
 
     (setq mu4e-context-policy 'pick-first)
     ;; set mailbox context
@@ -891,7 +935,7 @@
             (lambda (msg)
               (when msg
                 (string-prefix-p "/Icloud" (mu4e-message-field msg :maildir))))
-            :vars '((user-mail-address . "ramus_wilson@icloud.com")
+            :vars '((user-mail-address . "ramus@rjlwjr.com")
                     (mu4e-drafts-folder  . "/Icloud/Drafts")
                     (mu4e-sent-folder  . "/Icloud/Sent Messages")
                     (mu4e-refile-folder  . "/Icloud/Inbox")
@@ -967,14 +1011,17 @@
           ("from:ECOBANK" "ECOBANK Mails" ?c)))
 
   (use-package mu4e-marker-icons
-    :init (mu4e-marker-icons-mode 1))
+    :init
+    (mu4e-marker-icons-mode 1)
+    :config
+        (setq mu4e-marker-icons-use-unicode t))
 
-  (use-package mu4e-alert)
-
-  (setq mu4e-alert-icon "~/.emacs.d/e-mail.svg")
-  (mu4e-alert-set-default-style 'notifier)
-  (add-hook 'after-init-hook #'mu4e-alert-enable-notifications)
-  (add-hook 'after-init-hook #'mu4e-alert-enable-mode-line-display)
+  (use-package mu4e-alert
+    :config
+    (setq mu4e-alert-icon "~/.emacs.d/e-mail.svg")
+    (mu4e-alert-set-default-style 'notifier)
+    (add-hook 'after-init-hook #'mu4e-alert-enable-notifications)
+    (add-hook 'after-init-hook #'mu4e-alert-enable-mode-line-display))
 #+end_src
 ** Epg Config
 #+begin_src emacs-lisp
@@ -985,7 +1032,7 @@
   ;;       mml2015-sign-with-sender t)
 #+end_src
 
-** Org Mine
+* Org Mine
 #+begin_src emacs-lisp
   (use-package org-mime
     :config
@@ -1298,8 +1345,27 @@
   (add-hook 'org-mode-hook 'my/org-mode/load-prettify-symbols)
 
 #+end_src
+** Prog Symbols
+#+begin_src emacs-lisp
+  (defun my/prog-mode/load-prettify-symbols ()
+    (interactive)
+    "Beautify prog mode keywords."
+    (setq prettify-symbols-alist '(("lambda" . "λ")
+                                   ("|>" . "▶")
+                                   ("<|" . "◁")
+                                   ("->>" . "↠")
+                                   ("->" . "➞")
+                                   ("<-" . "←")
+                                   ("=>" . "⇒")
+                                   ("<=" . "≤")
+                                   (">=" . "≥")))
+    (prettify-symbols-mode 1))
+
+  (add-hook 'prog-mode-hook 'my/prog-mode/load-prettify-symbols)
+#+end_src
 
 * Misc
 #+begin_src emacs-lisp
   (global-display-line-numbers-mode 0)
 #+end_src
+
