@@ -1,6 +1,5 @@
 #+TITLE: Emacs Configuation
 #+PROPERTY: header-args:emacs-lisp :tangle ~/.emacs.d/init.el
-#+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-bigblow-local.setup
 
 * Utils
 #+begin_src emacs-lisp
@@ -163,6 +162,10 @@
     ;;   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 #+end_src
+** Try
+#+begin_src emacs-lisp
+(use-package try)
+#+end_src
 * Key Binding
 ** Evil
 #+begin_src emacs-lisp
@@ -178,11 +181,18 @@
     ;; example how to map a command in normal mode (called 'normal state' in evil)
     (define-key evil-normal-state-map (kbd "; f") 'find-file)
     (define-key evil-normal-state-map (kbd "; b") 'switch-to-buffer)
-    (define-key evil-normal-state-map (kbd "; ;") 'embark-act)
+    (define-key evil-normal-state-map (kbd "; SPC") 'embark-act)
+    (define-key evil-normal-state-map (kbd "; ;") 'execute-extended-command)
     (define-key evil-normal-state-map (kbd "; /") 'evilnc-comment-or-uncomment-lines)
     (define-key evil-normal-state-map (kbd "-") 'avy-goto-char)
     (define-key evil-normal-state-map (kbd "|") 'avy-goto-line)
-    (define-key evil-normal-state-map (kbd "; :") 'execute-extended-command)
+    (define-key evil-normal-state-map (kbd "g [") 'git-gutter:next-hunk)
+    (define-key evil-normal-state-map (kbd "g ]") 'git-gutter:previous-hunk)
+
+    (define-key evil-normal-state-map (kbd "g h") 'evil-multiedit-match-symbol-and-next)
+    (define-key evil-normal-state-map (kbd "g H") 'evil-multiedit-match-symbol-and-prev)
+    (define-key evil-normal-state-map (kbd "g SPC") 'evil-multiedit-match-all)
+
     (evil-mode 1))
 
   (use-package evil-collection
@@ -265,10 +275,10 @@
 #+begin_src emacs-lisp
   (use-package doom-modeline
     :init (doom-modeline-mode 1)
-    :custom ((doom-modeline-height 15)))
+    :custom ((doom-modeline-height 12)))
 
   (use-package doom-themes
-    :init (load-theme 'doom-dracula t))
+    :init (load-theme 'doom-one-light t))
 #+end_src
 
 ** Counsel Ivy
@@ -516,17 +526,58 @@
 
 
 #+end_src
+* Editor
+#+begin_src emacs-lisp
+
+  (use-package crdt)
+
+  (use-package vimish-fold
+    :after evil)
+
+  (use-package evil-vimish-fold
+    :after vimish-fold
+    :hook ((prog-mode conf-mode text-mode) . evil-vimish-fold-mode))
+
+  (use-package flyspell-lazy
+    :after flyspell
+    :config
+    (setq flyspell-lazy-idle-seconds 2))
+
+  (use-package synosaurus)
+
+  (use-package define-word)
+
+#+end_src
+* Searches
+#+begin_src emacs-lisp
+  (use-package ag)
+  (use-package ripgrep)
+  (use-package projectile-ripgrep)
+#+end_src
 * Developer Packages
+** Treesitter
+#+begin_src emacs-lisp
+  (use-package tree-sitter)
+
+  (use-package tree-sitter-langs)
+
+  (use-package tree-edit)
+
+  (use-package evil-tree-edit)
+
+  (global-tree-sitter-mode)
+#+end_src
 ** Programing
 #+begin_src emacs-lisp
-      (use-package prog-mode
-        :ensure nil
-        :hook (prog-mode lambda ()
-                         (display-line-numbers-mode 1)
-                         (flyspell-prog-mode)))
+  (use-package prog-mode
+    :ensure nil
+    :hook (prog-mode lambda ()
+                     (display-line-numbers-mode 1)
+                     (flyspell-prog-mode)
+                     (tree-sitter-hl-mode)))
 
-      (use-package rainbow-delimiters
-        :hook (prog-mode . rainbow-delimiters-mode))
+  (use-package rainbow-delimiters
+    :hook (prog-mode . rainbow-delimiters-mode))
 #+end_src
 ** LSP
 #+begin_src emacs-lisp
@@ -626,6 +677,7 @@
     (setq lsp-python-ms-python-executable "python3")
     (require 'dap-python))
 
+  (add-hook 'python-mode-hook #'evil-tree-edit-mode)
   #+end_src
 
 ** LSP-Python-MS 
@@ -859,7 +911,6 @@
     ;; :defer 20
 
     :config
-
     ;; This is set to 't' to avoid mail syncing issues when using mbsync
     (setq mu4e-change-filenames-when-moving t)
 
@@ -1301,6 +1352,24 @@
     (setq org-alert-interval 300
           org-alert-notification-title "Org Alert Reminder")
     (org-alert-enable))
+#+end_src
+** Org Roam
+#+begin_src emacs-lisp
+  (use-package org-roam
+    :init
+    (setq org-roam-v2-ack t)
+    :custom
+    (org-roam-directory "~/RoamNotes")
+    (org-roam-completion-everywhere t)
+    :bind (("C-c n l" . org-roam-buffer-toggle)
+           ("C-c n f" . org-roam-node-find)
+           ("C-c n i" . org-roam-node-insert)
+           :map org-mode-map
+           ("C-M-i"    . completion-at-point))
+    :config
+    (org-roam-setup))
+
+  (use-package org-roam-ui)
 #+end_src
 * Music
 #+begin_src emacs-lisp
