@@ -557,15 +557,23 @@
 * Developer Packages
 ** Treesitter
 #+begin_src emacs-lisp
+  (use-package tree-sitter
+    :init
+    (use-package tree-sitter-langs)
+    :config 
+    (global-tree-sitter-mode)
+    (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
   (use-package tree-sitter)
 
   (use-package tree-sitter-langs)
 
+  (use-package tree-edit
+    :after tree-sitter)
   (use-package tree-edit)
 
+  (use-package evil-tree-edit
+    :after tree-edit)
   (use-package evil-tree-edit)
-
-  (global-tree-sitter-mode)
 #+end_src
 ** Programing
 #+begin_src emacs-lisp
@@ -573,8 +581,7 @@
     :ensure nil
     :hook (prog-mode lambda ()
                      (display-line-numbers-mode 1)
-                     (flyspell-prog-mode)
-                     (tree-sitter-hl-mode)))
+                     (flyspell-prog-mode)))
 
   (use-package rainbow-delimiters
     :hook (prog-mode . rainbow-delimiters-mode))
@@ -925,6 +932,8 @@
     (setq shr-color-visible-luminance-min 80)
     (setq message-kill-buffer-on-exit t)
 
+    (setq mu4e-view-html-plaintext-ratio-heuristic most-positive-fixnum)
+
     (setq mu4e-context-policy 'pick-first)
     ;; set mailbox context
     (setq mu4e-contexts
@@ -1112,7 +1121,7 @@
     ;; Replace list hyphen with dot
     (font-lock-add-keywords 'org-mode
                             '(("^ *\\([-]\\) "
-                               (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "➽"))))))
+                               (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "➣"))))))
 
     ;; Set faces for heading levels
     (dolist (face '((org-level-1 . 1.2)
@@ -1144,6 +1153,8 @@
     (setq org-log-done '(time note))
     (setq org-log-into-drawer t)
     (setq org-startup-folded t)
+    (setq org-hide-emphasis-markers t)
+
 
     (setq org-agenda-files
           '("~/org/beorg/org/Tasks.org"
@@ -1367,7 +1378,7 @@
            :map org-mode-map
            ("C-M-i"    . completion-at-point))
     :config
-    (org-roam-setup))
+    (org-roam-db-autosync-enable))
 
   (use-package org-roam-ui)
 #+end_src
@@ -1437,4 +1448,5 @@
 #+begin_src emacs-lisp
   (global-display-line-numbers-mode 0)
 #+end_src
+
 
