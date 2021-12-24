@@ -1,7 +1,7 @@
 # If you come from bash you might have to change your $PATH.
 #
 # alias python=/usr/local/bin/python3
-export PATH=$HOME/bin:/usr/local/bin:$HOME/Library/Python/3.8/bin:$HOME/Library/Python/3.9/bin:/Library/PostgreSQL/13/bin:/usr/local/opt/mysql-client/bin:$HOME/go/bin:./node_modules/.bin:$PATH 
+export PATH=$HOME/bin:/usr/local/bin:$HOME/Library/Python/3.8/bin:$HOME/Library/Python/3.9/bin:/Library/PostgreSQL/13/bin:/usr/local/opt/mysql-client/bin:$HOME/go/bin:./node_modules/.bin:/Applications/Emacs.app/Contents/MacOS/bin:$PATH 
 
 # Path to your oh-my-zsh installation.
 export ZSH=$HOME/.oh-my-zsh
@@ -119,8 +119,6 @@ source /usr/local/opt/git-extras/share/git-extras/git-extras-completion.zsh
 
 autoload -Uz compinit
 compinit
-# Completion for kitty
-kitty + complete setup zsh | source /dev/stdin
 
 # FZF
 export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'

@@ -1,4 +1,4 @@
-#+TITLE: Emacs Configuation
+#+TITLE: Emacs Configuration
 #+PROPERTY: header-args:emacs-lisp :tangle ~/.emacs.d/init.el
 
 * Utils
@@ -20,9 +20,9 @@
   ;; Check emacs is runing in a daemon
   (if (daemonp)
       (message "Loading in the daemond")
-      (message "Loading in regular Emacs!"))
+    (message "Loading in regular Emacs!"))
 #+end_src
-* Enviroment
+* Environment
 ** Custom File
 #+begin_src emacs-lisp
   (setq custom-file (concat user-emacs-directory "custom.el"))
@@ -67,33 +67,30 @@
   (if (boundp buffer-file-coding-system)
       (setq buffer-file-coding-system 'utf-8)
     (setq default-buffer-file-coding-system 'utf-8))
-
-  (setq read-mail-command 'mu4e)
-  (setq mail-user-agent 'mu4e-user-agent)
 #+end_src
 ** Font and Windows
 #+begin_src emacs-lisp
-(defun efs/set-font-faces ()
-  (message "Setting faces!")
-  (set-face-attribute 'default nil :font "FiraCode Nerd Font" :height 160)
+  (defun efs/set-font-faces ()
+    (message "Setting faces!")
+    (set-face-attribute 'default nil :font "FiraCode Nerd Font" :height 162)
 
-  ;; Set the fixed pitch face
-  (set-face-attribute 'fixed-pitch nil :font "FiraCode Nerd Font" :height 160)
+    ;; Set the fixed pitch face
+    (set-face-attribute 'fixed-pitch nil :font "FiraCode Nerd Font" :height 162)
 
-  ;; Set the variable pitch face
-  (set-face-attribute 'variable-pitch nil :font "Cantarell" :height 160 :weight 'regular))
+    ;; Set the variable pitch face
+    (set-face-attribute 'variable-pitch nil :font "FiraCode Nerd Font" :height 162 :weight 'regular))
 
-(if (daemonp)
-    (add-hook 'after-make-frame-functions
-              (lambda (frame)
-                ;; (setq doom-modeline-icon t)
-                (with-selected-frame frame
-                  (efs/set-font-faces))))
+  (if (daemonp)
+      (add-hook 'after-make-frame-functions
+                (lambda (frame)
+                  ;; (setq doom-modeline-icon t)
+                  (with-selected-frame frame
+                    (efs/set-font-faces))))
     (efs/set-font-faces))
 #+end_src
 
 #+begin_src emacs-lisp
- ;; (set-frame-parameter nil 'fullscreen 'fullboth)
+  ;; (set-frame-parameter nil 'fullscreen 'fullboth)
   (setq visible-bell t)
   ;; (set-face-attribute 'default nil :font "FiraCode Nerd Font" :height 160)
   (scroll-bar-mode -1)
@@ -109,10 +106,11 @@
 #+end_src
 ** Shell
 #+begin_src emacs-lisp
-  ;; fix issues with python inferial process
-  (setq comint-process-echoes t)
   ;; (setenv "PATH" (concat (getenv "PATH") ":/usr/local/bin"))
   ;; (setq exec-path (append exec-path '("/usr/local/bin")))
+
+  ;;/Users/rwilson/anaconda3/condabin:/Users/rwilson/bin:/usr/local/bin:/Users/rwilson/Library/Python/3.8/bin:/Users/rwilson/Library/Python/3.9/bin:/Library/PostgreSQL/13/bin:/usr/local/opt/mysql-client/bin:/Users/rwilson/go/bin:./node_modules/.bin:/opt/local/bin:/opt/local/sbin:/Library/Frameworks/Python.framework/Versions/3.9/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin:/usr/local/go/bin:/usr/local/MacGPG2/bin:/Library/Apple/usr/bin:/Users/rwilson/.cargo/bin
+
   (use-package exec-path-from-shell
     :config (exec-path-from-shell-initialize))
 
@@ -145,26 +143,27 @@
 #+begin_src emacs-lisp
   ;; change all prompts to y or n
   (fset 'yes-or-no-p 'y-or-n-p)
-
+  (setq delete-by-moving-to-trash t)
+  (setq trash-directory "~/.trash")
   (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
   (global-auto-revert-mode)
 #+end_src
 ** Line Number
-  #+begin_src emacs-lisp
-    ;; disable line number for some mode
-    ;; (dolist (mode '(org-mode-hook
-    ;;                 term-mode-hook
-    ;;                 treemacs-mode-hook
-    ;;                 vterm-mode-hook
-    ;;                 lsp-ui-imenu
-    ;;                 tab-bar-mode-hook
-    ;;                 eshell-mode-hook))
-    ;;   (add-hook mode (lambda () (display-line-numbers-mode 0))))
+#+begin_src emacs-lisp
+  ;; disable line number for some mode
+  ;; (dolist (mode '(org-mode-hook
+  ;;                 term-mode-hook
+  ;;                 treemacs-mode-hook
+  ;;                 vterm-mode-hook
+  ;;                 lsp-ui-imenu
+  ;;                 tab-bar-mode-hook
+  ;;                 eshell-mode-hook))
+  ;;   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 #+end_src
 ** Try
 #+begin_src emacs-lisp
-(use-package try)
+  (use-package try)
 #+end_src
 * Key Binding
 ** Evil
@@ -186,12 +185,12 @@
     (define-key evil-normal-state-map (kbd "; /") 'evilnc-comment-or-uncomment-lines)
     (define-key evil-normal-state-map (kbd "-") 'avy-goto-char)
     (define-key evil-normal-state-map (kbd "|") 'avy-goto-line)
-    (define-key evil-normal-state-map (kbd "g [") 'git-gutter:next-hunk)
-    (define-key evil-normal-state-map (kbd "g ]") 'git-gutter:previous-hunk)
 
     (define-key evil-normal-state-map (kbd "g h") 'evil-multiedit-match-symbol-and-next)
     (define-key evil-normal-state-map (kbd "g H") 'evil-multiedit-match-symbol-and-prev)
     (define-key evil-normal-state-map (kbd "g SPC") 'evil-multiedit-match-all)
+
+    (define-key evil-normal-state-map (kbd "; q") 'evil-tree-state)
 
     (evil-mode 1))
 
@@ -217,20 +216,27 @@
 #+end_src
 ** General
 #+begin_src emacs-lisp
-    (use-package general
-      :config
-      (general-evil-setup t)
+  (use-package general
+    :config
+    (general-evil-setup t)
 
-      (general-nvmap
-        "; c" (general-simulate-key "C-c")
-        "; a" (general-simulate-key "C-c")
-        "; x" (general-simulate-key "C-x")
-        "; s" (general-simulate-key "C-x")
-        "; w" (general-simulate-key "C-w")
-        "; h" (general-simulate-key "C-h")
-        "C-w a" 'ace-window)
+    (general-nvmap
+      "; c" (general-simulate-key "C-c")
+      "; a" (general-simulate-key "C-c")
+      "; x" (general-simulate-key "C-x")
+      "; s" (general-simulate-key "C-x")
+      "; w" (general-simulate-key "C-w")
+      "; h" (general-simulate-key "C-h")
+      "C-w a" 'ace-window)
 
-    ;;   (general-create-definer rune/leader-keys
+    (general-imap
+      "C-j" 'next-line
+      "C-k" 'previous-line
+      "C-l" 'right-char
+      "C-h" 'left-char)
+
+
+    ;;  (general-create-definer rune/leader-keys
     ;;     :keymaps '(normal insert visual emacs)
     ;;     ;; :prefix "SPC"
     ;;     :global-prefix "C-SPC"
@@ -245,9 +251,7 @@
     ;; (rune/leader-keys
     ;;   "m" '(hydra-mail/body :which-key "mail")))
     )
-
 #+end_src
-
 ** Hydra
 #+begin_src emacs-lisp
   (use-package hydra
@@ -263,10 +267,8 @@
       ("o" mu4e "Open Mail")
       ("c" mu4e-compose-new "Compose New Mail")
       ("f" nil "finish")))
-
 #+end_src
-
-* UI Improvement 
+* UI Improvement
 ** All Icons
 #+begin_src emacs-lisp
   (use-package all-the-icons)
@@ -278,110 +280,164 @@
     :custom ((doom-modeline-height 12)))
 
   (use-package doom-themes
-    :init (load-theme 'doom-one-light t))
-#+end_src
+    :init (load-theme 'jazz t))
 
+  (use-package leuven-theme)
+  (use-package tao-theme)
+  (use-package jazz-theme)
+#+end_src
 ** Counsel Ivy
 #+begin_src emacs-lisp
-      ;; (use-package counsel
-      ;;   :after ivy
-      ;;   :bind (("M-x" . counsel-M-x)
-      ;;          ("C-:" . counsel-M-x)
-      ;;          ("C-x b" . counsel-ibuffer)
-      ;;          ("C-x C-b" . counsel-switch-buffer)
-      ;;          ("C-x C-f" . counsel-find-file)
-      ;;          :map minibuffer-local-map
-      ;;          ("C-r" . counsel-minibuffer-history))
-      ;;   :config (setq ivy-initial-inputs-alist nil))
+  ;; (use-package counsel
+  ;;   :after ivy
+  ;;   :bind (("M-x" . counsel-M-x)
+  ;;          ("C-:" . counsel-M-x)
+  ;;          ("C-x b" . counsel-ibuffer)
+  ;;          ("C-x C-b" . counsel-switch-buffer)
+  ;;          ("C-x C-f" . counsel-find-file)
+  ;;          :map minibuffer-local-map
+  ;;          ("C-r" . counsel-minibuffer-history))
+  ;;   :config (setq ivy-initial-inputs-alist nil))
 
-      ;; (use-package ivy
-      ;;   :diminish
-      ;;   :bind (("C-s" . swiper)
-      ;;          :map ivy-minibuffer-map
-      ;;          ("TAB" . ivy-alt-done)
-      ;;          ("C-l" . ivy-alt-done)
-      ;;          ("C-j" . ivy-next-line)
-      ;;          ("C-k" . ivy-previous-line)
-      ;;          :map ivy-switch-buffer-map
-      ;;          ("C-k" . ivy-previous-line)
-      ;;          ("C-l" . ivy-done)
-      ;;          ("C-d" . ivy-switch-buffer-kill)
-      ;;          :map ivy-reverse-i-search-map
-      ;;          ("C-k" . ivy-previous-line)
-      ;;          ("C-d" . ivy-reverse-i-search-kill))
-      ;;   :config
-      ;;   (ivy-mode 1))
+  ;; (use-package ivy
+  ;;   :diminish
+  ;;   :bind (("C-s" . swiper)
+  ;;          :map ivy-minibuffer-map
+  ;;          ("TAB" . ivy-alt-done)
+  ;;          ("C-l" . ivy-alt-done)
+  ;;          ("C-j" . ivy-next-line)
+  ;;          ("C-k" . ivy-previous-line)
+  ;;          :map ivy-switch-buffer-map
+  ;;          ("C-k" . ivy-previous-line)
+  ;;          ("C-l" . ivy-done)
+  ;;          ("C-d" . ivy-switch-buffer-kill)
+  ;;          :map ivy-reverse-i-search-map
+  ;;          ("C-k" . ivy-previous-line)
+  ;;          ("C-d" . ivy-reverse-i-search-kill))
+  ;;   :config
+  ;;   (ivy-mode 1))
 
-      ;; (use-package ivy-rich
-      ;;   :init (ivy-rich-mode 1)) 
-  #+end_src
+  ;; (use-package ivy-rich
+  ;;   :init (ivy-rich-mode 1)) 
+#+end_src
 
 ** Avy
 #+begin_src emacs-lisp
   (use-package avy
     :bind ("M-s c" . avy-goto-char-timer))
-  
+
   (use-package avy-flycheck)
 #+end_src
 ** Vertico
-  #+begin_src emacs-lisp
-    (use-package vertico
-      :bind (:map vertico-map
-                  ("C-j" . vertico-next)
-                  ("C-k" . vertico-previous)
-                  ("C-f" . vertico-exit)
-                  :map minibuffer-local-map
-                  ("M-h" . backward-kill-word))
-      :custom
-      (vertico-cycle t)
-      :init
-      (vertico-mode 1))
-  #+end_src
+#+begin_src emacs-lisp
+  (use-package vertico
+    :bind (:map vertico-map
+                ("C-j" . vertico-next)
+                ("C-k" . vertico-previous)
+                ("C-f" . vertico-exit)
+                :map minibuffer-local-map
+                ("M-h" . backward-kill-word))
+    :custom
+    (vertico-cycle t)
+    :init
+    (vertico-mode 1))
+#+end_src
 ** Orderless
-  #+begin_src emacs-lisp
+#+begin_src emacs-lisp
 
-    (use-package orderless
-      :init
-      (setq completion-styles '(orderless)
-            completion-category-default nil
-            completion-category-overrides '((file (styles partial-completion)))))
+  (use-package orderless
+    :init
+    (setq completion-styles '(orderless)
+          completion-category-default nil
+          completion-category-overrides '((file (styles partial-completion)))))
 
-  #+end_src
+#+end_src
 ** Which-Key
-  #+begin_src emacs-lisp
-    (use-package which-key
-      :init (which-key-mode)
-      :diminish which-key-mode
-      :config (setq which-key-idle-delay 0.3))
+#+begin_src emacs-lisp
+  (use-package which-key
+    :init (which-key-mode)
+    :diminish which-key-mode
+    :config (setq which-key-idle-delay 0.3))
 
-  #+end_src
+#+end_src
 ** Savehist
-  #+begin_src emacs-lisp
-    (use-package savehist
-      :init
-      (savehist-mode))
+#+begin_src emacs-lisp
+  (use-package savehist
+    :init
+    (savehist-mode))
 
-  #+end_src
+#+end_src
 ** Marginalia
-  #+begin_src emacs-lisp
-    (use-package marginalia 
-      :after vertico
-      :init
-      (marginalia-mode))
-  #+end_src
+#+begin_src emacs-lisp
+  (use-package marginalia 
+    :after vertico
+    :init
+    (marginalia-mode))
+#+end_src
 ** Consult
-  #+begin_src emacs-lisp
-    (use-package consult
-      :after vertico 
-      :bind (("C-s" . consult-line)))
+#+begin_src emacs-lisp
+  (use-package consult
+    :after vertico 
+    :bind (;; C-c bindings (mode-specific-map)
+           ("C-c h" . consult-history)
+           ("C-c m" . consult-mode-command)
+           ("C-c b" . consult-bookmark)
+           ("C-c k" . consult-kmacro)
 
-    (use-package consult-lsp)
-    (use-package consult-flycheck)
-    (use-package consult-yasnippet)
-    (use-package consult-company)
-    (use-package consult-projectile)
+           ;; C-x bindings (ctl-x-map)
+           ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+           ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+           ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+           ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
 
-     #+End_src
+           ;; Custom M-# bindings for fast register access
+           ("M-#" . consult-register-load)
+           ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+           ("C-M-#" . consult-register)
+
+           ;; Other custom bindings
+           ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+           ("<help> a" . consult-apropos)            ;; orig. apropos-command
+
+           ;; M-g bindings (goto-map)
+           ("M-g e" . consult-compile-error)
+           ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
+           ("M-g g" . consult-goto-line)             ;; orig. goto-line
+           ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
+           ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
+           ("M-g m" . consult-mark)
+           ("M-g k" . consult-global-mark)
+           ("M-g i" . consult-imenu)
+           ("M-g I" . consult-imenu-multi)
+
+           ;; M-s bindings (search-map)
+           ("M-s f" . consult-find)
+           ("M-s F" . consult-locate)
+           ("M-s g" . consult-grep)
+           ("M-s G" . consult-git-grep)
+           ("M-s r" . consult-ripgrep)
+           ("M-s l" . consult-line)
+           ("M-s L" . consult-line-multi)
+           ("M-s m" . consult-multi-occur)
+           ("M-s k" . consult-keep-lines)
+           ("M-s u" . consult-focus-lines)
+
+           ;; Isearch integration
+           ("M-s e" . consult-isearch-history)
+           :map isearch-mode-map
+           ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
+           ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
+           ("M-s L" . consult-line-multi)
+           ("C-s" . consult-line)))
+
+
+  (use-package consult-lsp)
+  (use-package consult-flycheck)
+  (use-package consult-yasnippet)
+  (use-package consult-company)
+  (use-package consult-projectile)
+
+#+End_src
 ** Embark
 #+begin_src emacs-lisp
   (use-package embark
@@ -404,7 +460,7 @@
                  '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
                    nil
                    (window-parameters (mode-line-format . none)))))
-     ;; use C-u to perform multiple action
+  ;; use C-u to perform multiple action
 
   ;; Consult users will also want the embark-consult package.
   (use-package embark-consult
@@ -423,7 +479,6 @@
 
   (use-package treemacs-icons-dired
     :hook (dired-mode . treemacs-icons-dired-enable-once))
-
 
   (use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
     :after (treemacs persp-mode) ;;or perspective vs. persp-mode
@@ -457,13 +512,6 @@
     (add-to-list 'global-mode-string '("" mode-line-keycast " "))
     (keycast-mode))
 #+end_src
-** Perspective
-#+begin_src emacs-lisp
-  (use-package perspective
-    :bind (("C-x k" . persp-kill-buffer*))
-    :init (persp-mode))
-#+end_src
-
 * DevOps
 ** Docker
 #+begin_src emacs-lisp
@@ -496,26 +544,27 @@
 * Terminal
 ** Eshell
 #+begin_src emacs-lisp
-(use-package eshell)
+  (use-package eshell)
 #+end_src
 ** Term
-  #+begin_src emacs-lisp
-    (use-package term
-      :config
-      (setq explicit-shell-file-name "bash")
-      (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *"))
+#+begin_src emacs-lisp
+
+  (use-package term
+    :config
+    (setq explicit-shell-file-name "bash")
+    (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *")
+    (setq mode-line-format nil))
 
 
-    (use-package eterm-256color
-      :hook (term-mode . eterm-256color-mode))
+  (use-package eterm-256color
+    :hook (term-mode . eterm-256color-mode))
 
-    (use-package multi-term
-      :config
-      (setq multi-term-program "/bin/bash"))
-
-  #+end_src
+  (use-package multi-term
+    :config
+    (setq multi-term-program "/bin/bash"))
+#+end_src
 ** Vterm
-  #+begin_src emacs-lisp
+#+begin_src emacs-lisp
 
   (use-package vterm
     :commands vterm
@@ -528,7 +577,6 @@
 #+end_src
 * Editor
 #+begin_src emacs-lisp
-
   (use-package crdt)
 
   (use-package vimish-fold
@@ -546,10 +594,13 @@
   (use-package synosaurus)
 
   (use-package define-word)
-
 #+end_src
 * Searches
 #+begin_src emacs-lisp
+  (use-package fzf
+    :bind
+    ("C-SPC" . 'fzf))
+
   (use-package ag)
   (use-package ripgrep)
   (use-package projectile-ripgrep)
@@ -575,7 +626,7 @@
     :after tree-edit)
   (use-package evil-tree-edit)
 #+end_src
-** Programing
+** Programming
 #+begin_src emacs-lisp
   (use-package prog-mode
     :ensure nil
@@ -585,53 +636,65 @@
 
   (use-package rainbow-delimiters
     :hook (prog-mode . rainbow-delimiters-mode))
+
+  (use-package rainbow-mode
+    :config
+    (setq rainbow-x-colors nil)
+    (add-hook 'prog-mode-hook 'rainbow-mode))
+  (use-package smartparens
+    :config
+    (add-hook 'prog-mode-hook 'smartparens-mode))
 #+end_src
 ** LSP
 #+begin_src emacs-lisp
-   (setq gc-cons-threshold 100000000)
-   (setq read-process-output-max (* 1024 1024)) ;; 1mb
-   (defun efs/lsp-mode-setup ()
-     (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
-     (lsp-headerline-breadcrumb-mode))
+  (setq gc-cons-threshold 100000000)
+  (setq read-process-output-max (* 1024 1024)) ;; 1mb
+  (defun efs/lsp-mode-setup ()
+    (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+    (lsp-headerline-breadcrumb-mode))
 
-   (use-package lsp-mode
-     :commands (lsp lsp-deferred)
-     :init
-     (setq lsp-keymap-prefix "C-c l")
+  (use-package lsp-mode
+    :commands (lsp lsp-deferred)
+    :init
+    (setq lsp-keymap-prefix "C-c l")
 
-     :hook
-     (lsp-mode . efs/lsp-mode-setup)
 
-     :config
-     (setq lsp-idle-delay 0.5
-           lsp-enable-symbol-highlighting t
-           lsp-enable-snippet nil)  ;; Not supported by company capf, which is the recommended company backend
-     (lsp-enable-which-key-integration t))
-  #+end_src
+    :bind (:map lsp-mode-map
+                ("S-l s" . lsp-signature-active))
+
+    :hook
+    (lsp-mode . efs/lsp-mode-setup)
+
+    :config
+    (setq lsp-idle-delay 0.5
+          lsp-enable-symbol-highlighting t
+          lsp-enable-snippet nil)  ;; Not supported by company capf, which is the recommended company backend
+    (lsp-enable-which-key-integration t))
+#+end_src
 ** LSP-UI
-  #+begin_src emacs-lisp
-   (use-package lsp-ui
-     :hook (lsp-mode . lsp-ui-mode)
-     ;; :custom (lsp-ui-doc-position 'bottom)
-     :config (setq lsp-ui-sideline-show-hover t
-                   lsp-ui-sideline-delay 0.5
-                   lsp-ui-doc-delay 5
-                   lsp-ui-sideline-ignore-duplicates t
-                   lsp-ui-doc-position 'bottom
-                   lsp-ui-doc-alignment 'frame
-                   lsp-ui-doc-header nil
-                   lsp-ui-doc-include-signature t
-                   lsp-ui-doc-use-childframe t)
-     :bind (:map evil-normal-state-map
-                 ("gd" . lsp-ui-peek-find-definitions)
-                 ("gr" . lsp-ui-peek-find-references)
-                 ("Ni" . lsp-ui-imenu)))
+#+begin_src emacs-lisp
+  (use-package lsp-ui
+    :hook (lsp-mode . lsp-ui-mode)
+    ;; :custom (lsp-ui-doc-position 'bottom)
+    :config (setq lsp-ui-sideline-show-hover t
+                  lsp-ui-sideline-delay 0.5
+                  lsp-ui-doc-delay 5
+                  lsp-ui-sideline-ignore-duplicates t
+                  lsp-ui-doc-position 'bottom
+                  lsp-ui-doc-alignment 'frame
+                  lsp-ui-doc-header nil
+                  lsp-ui-doc-include-signature t
+                  lsp-ui-doc-use-childframe t)
+    :bind (:map evil-normal-state-map
+                ("gd" . lsp-ui-peek-find-definitions)
+                ("gr" . lsp-ui-peek-find-references)
+                ("Ni" . lsp-ui-imenu)))
 
 
-   (use-package lsp-treemacs
-     :after lsp)
+  (use-package lsp-treemacs
+    :after lsp)
 
-   ;; (use-package lsp-ivy)
+  ;; (use-package lsp-ivy)
 
 #+end_src
 ** DAP
@@ -654,24 +717,44 @@
 
 
 #+end_src
+** Web Mode
+#+begin_src emacs-lisp
+  (use-package web-mode
+    :mode ("\\.html\\'")
+    :config
+    (setq web-mode-markup-indent-offset 2)
+    (setq web-mode-engines-alist
+          '(("django" . "focus/.*\\.html\\'")
+            ("ctemplate" . "realtimecrm/.*\\.html\\'"))))
+
+  (use-package markdown-mode
+    :commands (markdown-mode gfm-mode)
+    :mode (("README\\.md\\'" . gfm-mode)
+           ("\\.md\\'" . markdown-mode)
+           ("\\.markdown\\'" . markdown-mode))
+    :init (setq markdown-command "multimarkdown"))
+#+end_src
 ** JavaScript
 #+begin_src emacs-lisp
   (use-package js-mode
-     :ensure js
-     ;; :mode "\\.js\\'"
-     :hook (js-mode . lsp-deferred)
-     :config
-     (setq js-indent-level 4))
+    :ensure js
+    ;; :mode "\\.js\\'"
+    :hook (js-mode . lsp-deferred)
+    :config
+    (setq js-indent-level 4))
 
   (use-package typescript-mode
-     ;; :mode "\\.js\\'"
-     :hook (typescript-mode . lsp-deferred)
-     :config
-     (setq typescript-indent-level 4))
+    ;; :mode "\\.js\\'"
+    :hook (typescript-mode . lsp-deferred)
+    :config
+    (setq typescript-indent-level 4))
 
 #+end_src
 ** Python
 #+begin_src emacs-lisp
+  ;; fix issues with python inferial process
+  (setq comint-process-echoes t)
+
   (use-package python-mode
     ;;:mode "\\.py\\'"
     :hook (python-mode . lsp-deferred)
@@ -685,31 +768,37 @@
     (require 'dap-python))
 
   (add-hook 'python-mode-hook #'evil-tree-edit-mode)
-  #+end_src
+
+  (use-package live-py-mode)
+
+  (use-package blacken
+    :config
+    (add-hook 'python-mode-hook 'blacken-mode))
+#+end_src
 
 ** LSP-Python-MS 
-  #+begin_src emacs-lisp
-      (use-package lsp-python-ms
-        :init (setq lsp-python-ms-auto-install-server t)
-        :hook (python-mode . (lambda ()
-                               (require 'lsp-python-ms)
-                               (lsp))))  ; or lsp-deferred
+#+begin_src emacs-lisp
+  (use-package lsp-python-ms
+    :init (setq lsp-python-ms-auto-install-server t)
+    :hook (python-mode . (lambda ()
+                           (require 'lsp-python-ms)
+                           (lsp))))  ; or lsp-deferred
 
-    #+end_src
+#+end_src
 ** Pipenv
-    #+begin_src emacs-lisp
-      (use-package pipenv
-        :hook (python-mode . pipenv-mode))
-      ;;   :init
-      ;;   (setq
-      ;;    pipenv-projectile-after-switch-function
-      ;;    #'pipenv-projectile-after-switch-extended))
+#+begin_src emacs-lisp
+  (use-package pipenv
+    :hook (python-mode . pipenv-mode))
+  ;;   :init
+  ;;   (setq
+  ;;    pipenv-projectile-after-switch-function
+  ;;    #'pipenv-projectile-after-switch-extended))
 
 
-  #+end_src
+#+end_src
 
 ** Pyvenv
- #+begin_src emacs-lisp
+#+begin_src emacs-lisp
   (use-package pyvenv
     :ensure t
     :config
@@ -731,113 +820,122 @@
 #+end_src
 ** Emmet
 #+begin_src emacs-lisp
-   (use-package emmet-mode
-     :defer t
-     :init
-     (setq
-      emmet-indentation 2
-      emmet-move-cursor-between-quotes t)
-     :config
-     (add-hook 'sgml-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
-     (add-hook 'web-mode-hook  'emmet-mode)
-     (add-hook 'html-mode-hook 'emmet-mode)
-     (add-hook 'css-mode-hook  'emmet-mode)) ;; enable Emmet's css abbreviation.
-   ;; expand with ctrl-enter
+  (use-package emmet-mode
+    :defer t
+    :init
+    (setq
+     emmet-indentation 2
+     emmet-move-cursor-between-quotes t)
+    :config
+    (add-hook 'sgml-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
+    (add-hook 'web-mode-hook  'emmet-mode)
+    (add-hook 'html-mode-hook 'emmet-mode)
+    (add-hook 'css-mode-hook  'emmet-mode)) ;; enable Emmet's css abbreviation.
+  ;; expand with ctrl-enter
 
-  #+end_src
-
-  #+begin_src emacs-lisp
-   (use-package flymake-python-pyflakes)
-  #+end_src
-
-** Projectile
-  #+begin_src emacs-lisp
-
-   (use-package projectile
-     :diminish projectile-mode
-     :config (projectile-mode t)
-     :custom ((projectile-completion-system 'default))
-     :bind-keymap
-     ("C-c p" . projectile-command-map)
-     :init
-     (when (file-directory-p "~/Projects")
-       (setq projectile-project-search-path '("~/Projects")))
-     (setq projectile-switch-project-action
-           '(lambda ()
-              (projectile-dired))))
-
-   ;; (use-package counsel-projectile
-   ;;   :config (counsel-projectile-mode))
-
-  #+end_src
-** Magit
-  #+begin_src emacs-lisp
-
-    (use-package magit
-      :custom (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
-
-    (use-package git-gutter
-      :init (global-git-gutter-mode +1))
-
-    (use-package git-timemachine)
-    (use-package forge)
-
-
-  #+end_src
-
-** Company
-  #+begin_src emacs-lisp
-
-    (use-package company
-      :after lsp-mode
-      :hook (prog-mode . company-mode)
-      :bind (:map company-active-map
-                  ("<tab>" . company-complete-selection))
-      (:map lsp-mode-map
-            ("<tab>" . company-indent-or-complete-common))
-      :custom
-      (company-minimum-prefix-length 1)
-      (company-idle-delay 0.0))
-
-
-    (use-package company-tabnine
-      :config
-      (setq company-idle-delay 0)
-      ;;(add-to-list 'company-backends #'company-tabnine)
-      )
-
-    (use-package company-box
-      :hook (company-mode . company-box-mode))
-  #+end_src
-
-** Yasnippet
-  #+begin_src emacs-lisp
-    (use-package yasnippet
-      ;; :bind
-      ;; ("C-c y s" . yas-insert-snippet)
-      ;; ("C-c y v" . yas-visit-snippet-file)
-      :config
-      (add-hook 'yas-minor-mode-hook (lambda ()
-                                       (yas-activate-extra-mode 'fundamental-mode)))
-      (add-to-list 'yas-snippet-dirs "~/.emacs.d/snippets")
-      (yas-global-mode 1))
-
-    (define-key yas-minor-mode-map (kbd "<tab>") nil)
-    (define-key yas-minor-mode-map (kbd "TAB") nil)
-    ;; Bind `SPC' to `yas-expand' when snippet expansion available (it
-    ;; will still call `self-insert-command' otherwise).
-    (define-key yas-minor-mode-map (kbd "SPC") yas-maybe-expand)
-    ;; Bind `C-c y' to `yas-expand' ONLY.
-    (define-key yas-minor-mode-map (kbd "C-c y") #'yas-expand)
-
-    (use-package yasnippet-snippets)
 #+end_src
 
+#+begin_src emacs-lisp
+  (use-package flymake-python-pyflakes)
+#+end_src
+
+** Projectile
+#+begin_src emacs-lisp
+
+  (use-package projectile
+    :diminish projectile-mode
+    :config (projectile-mode t)
+    :custom ((projectile-completion-system 'default))
+    :bind-keymap
+    ("C-c p" . projectile-command-map)
+    :init
+    (when (file-directory-p "~/Projects")
+      (setq projectile-project-search-path '("~/Projects")))
+    (setq projectile-switch-project-action
+          '(lambda ()
+             (projectile-dired))))
+
+  ;; (use-package counsel-projectile
+  ;;  :config (counsel-projectile-mode))
+
+#+end_src
+** Magit
+#+begin_src emacs-lisp
+
+  (use-package magit
+    :custom (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+
+  (use-package git-gutter
+    :init (global-git-gutter-mode +1)
+    :bind (:map evil-normal-state-map
+                ("gs" . git-gutter:stage-hunk)
+                ("g]" . git-gutter:next-hunk)
+                ("g[" . git-gutter:previous-hunk)))
+
+  (use-package git-timemachine)
+  (use-package forge)
+
+
+#+end_src
+
+** Company
+#+begin_src emacs-lisp
+
+  (use-package company
+    :after lsp-mode
+    :hook (prog-mode . company-mode)
+    :bind (:map company-active-map
+                ("<tab>" . company-complete-selection))
+    (:map lsp-mode-map
+          ("<tab>" . company-indent-or-complete-common))
+    :custom
+    (company-minimum-prefix-length 1)
+    (company-idle-delay 0.0))
+
+
+  (use-package company-tabnine
+    :config
+    (setq company-idle-delay 0)
+    ;;(add-to-list 'company-backends #'company-tabnine)
+    )
+
+  (use-package company-box
+    :hook (company-mode . company-box-mode))
+#+end_src
+
+** Yasnippet
+#+begin_src emacs-lisp
+  (use-package yasnippet
+    ;; :bind
+    ;; ("C-c y s" . yas-insert-snippet)
+    ;; ("C-c y v" . yas-visit-snippet-file)
+    :config
+    (add-hook 'yas-minor-mode-hook (lambda ()
+                                     (yas-activate-extra-mode 'fundamental-mode)))
+    (add-to-list 'yas-snippet-dirs "~/.emacs.d/snippets")
+    (yas-global-mode 1))
+
+  (define-key yas-minor-mode-map (kbd "<tab>") nil)
+  (define-key yas-minor-mode-map (kbd "TAB") nil)
+  ;; Bind `SPC' to `yas-expand' when snippet expansion available (it
+  ;; will still call `self-insert-command' otherwise).
+  (define-key yas-minor-mode-map (kbd "SPC") yas-maybe-expand)
+  ;; Bind `C-c y' to `yas-expand' ONLY.
+  (define-key yas-minor-mode-map (kbd "C-c y") #'yas-expand)
+
+  (use-package yasnippet-snippets)
+  (use-package django-snippets)
+#+end_src
 ** LaTex
 #+begin_src emacs-lisp
   (use-package latex-preview-pane
     :config
     (latex-preview-pane-enable))
+
+  (use-package writegood-mode
+    :bind ("C-c g" . writegood-mode)
+    :config
+    (add-to-list 'writegood-weasel-words "actionable"))
 #+end_src
 
 ** UML
@@ -871,12 +969,12 @@
 
 * Writing
 #+begin_src emacs-lisp
- ;; (use-package keytar)
- ;; (use-package lsp-grammarly
- ;;    :ensure t
- ;;    :hook (text-mode . (lambda ()
- ;;                         (require 'lsp-grammarly)
- ;;                         (lsp))))  ; or lsp-deferred
+  ;; (use-package keytar)
+  ;; (use-package lsp-grammarly
+  ;;    :ensure t
+  ;;    :hook (text-mode . (lambda ()
+  ;;                         (require 'lsp-grammarly)
+  ;;                         (lsp))))  ; or lsp-deferred
 #+end_src
 * Windows Management
 ** Winum Mode
@@ -891,7 +989,7 @@
   (use-package ace-window
     :config
     (setq aw-dispatch-always t
-            aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
+          aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
 
 #+end_src
 * Email
@@ -908,31 +1006,78 @@
    smtpmail-smtp-server         "smtp.mail.me.com"
    smtpmail-smtp-service        587
    smtpmail-stream-type         'starttls
-   )
+
+   read-mail-command 'mu4e
+   mail-user-agent 'mu4e-user-agent)
 #+end_src
 ** Mu4e
 #+begin_src emacs-lisp
+  (defun do.mail.html/render-pdf (msg)
+    "Attempt to render body of MSG as PDF and display in current buffer."
+    (let ((msg2pdf (executable-find "wkhtmltopdf"))
+          (buf (get-buffer-create "*rendered mail*"))
+          (tmpfile (make-temp-file "pdfmailrender")))
+      (unless msg2pdf
+        (mu4e-error "wkhtmltopdf not found"))
+      (unless (mu4e-message-has-field msg :body-html)
+        (mu4e-error "message has no html."))
+      ;; convert message body to PDF
+      (with-temp-buffer
+        (insert (mu4e-message-field msg :body-html))
+        (shell-command-on-region
+         (point-min) (point-max)
+         (concat msg2pdf " -s Letter --quiet - "
+                 tmpfile
+                 " 2>/dev/null") nil nil nil nil nil))
+      ;; display in current window
+      (switch-to-buffer buf)
+      (read-only-mode -1)
+      (erase-buffer)
+      (insert-file-contents tmpfile)
+      (doc-view-mode)
+      (delete-file tmpfile)))
+
   (use-package mu4e
     :ensure nil
-    :load-path "/usr/local/share/emacs/site-lisp/mu4e/"
+    :load-path "/usr/local/share/emacs/site-lisp/mu/mu4e"
+
     ;; :defer 20
 
     :config
-    ;; This is set to 't' to avoid mail syncing issues when using mbsync
-    (setq mu4e-change-filenames-when-moving t)
 
-    ;; Refresh mail using isync every 10 minutes
-    (setq mu4e-update-interval (* 10 60))
-    (setq mu4e-get-mail-command "mbsync -a")
+    (setq
+     mu4e-get-mail-command "mbsync -a"
+     mu4e-change-filenames-when-moving t
+     ;; Refresh mail using isync every 10 minutes
+     mu4e-update-interval (* 10 60))
+
     (setq mu4e-maildir "~/Mail")
     (setq mu4e-use-fancy-chars t)
+    (setq mu4e-headers-attach-mark    `("a" . ,(char-to-string #xf8e1)))
+    (setq mu4e-headers-unread-mark    `("u" . ,(char-to-string #xf6ef)))
+    (setq mu4e-headers-flagged-mark   `("F" . ,(char-to-string #xf73a)))
+    (setq mu4e-headers-seen-mark      `("S" . ,(char-to-string #xfaee)))
+    (setq mu4e-headers-draft-mark     `("D" . ,(char-to-string #xf0f6)))
+    (setq mu4e-headers-new-mark       `("N" . ,(char-to-string #x26a1)))
+    (setq mu4e-headers-passed-mark    `("P" . ,(char-to-string #xf064)))
+    (setq mu4e-headers-replied-mark   `("R" . ,(char-to-string #xf112)))
+    (setq mu4e-headers-trashed-mark   `("T" . ,(char-to-string #xf014)))
+    (setq mu4e-headers-encrypted-mark `("x" . ,(char-to-string #xf023)))
+    (setq mu4e-headers-signed-mark    `("s" . ,(char-to-string #xf040)))
 
+    (setq
+     ;; always prefer plaintext
+     mu4e-view-prefer-html nil
+     ;; mu4e-view-html-plaintext-ratio-heuristic most-positive-fixnum
+     ;; if only html, render in emacs
+     ;; mu4e-html2text-command 'mu4e-shr2text
+     ;; shr-color-visible-luminance-min 80
+     )
 
     (setq mu4e-compose-format-flowed t)
     (setq shr-color-visible-luminance-min 80)
     (setq message-kill-buffer-on-exit t)
 
-    (setq mu4e-view-html-plaintext-ratio-heuristic most-positive-fixnum)
 
     (setq mu4e-context-policy 'pick-first)
     ;; set mailbox context
@@ -1011,7 +1156,7 @@
                                                ("/Icloud/Archive"         . ?t)
                                                ("/Icloud/Drafts"          . ?d)
                                                ("/Icloud"                 . ?a))))))))
-  ;; (require 'org-mu4e)
+
   (defun efs/store-link-to-mu4e-query ()
     (interactive)
     (let ((org-mu4e-link-query-in-headers-mode t))
@@ -1039,7 +1184,8 @@
     (org-capture nil "er"))
 
   ;; add option to view as pdf.
-  (add-to-list 'mu4e-view-actions '("Save to PDF" . mu4e-action-save-to-pdf) t)
+                                          ; (add-to-list 'mu4e-view-actions '("Save to PDF" . mu4e-action-save-to-pdf) t)
+  (add-to-list 'mu4e-view-actions '("Save to PDF" . do.mail.html/render-pdf) t)
   ;; add option to view a message in the browser.
   (add-to-list 'mu4e-view-actions
                '("View in browser" . mu4e-action-view-in-browser) t)
@@ -1060,7 +1206,6 @@
 
   (add-hook 'mu4e-compose-mode-hook
             (lambda ()
-              (add-hook 'mu4e-compose-mode-hook #'turn-on-flyspell)
               (turn-off-auto-fill)
               (use-hard-newlines -1)))
 
@@ -1074,7 +1219,7 @@
     :init
     (mu4e-marker-icons-mode 1)
     :config
-        (setq mu4e-marker-icons-use-unicode t))
+    (setq mu4e-marker-icons-use-unicode t))
 
   (use-package mu4e-alert
     :config
@@ -1082,6 +1227,23 @@
     (mu4e-alert-set-default-style 'notifier)
     (add-hook 'after-init-hook #'mu4e-alert-enable-notifications)
     (add-hook 'after-init-hook #'mu4e-alert-enable-mode-line-display))
+
+  (require 'gnus-dired)
+  ;; make the `gnus-dired-mail-buffers' function also work on
+  ;; message-mode derived modes, such as mu4e-compose-mode
+  (defun gnus-dired-mail-buffers ()
+    "Return a list of active message buffers."
+    (let (buffers)
+      (save-current-buffer
+        (dolist (buffer (buffer-list t))
+          (set-buffer buffer)
+          (when (and (derived-mode-p 'message-mode)
+                     (null message-sent-message-via))
+            (push (buffer-name buffer) buffers))))
+      (nreverse buffers)))
+
+  (setq gnus-dired-mail-mode 'mu4e-user-agent)
+  (add-hook 'dired-mode-hook 'turn-on-gnus-dired-mode)
 #+end_src
 ** Epg Config
 #+begin_src emacs-lisp
@@ -1092,7 +1254,7 @@
   ;;       mml2015-sign-with-sender t)
 #+end_src
 
-* Org Mine
+** Org Mine
 #+begin_src emacs-lisp
   (use-package org-mime
     :config
@@ -1104,12 +1266,10 @@
                 (org-mime-change-element-style
                  "pre" (format "color: %s; background-color: %s; padding: 0.5em;"
                                "#E6E1DC" "#232323")))))
-
-
 #+end_src
-
 * Org Mode
 ** Org Customization
+** Custom function
 #+begin_src emacs-lisp
   ;; Org Mode Configuration ------------------------------------------------------
   (defun efs/org-mode-setup ()
@@ -1132,7 +1292,7 @@
                     (org-level-6 . 1.1)
                     (org-level-7 . 1.1)
                     (org-level-8 . 1.1)))
-      (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
+      (set-face-attribute (car face) nil :font "ETBembo" :weight 'regular :height (cdr face)))
 
     ;; Ensure that anything that should be fixed-pitch in Org files appears that way
     (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
@@ -1148,7 +1308,7 @@
   (use-package org
     :hook (org-mode . efs/org-mode-setup)
     :config
-    (setq org-ellipsis "⬎")
+    (setq org-ellipsis " ⤸")
     (setq org-agenda-start-with-log-mode t)
     (setq org-log-done '(time note))
     (setq org-log-into-drawer t)
@@ -1289,8 +1449,8 @@
 #+begin_src emacs-lisp
   (org-babel-do-load-languages
    'org-babel-load-languages
-    '((emacs-lisp . t)
-      (python . t)))
+   '((emacs-lisp . t)
+     (python . t)))
 #+end_src
 ** Org Bullets
 #+begin_src emacs-lisp
@@ -1300,11 +1460,13 @@
     :custom
     (setq org-bullets-bullet-list '("✙" "♱" "♰" "☥" "✞" "✟" "✝" "†" "✠" "✚" "✜" "✛" "✢" "✣" "✤" "✥")))
 #+end_src
-** Org Msg
+** Org MSG
 #+begin_src emacs-lisp
-
   (use-package org-msg
     :ensure t
+    :hook (org-msg-mode lambda ()
+                        (flyspell-mode))
+
     :config
     (setq org-msg-options "html-postamble:nil H:5 num:nil ^:{} toc:nil author:nil email:nil \\n:t"
           org-msg-startup "hidestars indent inlineimages"
@@ -1314,16 +1476,16 @@
                                          (reply-to-html	. (text html))
                                          (reply-to-text	. (text)))
           org-msg-convert-citation t
-          org-msg-signature "
-
+          org-msg-signature
+          "
   Regards,
 
-   ,#+begin_signature
+  ,#+begin_signature
   ---------------------------
   ,*Ramus Jabee Lloyd Wilson*
-    ICT Consultant
-    Smile Technology LLC
-    /The simple act of paying attention can take you a long way/
+  ICT Consultant
+  Smile Technology LLC
+  /The simple act of paying attention can take you a long way/
   ,#+end_signature")
     (org-msg-mode))
 #+end_src
@@ -1355,6 +1517,10 @@
 #+begin_src emacs-lisp
   (use-package ox-reveal)
 #+end_src
+** Org Present
+#+begin_src emacs-lisp
+  (use-package org-present)
+#+end_src
 ** Org Alert
 #+begin_src emacs-lisp
   (use-package org-alert
@@ -1382,11 +1548,16 @@
 
   (use-package org-roam-ui)
 #+end_src
-* Music
+** Org Dired Attachment
 #+begin_src emacs-lisp
-  (use-package simple-mpc)
+  (add-hook 'dired-mode-hook
+            (lambda ()
+              (define-key dired-mode-map (kbd "C-c C-x c")
+                (lambda ()
+                  (interactive)
+                  (let ((org-attach-method 'cp))
+                    (call-interactively #'org-attach-dired-to-subtree))))))
 #+end_src
-
 * Pretty Symbols
 ** Org Symbols
 #+begin_src emacs-lisp
@@ -1443,10 +1614,15 @@
 
   (add-hook 'prog-mode-hook 'my/prog-mode/load-prettify-symbols)
 #+end_src
-
 * Misc
+** Line Number
 #+begin_src emacs-lisp
   (global-display-line-numbers-mode 0)
 #+end_src
 
-
+** Tab-Bar Mode
+#+begin_src emacs-lisp
+  (set-face-attribute
+   'tab-bar-tab nil :inherit 'doom-modeline-panel
+   :foreground nil :background nil)
+#+end_src

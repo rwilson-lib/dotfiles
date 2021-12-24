@@ -52,7 +52,8 @@ Channel gmail
 	Far :gmail-remote:
 	Near :gmail-local:
 # Include everything
-	Patterns * ![Gmail]* "[Gmail]/Sent Mail" "[Gmail]/Starred" "[Gmail]/All Mail"
+	# Patterns * ![Gmail]* "[Gmail]/Sent Mail" "[Gmail]/Starred" "[Gmail]/All Mail"
+	Patterns * 
 	Create Both
 	Sync All
 	Expunge Both
