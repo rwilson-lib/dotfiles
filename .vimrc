@@ -277,17 +277,17 @@ nnoremap <LocalLeader>vz :call VimuxZoomRunner()<CR>
 function! StatusLineBuffWinNum()
     let bufferNumber = bufnr("%")
     let splitNumber = winnr()
-    return bufferNumber . "." . splitNumber
+    return bufferNumber . "|" . splitNumber
 endfunction
 
 call airline#parts#define_function('BufandSplitNum', 'StatusLineBuffWinNum')
+let g:airline_section_u = airline#section#create_right(['BufandSplitNum'])
 
 let g:airline#extensions#default#layout = [
   \ [ 'a', 'b', 'c' ],
   \ [ 'x', 'y', 'z', 'warning', 'error', 'u']
 \ ]
 
-let g:airline_section_u = airline#section#create_right(['BufandSplitNum'])
 
 " Easymotion
 " <Leader>f{char} to move to {char}
