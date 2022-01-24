@@ -1831,6 +1831,11 @@
     (require 'evil-org-agenda)
     (evil-org-agenda-set-keys))
 #+end_src
+** Org remark
+#+begin_src emacs-lisp
+;; TODO Install this package
+;; (use-package org-remark)
+#+end_src
 * Pretty Symbols
 ** Org Symbols
 #+begin_src emacs-lisp
