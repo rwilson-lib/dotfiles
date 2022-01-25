@@ -214,36 +214,53 @@
     (define-key evil-normal-state-map (kbd "; SPC") 'embark-act)
     (define-key evil-normal-state-map (kbd "; ;") 'execute-extended-command)
     (define-key evil-normal-state-map (kbd "; /") 'evilnc-comment-or-uncomment-lines)
-    (define-key evil-normal-state-map (kbd "s") 'avy-goto-char)
-    (define-key evil-normal-state-map (kbd "S") 'avy-goto-line)
-
-    (define-key evil-normal-state-map (kbd "g h") 'evil-multiedit-match-symbol-and-next)
-    (define-key evil-normal-state-map (kbd "g H") 'evil-multiedit-match-symbol-and-prev)
-    (define-key evil-normal-state-map (kbd "g SPC") 'evil-multiedit-match-all)
-
-    (define-key evil-normal-state-map (kbd "; q") 'evil-tree-state)
-
     (evil-mode 1))
 
-  (use-package evil-collection
-    :after evil
-    :config
-    (evil-collection-init))
+  #+end_src
+** Evil Collection
+  #+begin_src emacs-lisp
+    (use-package evil-collection
+      :after evil
+      :config
+      (evil-collection-init))
 
-  (use-package evil-nerd-commenter
-    :bind ("M-/" . evilnc-comment-or-uncomment-lines))
+    (use-package evil-nerd-commenter
+      :after evil
+      :bind ("M-/" . evilnc-comment-or-uncomment-lines))
 
-  (use-package evil-matchit
-    :after evil
-    :config (global-evil-matchit-mode 1))
+    (use-package evil-matchit
+      :after evil
+      :config (global-evil-matchit-mode 1))
 
-  (use-package evil-surround
-    :config
-    (global-evil-surround-mode 1))
+    (use-package evil-surround
+      :after evil
+      :config
+      (global-evil-surround-mode 1))
 
-  (use-package evil-multiedit
-    :after evil)
+    (use-package evil-multiedit
+      :bind ((:map evil-normal-state-map
+                   ("g h" . evil-multiedit-match-symbol-and-next)
+                   ("g H" . evil-multiedit-match-symbol-and-prev)
+                   ("g SPC" . evil-multiedit-match-all)))
+      :after evil)
 
+    #+end_src
+** IEdit
+    #+begin_src emacs-lisp
+      (global-set-key (kbd "C-*") 'iedit-mode)
+      (global-set-key (kbd "M-*") 'iedit-mode-toggle-on-function)
+      (use-package iedit
+        :bind ((:map iedit-occurrence-keymap-default
+                     ("M-u" . iedit-downcase-occurrences)
+                     ("M-U" . iedit-upcase-occurrences)
+                     ("<tab>" . iedit-next-occurrence)
+                     ("<S-tab>" . iedit-prev-occurrence)
+                     ("<escape>" . iedit--quit))
+               (:map evil-normal-state-map
+                     ("g /" . iedit-mode-from-isearch)))) 
+
+      ;; iedit-goto-last-occurrences
+      ;; iedit-goto-first-occurrences
 #+end_src
 ** General
 #+begin_src emacs-lisp
@@ -370,10 +387,14 @@
 
 ** Avy
 #+begin_src emacs-lisp
-  (use-package avy
-    :bind ("M-s c" . avy-goto-char-timer))
+    (use-package avy
+      :bind ((:map evil-normal-state-map
+              ("s" . avy-goto-char)
+              ("S" . avy-goto-line))
+                 ("M-s c" . avy-goto-char-timer)))
 
-  (use-package avy-flycheck)
+
+    (use-package avy-flycheck)
 #+end_src
 ** Vertico
 #+begin_src emacs-lisp
@@ -469,6 +490,7 @@
            ("M-s m" . consult-multi-occur)
            ("M-s k" . consult-keep-lines)
            ("M-s u" . consult-focus-lines)
+           ("M-s a" . ag)
 
            ;; Isearch integration
            ("M-s e" . consult-isearch-history)
@@ -571,11 +593,10 @@
     (company-minimum-prefix-length 1)
     (company-idle-delay 0.0))
 
-
-  (use-package company-tabnine
-    :config
-    (add-to-list 'company-backends #'company-tabnine)
-    (setq company-idle-delay 0))
+  ;; (use-package company-tabnine
+  ;;   :config
+  ;;   (add-to-list 'company-backends #'company-tabnine)
+  ;;   (setq company-idle-delay 0))
 
   (use-package company-box
     :hook (company-mode . company-box-mode))
@@ -742,8 +763,7 @@
     (lsp-mode . efs/lsp-mode-setup)
 
     :bind (:map lsp-mode-map
-          ("M-SPC" . lsp-command-map)
-          ("C-*" . lsp-execute-code-action))
+          ("C-!" . lsp-execute-code-action))
 
 
     :config
@@ -890,18 +910,19 @@
 #+end_src
 ** LSP-Python-MS 
 #+begin_src emacs-lisp
-  (use-package lsp-python-ms
-    :init (setq lsp-python-ms-auto-install-server t)
-    :hook (python-mode . (lambda ()
-                           (require 'lsp-python-ms)
-                           (lsp))))  ; or lsp-deferred
+  ;; (use-package lsp-python-ms
+  ;;   :init (setq lsp-python-ms-auto-install-server t)
+  ;;   :hook (python-mode . (lambda ()
+  ;;                          (require 'lsp-python-ms)
+  ;;                          (lsp))))  ; or lsp-deferred
 
 #+end_src
+** Pyright
 #+begin_src emacs-lisp
- ;; (use-package lsp-pyright
- ;;   :hook (python-mode . (lambda ()
- ;;                           (require 'lsp-pyright)
- ;;                           (lsp))))  ; or lsp-deferred
+(use-package lsp-pyright
+  :hook (python-mode . (lambda ()
+                          (require 'lsp-pyright)
+                          (lsp))))  ; or lsp-deferred
 #+end_src
 ** Pipenv
 #+begin_src emacs-lisp
