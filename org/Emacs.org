@@ -113,16 +113,16 @@
                     (efs/set-font-faces))))
     (efs/set-font-faces))
 #+end_src
-
+** Windows Visuals
 #+begin_src emacs-lisp
   ;; (set-frame-parameter nil 'fullscreen 'fullboth)
   (setq visible-bell t)
   ;; (set-face-attribute 'default nil :font "FiraCode Nerd Font" :height 160)
+  (menu-bar-mode 1)
   (scroll-bar-mode -1)
   (tool-bar-mode -1)
   (tooltip-mode -1)
   (set-fringe-mode 10)
-  (menu-bar-mode -1)
   (display-battery-mode 1)
   (setq tab-bar-tab-hints t)
   (setq inhibit-startup-message t)
@@ -131,19 +131,18 @@
 #+end_src
 ** Shell
 #+begin_src emacs-lisp
-  ;; (setenv "PATH" (concat (getenv "PATH") ":/usr/local/bin"))
-  ;; (setq exec-path (append exec-path '("/usr/local/bin")))
+  (setenv "PATH" (concat (getenv "PATH") "/Users/rwilson/anaconda3/condabin:/Users/rwilson/bin:/usr/local/bin:/Users/rwilson/Library/Python/3.8/bin:/Users/rwilson/Library/Python/3.9/bin:/Library/PostgreSQL/13/bin:/usr/local/opt/mysql-client/bin:/Users/rwilson/go/bin:./node_modules/.bin:/Applications/Emacs.app/Contents/MacOS/bin:/opt/local/bin:/opt/local/sbin:/Library/Frameworks/Python.framework/Versions/3.9/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin:/usr/local/go/bin:/usr/local/MacGPG2/bin:/opt/X11/bin:/Library/Apple/usr/bin:/Users/rwilson/.cargo/bin"))
 
-  ;;/Users/rwilson/anaconda3/condabin:/Users/rwilson/bin:/usr/local/bin:/Users/rwilson/Library/Python/3.8/bin:/Users/rwilson/Library/Python/3.9/bin:/Library/PostgreSQL/13/bin:/usr/local/opt/mysql-client/bin:/Users/rwilson/go/bin:./node_modules/.bin:/opt/local/bin:/opt/local/sbin:/Library/Frameworks/Python.framework/Versions/3.9/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin:/usr/local/go/bin:/usr/local/MacGPG2/bin:/Library/Apple/usr/bin:/Users/rwilson/.cargo/bin
+   (setq exec-path (append exec-path '("/Users/rwilson/anaconda3/condabin/" "/Users/rwilson/bin/" "/usr/local/bin/" "/Users/rwilson/Library/Python/3.8/bin/" "/Users/rwilson/Library/Python/3.9/bin/" "/Library/PostgreSQL/13/bin/" "/usr/local/opt/mysql-client/bin/" "/Users/rwilson/go/bin/" "./node_modules/.bin/" "/Applications/Emacs.app/Contents/MacOS/bin/" "/opt/local/bin/" "/opt/local/sbin/" "/Library/Frameworks/Python.framework/Versions/3.9/bin/" "/usr/local/bin/" "/usr/bin/" "/bin/" "/usr/sbin/" "/sbin/" "/Library/TeX/texbin/" "/usr/local/go/bin/" "/usr/local/MacGPG2/bin/" "/opt/X11/bin/" "/Library/Apple/usr/bin/" "/Users/rwilson/.cargo/bin/" "/Applications/Emacs.app/Contents/MacOS/libexec/")))
+
 
   (setq comint-terminfo-terminal "eterm-256color")
 
-  (use-package exec-path-from-shell
-    :config (exec-path-from-shell-initialize))
+  ;; (use-package exec-path-from-shell
+  ;;   :config (exec-path-from-shell-initialize))
 
-  ;; (global-undo-tree-mode)
-  ;; set enviromental variable
-  ;;(setenv "DOCKER_TLS_VERIFY" "1")
+  ;; ;; 
+  (global-undo-tree-mode)
 #+end_src
 ** Clipboard & Undo
 #+begin_src emacs-lisp
@@ -211,7 +210,6 @@
     ;; example how to map a command in normal mode (called 'normal state' in evil)
     (define-key evil-normal-state-map (kbd "; f") 'find-file)
     (define-key evil-normal-state-map (kbd "; b") 'switch-to-buffer)
-    (define-key evil-normal-state-map (kbd "; SPC") 'embark-act)
     (define-key evil-normal-state-map (kbd "; ;") 'execute-extended-command)
     (define-key evil-normal-state-map (kbd "; /") 'evilnc-comment-or-uncomment-lines)
     (evil-mode 1))
@@ -262,9 +260,36 @@
       ;; iedit-goto-last-occurrences
       ;; iedit-goto-first-occurrences
 #+end_src
+** Hydra
+#+begin_src emacs-lisp
+  (use-package hydra
+    :config
+    (defhydra hydra-vuiet (:timeout 4)
+      "vuiet music"
+      ("l" vuiet-love-track "like")
+      ("u" vuiet-unlove-track "dislike")
+      ("s" vuiet-stop "stop")
+      (">" vuiet-next "next")
+      ("<" vuiet-previous "previous")
+      ("<escape>" nil "finish"))
+
+    (defhydra hydra-mpc (:timeout 4)
+      "mpc music"
+      ("s" mpc-stop "stop")
+      (">" mpc-next "next")
+      ("<" mpc-prev "previous")
+      ("<escape>" nil "finish"))
+
+    (defhydra hydra-mail (:timeout 4)
+      "mail"
+      ("o" mu4e "Open Mail")
+      ("c" mu4e-compose-new "Compose New Mail")
+      ("<escape>" nil "finish")))
+#+end_src
 ** General
 #+begin_src emacs-lisp
   (use-package general
+    :after evil
     :config
     (general-evil-setup t)
 
@@ -283,38 +308,10 @@
       "C-l" 'right-char
       "C-h" 'left-char)
 
-
-    ;;  (general-create-definer rune/leader-keys
-    ;;     :keymaps '(normal insert visual emacs)
-    ;;     ;; :prefix "SPC"
-    ;;     :global-prefix "C-SPC"
-
-    ;;   (rune/leader-keys
-    ;;     "t" '(:ignore t :which-key "toggles")
-    ;;     "tt" '(consult-theme :which-key "choose theme"))
-
-    ;; (rune/leader-keys
-    ;;   "ts" '(hydra-text-scale/body :which-key "scale text"))
-
-    ;; (rune/leader-keys
-    ;;   "m" '(hydra-mail/body :which-key "mail")))
-    )
-#+end_src
-** Hydra
-#+begin_src emacs-lisp
-  (use-package hydra
-    :config
-    (defhydra hydra-text-scale (:timeout 4)
-      "text scale"
-      ("j" text-scale-increase "in")
-      ("k" text-scale-decrease "out")
-      ("f" nil "finish"))
-
-    (defhydra hydra-mail (:timeout 4)
-      "mail"
-      ("o" mu4e "Open Mail")
-      ("c" mu4e-compose-new "Compose New Mail")
-      ("f" nil "finish")))
+    (nvmap :prefix "SPC"
+      "m" '(:ignore t :which-key "music")
+      "mc" '(hydra-mpc/body :which-key "mpc-music")
+      "mv" '(hydra-vuiet/body :which-key "vuiet-music")))
 #+end_src
 ** Which-Key
 #+begin_src emacs-lisp
@@ -343,12 +340,13 @@
              (doom-modeline-height 12)))
 
   (use-package doom-themes
-    :init (load-theme 'leuven t))
+    :init (load-theme 'doom-outrun-electric t))
 
   (use-package leuven-theme)
   (use-package tao-theme)
   (use-package jazz-theme)
   (use-package exotica-theme)
+  ;; (use-package eziam-theme)
 #+end_src
 ** Counsel Ivy
 #+begin_src emacs-lisp
@@ -514,15 +512,15 @@
     :bind
     (("M-o" . embark-act)         ;; pick some comfortable binding
      ("M-O" . embark-dwim)        ;; good alternative: M-.
-     ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+     ("C-h B" . embark-bindings) ;; alternative for `describe-bindings'
+    :map evil-normal-state-map
+    ("; SPC" . embark-act))         ;; pick some comfortable binding
 
     :init
-
     ;; Optionally replace the key help with a completing-read interface
     (setq prefix-help-command #'embark-prefix-help-command)
 
     :config
-
     ;; Hide the mode line of the Embark live/completions buffers
     (add-to-list 'display-buffer-alist
                  '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
@@ -583,25 +581,40 @@
 ** Company
 #+begin_src emacs-lisp
   (use-package company
-    :after lsp-mode
     :hook (prog-mode . company-mode)
     :bind (:map company-active-map
-                ("<tab>" . company-complete-selection))
-    (:map lsp-mode-map
-          ("<tab>" . company-indent-or-complete-common))
+                ("<tab>" . company-complete-selection)
+                :map company-mode-map
+                ("<backtab>" . company-yasnippet))
+
     :custom
     (company-minimum-prefix-length 1)
     (company-idle-delay 0.0))
+
+  (use-package company-box
+    :after company
+    :hook (company-mode . company-box-mode))
+#+end_src
+** Company Backends
+#+begin_src emacs-lisp
+  (use-package company-web
+    :after (web-mode)
+    :config
+    (add-to-list 'company-backends 'company-web-html)
+    (add-to-list 'company-backends 'company-web-jade)
+    (add-to-list 'company-backends 'company-web-slim))
+
+  (use-package company-restclient
+    :after restclient
+    :config
+    (add-to-list 'company-backends 'company-restclient))
 
   ;; (use-package company-tabnine
   ;;   :config
   ;;   (add-to-list 'company-backends #'company-tabnine)
   ;;   (setq company-idle-delay 0))
 
-  (use-package company-box
-    :hook (company-mode . company-box-mode))
 #+end_src
-
 ** Popup
 #+begin_src emacs-lisp
 (use-package popup)
@@ -693,10 +706,7 @@
 #+end_src
 * Searches
 #+begin_src emacs-lisp
-  (use-package fzf
-    :bind
-    ("C-SPC" . 'fzf))
-
+  (use-package fzf)
   (use-package ag)
   (use-package ripgrep)
   (use-package projectile-ripgrep)
@@ -714,26 +724,23 @@
   (use-package tree-sitter
     :init
     (use-package tree-sitter-langs)
+
     :config 
     (global-tree-sitter-mode)
     (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
-  (use-package tree-sitter)
-
-  (use-package tree-sitter-langs)
 
   (use-package tree-edit
     :after tree-sitter)
-  (use-package tree-edit)
 
   (use-package evil-tree-edit
     :after tree-edit)
-  (use-package evil-tree-edit)
 #+end_src
 ** Programming
 #+begin_src emacs-lisp
   (use-package prog-mode
     :ensure nil
     :hook (prog-mode lambda ()
+                     (hl-todo-mode)
                      (display-line-numbers-mode 1)
                      (flyspell-prog-mode)))
 
@@ -744,9 +751,61 @@
     :config
     (setq rainbow-x-colors nil)
     (add-hook 'prog-mode-hook 'rainbow-mode))
+
   (use-package smartparens
     :config
     (add-hook 'prog-mode-hook 'smartparens-mode))
+#+end_src
+** Snippet
+#+begin_src emacs-lisp
+
+  (use-package yasnippet
+    ;; :bind
+    ;; ("C-c y s" . yas-insert-snippet)
+    ;; ("C-c y v" . yas-visit-snippet-file)
+    :config
+    (use-package js-react-redux-yasnippets)
+
+    (add-hook 'yas-minor-mode-hook (lambda ()
+                                     (yas-activate-extra-mode 'fundamental-mode)))
+    ;; (add-to-list 'yas-snippet-dirs "~/.emacs.d/snippets")
+    (yas-global-mode 1))
+
+  (define-key yas-minor-mode-map (kbd "<tab>") nil)
+  (define-key yas-minor-mode-map (kbd "TAB") nil)
+  ;; Bind `SPC' to `yas-expand' when snippet expansion available (it
+  ;; will still call `self-insert-command' otherwise).
+  (define-key yas-minor-mode-map (kbd "SPC") yas-maybe-expand)
+  ;; Bind `C-c y' to `yas-expand' ONLY.
+  (define-key yas-minor-mode-map (kbd "C-c y") #'yas-expand)
+
+  (use-package yasnippet-snippets)
+
+  (use-package auto-yasnippet)
+#+end_src
+
+** Emmet
+#+begin_src emacs-lisp
+  (use-package emmet-mode
+    :init
+    (setq
+     emmet-indentation 2
+     emmet-move-cursor-between-quotes t)
+    :bind (:map emmet-mode-keymap 
+                ("C-c C-c p" . emmet-preview-mode)
+                ("C-<tab>" . emmet-expand-line))
+
+    :hook
+    (sgml-mode . emmet-mode) ;; Auto-start on any markup modes
+    (web-mode . emmet-mode)
+    (html-mode . emmet-mode)
+    (rjsx-mode . emmet-mode)
+    (css-mode  . emmet-mode)) ;; enable Emmet's css abbreviation.
+  ;; expand with ctrl-enter
+
+#+end_src
+#+begin_src emacs-lisp
+  (use-package flymake-python-pyflakes)
 #+end_src
 ** LSP
 #+begin_src emacs-lisp
@@ -762,9 +821,12 @@
     :hook
     (lsp-mode . efs/lsp-mode-setup)
 
-    :bind (:map lsp-mode-map
-          ("C-!" . lsp-execute-code-action))
+    :bind-keymap
+        ("C-c l" . lsp-command-map)
 
+    :bind (:map lsp-mode-map
+          ("C-!" . lsp-execute-code-action)
+          ("<tab>" . company-indent-or-complete-common))
 
     :config
     (setq lsp-idle-delay 0.5
@@ -792,35 +854,36 @@
 #+end_src
 ** LSP-UI
 #+begin_src emacs-lisp
-          (use-package lsp-ui
-            :hook (lsp-mode . lsp-ui-mode)
-            ;; :custom (lsp-ui-doc-position 'bottom)
-            :config (setq lsp-ui-sideline-show-hover t
-                          lsp-ui-sideline-delay 0.5
-                          lsp-ui-doc-delay 5
-                          lsp-ui-sideline-ignore-duplicates t
-                          lsp-ui-doc-position 'bottom
-                          lsp-ui-doc-alignment 'frame
-                          lsp-ui-doc-header nil
-                          lsp-ui-doc-include-signature t
-                          lsp-ui-doc-use-childframe t)
-            :bind ((:map evil-normal-state-map
-                        ("gd" . lsp-ui-peek-find-definitions)
-                        ("gr" . lsp-ui-peek-find-references)
-                        ("gi" . lsp-ui-peek-find-implementation)
-                        ("Ni" . lsp-ui-imenu))
-                   (:map lsp-ui-peek-mode-map
-                         ("C-k" . lsp-ui-peek--select-prev)
-                         ("C-j" . lsp-ui-peek--select-next)
-                         ("C-l" . lsp-ui-peek--select-next-file)
-                         ("C-h" . lsp-ui-peek--select-prev-file)
-                         ("C-<return>" . lsp-ui-peek--goto-xref-other-window))))
+  (use-package lsp-ui
+    :after lsp-mode
+    :hook (lsp-mode . lsp-ui-mode)
+    ;; :custom (lsp-ui-doc-position 'bottom)
+    :config (setq lsp-ui-sideline-show-hover t
+                  lsp-ui-sideline-delay 0.5
+                  lsp-ui-doc-delay 5
+                  lsp-ui-sideline-ignore-duplicates t
+                  lsp-ui-doc-position 'bottom
+                  lsp-ui-doc-alignment 'frame
+                  lsp-ui-doc-header nil
+                  lsp-ui-doc-include-signature t
+                  lsp-ui-doc-use-childframe t)
+    :bind ((:map evil-normal-state-map
+                ("gd" . lsp-ui-peek-find-definitions)
+                ("gr" . lsp-ui-peek-find-references)
+                ("gi" . lsp-ui-peek-find-implementation)
+                ("Ni" . lsp-ui-imenu))
+           (:map lsp-ui-peek-mode-map
+                 ("C-k" . lsp-ui-peek--select-prev)
+                 ("C-j" . lsp-ui-peek--select-next)
+                 ("C-l" . lsp-ui-peek--select-next-file)
+                 ("C-h" . lsp-ui-peek--select-prev-file)
+                 ("C-<return>" . lsp-ui-peek--goto-xref-other-window))))
 
 
-          (use-package lsp-treemacs
-            :after lsp)
+  (use-package lsp-treemacs
+    :after lsp)
 
-          ;; (use-package lsp-ivy)
+  ;; (use-package lsp-ivy)
 
 #+end_src
 ** DAP
@@ -840,48 +903,84 @@
     ;; (dap-python-executable "python3")
     (dap-python-debugger 'debugpy)
     (dap-auto-configure-features '(sessions locals controls tooltip)))
-
-
 #+end_src
 ** Web Mode
 #+begin_src emacs-lisp
   (use-package web-mode
+    ;; :init
+    ;; (add-hook 'web-mode-hook 
+    ;;           '(lambda ()
+    ;;             (set (make-local-variable 'company-backends)
+    ;;                  '(company-web-html company-css))))
+
+    :hook (web-mode-before-auto-complete-hooks
+           . (lambda ()
+               (let ((web-mode-cur-language
+                      (web-mode-language-at-pos)))
+                 (if (string= web-mode-cur-language "php")
+                     (yas-activate-extra-mode 'php-mode)
+                   (yas-deactivate-extra-mode 'php-mode))
+                 (if (string= web-mode-cur-language "css")
+                     (setq emmet-use-css-transform t)
+                   (setq emmet-use-css-transform nil)))))
+
+
+    :mode (("\\.phtml\\'" . web-mode)
+           ("\\.tpl\\.php\\'" . web-mode)
+           ("\\.[agj]sp\\'" . web-mode)
+           ("\\.as[cp]x\\'" . web-mode)
+           ("\\.erb\\'" . web-mode)
+           ("\\.mustache\\'" . web-mode)
+           ("\\.djhtml\\'" . web-mode)
+           ("\\.html?\\'" . web-mode))
     :config
-    (setq web-mode-markup-indent-offset 2)
-    (setq web-mode-engines-alist
+    (setq web-mode-markup-indent-offset 2
+          web-mode-css-indent-offset 2
+          web-mode-code-indent-offset 2
+          web-mode-enable-engine-detection t
+          web-mode-enable-current-column-highlight t
+          web-mode-enable-current-element-highlight t
+          web-mode-engines-alist
           '(("django" . "focus/.*\\.html\\'")
             ("ctemplate" . "realtimecrm/.*\\.html\\'"))))
 
+  
   (use-package markdown-mode
     :commands (markdown-mode gfm-mode)
     :mode (("README\\.md\\'" . gfm-mode)
            ("\\.md\\'" . markdown-mode)
            ("\\.markdown\\'" . markdown-mode))
     :init (setq markdown-command "multimarkdown"))
+
+  (use-package css-mode
+    :config
+    (add-to-list 'company-backends 'company-css))
 #+end_src
 ** JavaScript
 #+begin_src emacs-lisp
-      (use-package js-mode
-        ;; :mode "\\.js\\'"
-        :ensure nil
-        :hook (js-mode . lsp-deferred)
-        :config
-        (setq js-indent-level 4))
+  (use-package js-mode
+    ;; :mode "\\.js\\'"
+    :ensure nil
+    :hook (js-mode . lsp-deferred)
+    :config
+    (setq js-indent-level 4))
 
-      (use-package typescript-mode
-        :hook (typescript-mode . lsp-deferred)
-        :config
-        (setq typescript-indent-level 4))
+  (use-package typescript-mode
+    :hook (typescript-mode . lsp-deferred)
+    :config
+    (setq typescript-indent-level 4))
 
-      (use-package rjsx-mode
-        :mode "\\.js\\'"
-        :hook (rjsx-mode . lsp-deferred)
-        :config
-        (setq js-jsx-indent-level 2))
+  (use-package rjsx-mode
+    :mode "\\.js\\'"
+    :hook (rjsx-mode . lsp-deferred)
+    :bind (:map rjsx-mode-map
+                ("<" . self-insert-command))
+    :config
+    (setq js-jsx-indent-level 2))
 
-      (use-package prettier-js
-        :after rjsx-mode
-        :hook (rjsx-mode . prettier-js-mode))
+  (use-package prettier-js
+    :after rjsx-mode
+    :hook (rjsx-mode . prettier-js-mode))
 
 #+end_src
 ** Python
@@ -903,12 +1002,23 @@
 
   (add-hook 'python-mode-hook #'evil-tree-edit-mode)
 
-  (use-package live-py-mode)
+  (use-package live-py-mode
+    :init
+    (setq live-py-version "python3"))
+
   (use-package ipython-shell-send)
 
+  (use-package python-insert-docstring
+    :after python-mode
+    :bind ((:map python-mode-map
+                 ("C-c i" . python-insert-docstring-with-google-style-at-point))))
 
+  ;; :ensure nil
+  ;; :quelpa (python-insert-docstring
+  ;;          :fetcher github
+  ;;          :repo "macurovc/insert-docstring"))
 #+end_src
-** LSP-Python-MS 
+*** LSP-Python-MS 
 #+begin_src emacs-lisp
   ;; (use-package lsp-python-ms
   ;;   :init (setq lsp-python-ms-auto-install-server t)
@@ -919,15 +1029,16 @@
 #+end_src
 ** Pyright
 #+begin_src emacs-lisp
-(use-package lsp-pyright
-  :hook (python-mode . (lambda ()
-                          (require 'lsp-pyright)
-                          (lsp))))  ; or lsp-deferred
+  (use-package lsp-pyright
+    :hook (python-mode . (lambda ()
+                           (require 'lsp-pyright)
+                           (lsp))))  ; or lsp-deferred
 #+end_src
 ** Pipenv
 #+begin_src emacs-lisp
   (use-package pipenv
-    :hook (python-mode . pipenv-mode))
+   :after python-mode 
+   :hook (python-mode . pipenv-mode))
   ;;   :init
   ;;   (setq
   ;;    pipenv-projectile-after-switch-function
@@ -938,42 +1049,21 @@
 ** Pyvenv
 #+begin_src emacs-lisp
   (use-package pyvenv
-    :ensure t
+    :after python-mode
     :config
     (pyvenv-mode 1)
     ;; Set correct Python interpreter
     (setq pyvenv-post-activate-hooks
           (list (lambda ()
-                  (setq python-shell-interpreter (concat pyvenv-virtual-env "bin/python"))
-                  (setq lsp-python-ms-python-executable-cmd  (concat pyvenv-virtual-env "bin/python3")))))
+                  (setq python-shell-interpreter (concat pyvenv-virtual-env "bin/python")))))
     (setq pyvenv-post-deactivate-hooks
           (list (lambda ()
-                  (setq python-shell-interpreter (concat pyvenv-virtual-env "python"))
-                  (setq lsp-python-ms-python-executable-cmd "python"))))
+                  (setq python-shell-interpreter (concat pyvenv-virtual-env "python3")))))
 
     (pyvenv-tracking-mode 1))
 
   (setq python-shell-completion-native-enable nil)
 
-#+end_src
-** Emmet
-#+begin_src emacs-lisp
-  (use-package emmet-mode
-    :defer t
-    :init
-    (setq
-     emmet-indentation 2
-     emmet-move-cursor-between-quotes t)
-    :config
-    (add-hook 'sgml-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
-    (add-hook 'web-mode-hook  'emmet-mode)
-    (add-hook 'html-mode-hook 'emmet-mode)
-    (add-hook 'css-mode-hook  'emmet-mode)) ;; enable Emmet's css abbreviation.
-  ;; expand with ctrl-enter
-
-#+end_src
-#+begin_src emacs-lisp
-  (use-package flymake-python-pyflakes)
 #+end_src
 ** Projectile
 #+begin_src emacs-lisp
@@ -995,61 +1085,20 @@
   ;;  :config (counsel-projectile-mode))
 
 #+end_src
-** Magit
-#+begin_src emacs-lisp
-
-  (use-package magit
-    :custom (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
-    :bind (:map evil-normal-state-map
-                (";g" . magit-status)))
-
-  (use-package git-gutter
-    :init (global-git-gutter-mode +1)
-    :bind (:map evil-normal-state-map
-                ("gs" . git-gutter:stage-hunk)
-                ("g]" . git-gutter:next-hunk)
-                ("g[" . git-gutter:previous-hunk)))
-
-  (use-package git-timemachine)
-  (use-package forge)
-
-
-#+end_src
-**Yasnippet
-#+begin_src emacs-lisp
-  (use-package yasnippet
-    ;; :bind
-    ;; ("C-c y s" . yas-insert-snippet)
-    ;; ("C-c y v" . yas-visit-snippet-file)
-    :config
-    (add-hook 'yas-minor-mode-hook (lambda ()
-                                     (yas-activate-extra-mode 'fundamental-mode)))
-    (add-to-list 'yas-snippet-dirs "~/.emacs.d/snippets")
-    (yas-global-mode 1))
-
-  (define-key yas-minor-mode-map (kbd "<tab>") nil)
-  (define-key yas-minor-mode-map (kbd "TAB") nil)
-  ;; Bind `SPC' to `yas-expand' when snippet expansion available (it
-  ;; will still call `self-insert-command' otherwise).
-  (define-key yas-minor-mode-map (kbd "SPC") yas-maybe-expand)
-  ;; Bind `C-c y' to `yas-expand' ONLY.
-  (define-key yas-minor-mode-map (kbd "C-c y") #'yas-expand)
-
-  (use-package auto-yasnippet)
-  (use-package yasnippet-snippets)
-  (use-package django-snippets)
-#+end_src
 ** UML
 #+begin_src emacs-lisp
-  (use-package ob-napkin)
   (use-package plantuml-mode
+    :mode (("\\.pu\\'" . plantuml-mode)
+           ("\\.puml\\'" . plantuml-mode))
     :config
-    (setq org-plantuml-jar-path
-          (expand-file-name "/usr/local/Cellar/plantuml/1.2021.10/bin/plantuml"))
-    (add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
-    (org-babel-do-load-languages 'org-babel-load-languages '((plantuml . t))))
+    (setq
+     ;; (add-to-list 'org-src-lang-modes '("plantuml" . plantuml-mode))
+     org-plantuml-jar-path (expand-file-name "/usr/local/Cellar/plantuml/1.2022.1/libexec/plantuml.jar")
+          plantuml-output-type "svg"))
 
+  (use-package ob-napkin)
 #+end_src
+
 ** SQL
 #+begin_src emacs-lisp
   (setq lsp-sqls-connections
@@ -1067,62 +1116,113 @@
           sqlformat-args '("-kupper")))
 
 #+end_src
+** Rest Client
+#+begin_src emacs-lisp
+  (use-package restclient
+    :mode ("\\.http\\'" . restclient-mode)
+    :hook (restclient-mode . company-mode)
+    :bind (:map restclient-mode-map
+                ("C-c C-f" . json-mode-beautify)))
+
+  (use-package ob-restclient
+    :after restclient
+    :config
+    (add-to-list 'org-src-lang-modes '("restclient" . restclient)))
+#+end_src
+** Yaml
+#+begin_src emacs-lisp
+  (use-package yaml-mode 
+    :mode (("\\.yaml\\'" . yaml-mode)
+           ("\\.yml\\'" . yaml-mode))
+    :bind ((:map yaml-mode-map
+                 ("\C-m" . 'newline-and-indent))))
+#+end_src
+* Version Control
+** Magit
+#+begin_src emacs-lisp
+      (use-package magit
+        :defer 10
+        :custom (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
+        :bind (:map evil-normal-state-map
+                    (";g" . magit-status)))
+
+      (use-package git-gutter
+        :after magit
+        :init (global-git-gutter-mode +1)
+        :bind (:map evil-normal-state-map
+                    ("gs" . git-gutter:stage-hunk)
+                    ("g]" . git-gutter:next-hunk)
+                    ("g[" . git-gutter:previous-hunk)))
+
+      (use-package git-timemachine
+        :after magit)
+
+      (use-package forge
+        :after magit
+        :init
+        (setq forge-add-default-bindings nil))
+#+end_src
 * Writing
 ** Grammar 
 #+begin_src emacs-lisp
 
-  (add-to-list 'ispell-skip-region-alist '("#\\+begin_src". "#\\+end_src"))
+  (add-to-list 'ispell-skip-region-alist '("#\\+begin_src" . "#\\+end_src"))
 
   (use-package text-mode
     :ensure nil
     :hook (text-mode . flyspell-mode))
 
+
+  (use-package lsp-ltex
+    :init
+    (setq lsp-ltex-version "15.2.0")
+    :hook (latex-mode . (lambda ()
+                         (require 'lsp-ltex)
+                         (lsp)))) ; or lsp-deferred
+
+#+end_src
+*** Lang tools
+#+begin_src emacs-lisp
   ;; (add-hook 'text-mode-hook
   ;;           (lambda () 
   ;;             (add-hook 'after-save-hook 'langtool-check nil 'make-it-local)))
 
-  (dolist (hook '(change-log-mode-hook log-edit-mode-hook))
-    (add-hook hook (lambda () (flyspell-mode -1))))
+  ;; (dolist (hook '(change-log-mode-hook log-edit-mode-hook))
+  ;;   (add-hook hook (lambda () (flyspell-mode -1))))
 
-  (defun langtool-autoshow-detail-popup (overlays)
-    (when (require 'popup nil t)
-      ;; Do not interrupt current popup
-      (unless (or popup-instances
-                  ;; suppress popup after type `C-g` .
-                  (memq last-command '(keyboard-quit)))
-        (let ((msg (langtool-details-error-message overlays)))
-          (popup-tip msg)))))
+  ;; (defun langtool-autoshow-detail-popup (overlays)
+  ;;   (when (require 'popup nil t)
+  ;;     ;; Do not interrupt current popup
+  ;;     (unless (or popup-instances
+  ;;                 ;; suppress popup after type `C-g` .
+  ;;                 (memq last-command '(keyboard-quit)))
+  ;;       (let ((msg (langtool-details-error-message overlays)))
+  ;;         (popup-tip msg)))))
 
-  (use-package langtool
-    :init
-    (setq langtool-language-tool-jar "~/bin/LanguageTool-5.6/languagetool-commandline.jar")
-
-    :config
-    (set-face-attribute 'langtool-errline nil
-                        :weight 'bold
-                        :slant 'italic
-                        :underline '(:color "pink" :style wave)
-                        :foreground nil
-                        :background nil)
-    (setq langtool-mother-tongue "en"
-          langtool-default-language "en-US"
-          langtool-autoshow-message-function 'langtool-autoshow-detail-popup))
-
-
-  (global-set-key "\C-x4w" 'langtool-check)
-  (global-set-key "\C-x4W" 'langtool-check-done)
-  (global-set-key "\C-x4l" 'langtool-switch-default-language)
-  (global-set-key "\C-x44" 'langtool-show-message-at-point)
-  (global-set-key "\C-x4c" 'langtool-correct-buffer)
-
-  ;; (use-package lsp-ltex
+  ;;  (use-package langtool
   ;;   :init
-  ;;   (setq lsp-ltex-version "15.2.0")
-  ;;   :hook (text-mode . (lambda ()
-  ;;                            (require 'lsp-ltex)
-  ;;                             (lsp)))) ; or lsp-deferred
+  ;;   (setq langtool-language-tool-jar "~/bin/LanguageTool-5.6/languagetool-commandline.jar")
+
+  ;;   :config
+  ;;   (set-face-attribute 'langtool-errline nil
+  ;;                       :weight 'bold
+  ;;                       :slant 'italic
+  ;;                       :underline '(:color "pink" :style wave)
+  ;;                       :foreground nil
+  ;;                       :background nil)
+  ;;   (setq langtool-mother-tongue "en"
+  ;;         langtool-default-language "en-US"
+  ;;         langtool-autoshow-message-function 'langtool-autoshow-detail-popup))
+
+
+  ;; (global-set-key "\C-x4w" 'langtool-check)
+  ;; (global-set-key "\C-x4W" 'langtool-check-done)
+  ;; (global-set-key "\C-x4l" 'langtool-switch-default-language)
+  ;; (global-set-key "\C-x44" 'langtool-show-message-at-point)
+  ;; (global-set-key "\C-x4c" 'langtool-correct-buffer)
 
 #+end_src
+
 ** Dictionary
 #+begin_src emacs-lisp
   (use-package dictionary
@@ -1159,6 +1259,16 @@
     (use-package latex-preview-pane
       :config
       (latex-preview-pane-enable))
+#+end_src
+** PDF Tools
+#+begin_src emacs-lisp
+(use-package pdf-tools
+      :ensure t
+      :config
+      (custom-set-variables
+        '(pdf-tools-handle-upgrades nil)) ; Use brew upgrade pdf-tools instead.
+     (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo"))
+     (pdf-tools-install)
 #+end_src
 * Windows Management
 ** Winum Mode
@@ -1431,29 +1541,32 @@
 #+end_src
 ** MU4E Alert
 #+begin_src emacs-lisp
- (use-package mu4e-alert
-    :config
-    ;; (setq mu4e-alert-icon "~/.emacs.d/e-mail.svg")
-    ;; (mu4e-alert-set-default-style 'notifier
-    ;; (add-hook 'after-init-hook #'mu4e-alert-enable-notifications)
-    (add-hook 'after-init-hook #'mu4e-alert-enable-mode-line-display))
+  ;; (use-package mu4e-alert
+  ;;    :after mu4e
+  ;;    :config
+  ;;    ;; (setq mu4e-alert-icon "~/.emacs.d/e-mail.svg")
+  ;;    ;; (mu4e-alert-set-default-style 'notifier
+  ;;    ;; (add-hook 'after-init-hook #'mu4e-alert-enable-notifications)
+  ;;    (add-hook 'after-init-hook #'mu4e-alert-enable-mode-line-display))
+#+end_src
+** GNUS function
+#+begin_src emacs-lisp
+  (require 'gnus-dired)
+  ;; make the `gnus-dired-mail-buffers' function also work on
+  ;; message-mode derived modes, such as mu4e-compose-mode
+  (defun gnus-dired-mail-buffers ()
+    "Return a list of active message buffers."
+    (let (buffers)
+      (save-current-buffer
+        (dolist (buffer (buffer-list t))
+          (set-buffer buffer)
+          (when (and (derived-mode-p 'message-mode)
+                     (null message-sent-message-via))
+            (push (buffer-name buffer) buffers))))
+      (nreverse buffers)))
 
- (require 'gnus-dired)
- ;; make the `gnus-dired-mail-buffers' function also work on
- ;; message-mode derived modes, such as mu4e-compose-mode
- (defun gnus-dired-mail-buffers ()
-   "Return a list of active message buffers."
-   (let (buffers)
-     (save-current-buffer
-       (dolist (buffer (buffer-list t))
-         (set-buffer buffer)
-         (when (and (derived-mode-p 'message-mode)
-                    (null message-sent-message-via))
-           (push (buffer-name buffer) buffers))))
-     (nreverse buffers)))
-
- (setq gnus-dired-mail-mode 'mu4e-user-agent)
- (add-hook 'dired-mode-hook 'turn-on-gnus-dired-mode)
+  (setq gnus-dired-mail-mode 'mu4e-user-agent)
+  (add-hook 'dired-mode-hook 'turn-on-gnus-dired-mode)
 #+end_src
 ** Epg Config
 #+begin_src emacs-lisp
@@ -1691,9 +1804,9 @@
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((emacs-lisp . t)
+     (restclient . t)
+     (plantuml . t)
      (python . t)))
-
-  (use-package ob-async)
 #+end_src
 ** Org Bullets
 #+begin_src emacs-lisp
@@ -1739,8 +1852,9 @@
   (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
   (add-to-list 'org-structure-template-alist '("py" . "src python"))
   (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+  (add-to-list 'org-structure-template-alist '("rc" . "src restclient"))
   (add-to-list 'org-structure-template-alist '("np" . "src napkin"))
-  (add-to-list 'org-structure-template-alist '("npp". "napkin-puml"))
+  (add-to-list 'org-structure-template-alist '("npp". "src napkin-puml"))
 #+end_src
 
 ** Auto Tangle Configuration into files
@@ -1857,6 +1971,30 @@
 ;; TODO Install this package
 ;; (use-package org-remark)
 #+end_src
+** Org Noter
+#+begin_src emacs-lisp
+(use-package org-noter-pdftools)
+#+end_src
+** Todo
+#+begin_src emacs-lisp
+  (use-package hl-todo)
+  (use-package magit-todos)
+  (use-package todotxt-mode)
+
+  (use-package org-projectile
+    :bind (("C-c n p" . org-projectile-project-todo-completing-read)
+           ("C-c c" . org-capture))
+    :config
+    (progn
+      (setq org-projectile-projects-file "~/org/beorg/org/Projects.org")
+      (setq org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
+      (push (org-projectile-project-todo-entry) org-capture-templates)))
+#+end_src
+
+** Flash card
+#+begin_src emacs-lisp
+(use-package org-anki)
+#+end_src
 * Pretty Symbols
 ** Org Symbols
 #+begin_src emacs-lisp
@@ -1914,11 +2052,50 @@
   (add-hook 'prog-mode-hook 'my/prog-mode/load-prettify-symbols)
 #+end_src
 * Music
+** Function
+#+begin_src emacs-lisp
+      ;; (defun mpd-start ()
+      ;;   (interactive)
+      ;;   ;; Switch to `*shell*'
+      ;;   (shell)
+      ;;   ;; Goto last prompt, clear old input if any, and insert new one
+      ;;   (goto-char (point-max))
+      ;;   (comint-kill-input)
+      ;;   (insert "mpd")
+      ;;   ;; Execute
+      ;;   (comint-send-input))
+
+    ;; (add-to-list 'display-buffer-alist '("*Async Shell Command*" . (display-buffer-no-window . nil)) )
+
+  (defun mpd-start ()
+    (interactive)
+    (setq-local display-buffer-alist '("*Async Shell Command*" . (display-buffer-no-window . nil)) )
+    (async-shell-command "mpd"))
+      ;; (global-set-key (kbd "M-m") 'my-compile)
+#+end_src
 **  Vuiet  
 #+begin_src emacs-lisp
-    (use-package  vuiet)
+    (use-package  vuiet
+      :config
+      (setq vuiet-update-mode-line-automatically t)
+      (setq vuiet-update-mode-line-interval 1))
+
     (use-package lastfm)
 #+end_src
+** MPC
+#+begin_src emacs-lisp
+  (use-package mpc)
+#+end_src
+* Games
+** Key-quiz
+#+begin_src emacs-lisp
+(use-package key-quiz)
+#+end_src
+** Speed Type
+#+begin_src emacs-lisp
+(use-package speed-type)
+#+end_src
+
 * Misc
 ** Line Number
 #+begin_src emacs-lisp
@@ -1932,19 +2109,46 @@
 
 ** Tab-Bar Mode
 #+begin_src emacs-lisp
+  ;; (setq tab-bar-show 1)
+  (defun my/tab-bar-tab-name-function ()
+    (let ((project (project-current)))
+      (if project
+          (project-root project)
+        (tab-bar-tab-name-current))))
+
+  (setq tab-bar-tab-name-function #'my/tab-bar-tab-name-function)
   (set-face-attribute
    'tab-bar-tab nil :inherit 'doom-modeline-panel
    :foreground nil :background nil)
-#+end_src
 
-** Key-quiz
-#+begin_src emacs-lisp
-(use-package key-quiz)
+  (setq tab-bar-format '(tab-bar-format-tabs tab-bar-separator tab-bar-format-align-right tab-bar-format-global))
+
+  (add-to-list 'global-mode-string "")
+
+  ;; Make sure mode line text in the tab bar can be read
+  (set-face-attribute 'tab-bar nil :foreground "#FFFFFF")
+
+
+  (set-face-attribute
+   'tab-line nil :inherit 'doom-modeline-panel
+   :foreground nil :background nil)
 #+end_src
 
 ** Scanner
 #+begin_src emacs-lisp
 (use-package scanner)
+#+end_src
+
+** Measure Load Time
+#+begin_src emacs-lisp
+(defun efs/display-startup-time ()
+  (message "Emacs loaded in %s with %d garbage collections."
+           (format "%.2f seconds"
+                   (float-time
+                   (time-subtract after-init-time before-init-time)))
+           gcs-done))
+
+(add-hook 'emacs-startup-hook #'efs/display-startup-time)
 #+end_src
 
 
