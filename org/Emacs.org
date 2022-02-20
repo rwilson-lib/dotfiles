@@ -50,28 +50,31 @@
 #+end_src
 ** Emacs
 #+begin_src emacs-lisp
-;; A few more useful configurations...
-(use-package emacs
-  :init
-  ;; Add prompt indicator to `completing-read-multiple'.
-  ;; Alternatively try `consult-completing-read-multiple'.
-  (defun crm-indicator (args)
-    (cons (concat "[CRM] " (car args)) (cdr args)))
-  (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
+  ;; A few more useful configurations...
+  (use-package emacs
+    :init
+    ;; Add prompt indicator to `completing-read-multiple'.
+    ;; Alternatively try `consult-completing-read-multiple'.
+    (defun crm-indicator (args)
+      (cons (concat "[CRM] " (car args)) (cdr args)))
+    (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
 
-  ;; Do not allow the cursor in the minibuffer prompt
-  (setq minibuffer-prompt-properties
-        '(read-only t cursor-intangible t face minibuffer-prompt))
-  (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+    ;; Do not allow the cursor in the minibuffer prompt
+    (setq minibuffer-prompt-properties
+          '(read-only t cursor-intangible t face minibuffer-prompt))
+    (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
 
-  ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
-  ;; Vertico commands are hidden in normal buffers.
-  (setq read-extended-command-predicate
-         #'command-completion-default-include-p)
+    ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
+    ;; Vertico commands are hidden in normal buffers.
+    (setq read-extended-command-predicate
+           #'command-completion-default-include-p)
 
-  ;; Enable recursive minibuffers
-  (setq enable-recursive-minibuffers t))
+    ;; Do not use system clip board
+    (setq x-select-enable-clipboard nil)
+    ;; Enable recursive minibuffers
+    (setq enable-recursive-minibuffers t))
 #+end_src
+
 ** Encoding
 #+begin_src emacs-lisp
   ;; (setq mac-option-modifier 'meta)
@@ -118,14 +121,14 @@
   ;; (set-frame-parameter nil 'fullscreen 'fullboth)
   (setq visible-bell t)
   ;; (set-face-attribute 'default nil :font "FiraCode Nerd Font" :height 160)
+  (setq tab-bar-tab-hints t)
+  (setq inhibit-startup-message t)
   (menu-bar-mode 1)
   (scroll-bar-mode -1)
   (tool-bar-mode -1)
   (tooltip-mode -1)
   (set-fringe-mode 10)
   (display-battery-mode 1)
-  (setq tab-bar-tab-hints t)
-  (setq inhibit-startup-message t)
   (column-number-mode)
   (set-window-fringes nil 0 0)
 #+end_src
@@ -284,6 +287,12 @@
       "mail"
       ("o" mu4e "Open Mail")
       ("c" mu4e-compose-new "Compose New Mail")
+      ("<escape>" nil "finish"))
+
+    (defhydra hydra-aya (:timeout 4)
+      "aya"
+      ("c" aya-create "aya create")
+      ("e" aya-expand "aya expand")
       ("<escape>" nil "finish")))
 #+end_src
 ** General
@@ -308,11 +317,18 @@
       "C-l" 'right-char
       "C-h" 'left-char)
 
+    (general-define-key
+     :keymaps '(normal insert visual emacs)
+     :prefix "SPC"
+     :non-normal-prefix "M-SPC"
+     "y" '(hydra-aya/body :which-key "aya"))
+
     (nvmap :prefix "SPC"
       "m" '(:ignore t :which-key "music")
       "mc" '(hydra-mpc/body :which-key "mpc-music")
       "mv" '(hydra-vuiet/body :which-key "vuiet-music")))
 #+end_src
+
 ** Which-Key
 #+begin_src emacs-lisp
   (use-package which-key
@@ -335,6 +351,8 @@
 
   (use-package doom-modeline
     :init (doom-modeline-mode 1)
+    :config
+    (setq find-file-visit-truename t)
     :custom ((mu4e-alert-enable-mode-line-display)
              (doom-modeline-mu4e t)
              (doom-modeline-height 12)))
@@ -718,7 +736,15 @@
     :bind (("C-=" . 'format-all-buffer))
     :config
     (add-hook 'prog-mode-hook 'format-all-mode))
+
+  (use-package aggressive-indent
+    :hook
+    (prog-mode . aggressive-indent-mode)
+    (css-mode  . emmet-mode) 
+    :config
+    (add-to-list 'aggressive-indent-excluded-modes 'html-mode))
 #+end_src
+
 ** Treesitter
 #+begin_src emacs-lisp
   (use-package tree-sitter
@@ -782,6 +808,7 @@
   (use-package yasnippet-snippets)
 
   (use-package auto-yasnippet)
+
 #+end_src
 
 ** Emmet
@@ -806,51 +833,6 @@
 #+end_src
 #+begin_src emacs-lisp
   (use-package flymake-python-pyflakes)
-#+end_src
-** LSP
-#+begin_src emacs-lisp
-  (setq gc-cons-threshold 100000000)
-  (setq read-process-output-max (* 1024 1024)) ;; 1mb
-  (defun efs/lsp-mode-setup ()
-    (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
-    (lsp-headerline-breadcrumb-mode))
-
-  (use-package lsp-mode
-    :commands (lsp lsp-deferred)
-
-    :hook
-    (lsp-mode . efs/lsp-mode-setup)
-
-    :bind-keymap
-        ("C-c l" . lsp-command-map)
-
-    :bind (:map lsp-mode-map
-          ("C-!" . lsp-execute-code-action)
-          ("<tab>" . company-indent-or-complete-common))
-
-    :config
-    (setq lsp-idle-delay 0.5
-          ;;lsp-enable-symbol-highlighting t
-          ;;Not supported by company capf, which is the recommended company backend
-          lsp-enable-snippet nil)) 
-
-
-   ;;  (add-hook 'python-mode-hook
-   ;;            (lambda ()
-   ;;              (lsp-python-enable)))
-
-   ;;  (setq lsp-pyls-plugins-flake8-enabled t)
-   ;;  (lsp-register-custom-settings
-   ;; '(("pyls.plugins.pyls_mypy.enabled" t t)
-   ;;   ("pyls.plugins.pyls_mypy.live_mode" nil t)
-   ;;   ("pyls.plugins.pyls_black.enabled" t t)
-   ;;   ("pyls.plugins.pyls_isort.enabled" t t)
-
-   ;;   ;; Disable these as they're duplicated by flake8
-   ;;   ("pyls.plugins.pycodestyle.enabled" nil t)
-   ;;   ("pyls.plugins.mccabe.enabled" nil t)
-   ;;   ("pyls.plugins.pyflakes.enabled" nil t))))
-
 #+end_src
 ** LSP-UI
 #+begin_src emacs-lisp
@@ -997,7 +979,6 @@
     :config
     (setq python-indent-level 4)
     (setq python-shell-interpreter "python3")
-    (setq lsp-python-ms-python-executable "python3")
     (require 'dap-python))
 
   (add-hook 'python-mode-hook #'evil-tree-edit-mode)
@@ -1007,16 +988,6 @@
     (setq live-py-version "python3"))
 
   (use-package ipython-shell-send)
-
-  (use-package python-insert-docstring
-    :after python-mode
-    :bind ((:map python-mode-map
-                 ("C-c i" . python-insert-docstring-with-google-style-at-point))))
-
-  ;; :ensure nil
-  ;; :quelpa (python-insert-docstring
-  ;;          :fetcher github
-  ;;          :repo "macurovc/insert-docstring"))
 #+end_src
 *** LSP-Python-MS 
 #+begin_src emacs-lisp
@@ -1026,13 +997,6 @@
   ;;                          (require 'lsp-python-ms)
   ;;                          (lsp))))  ; or lsp-deferred
 
-#+end_src
-** Pyright
-#+begin_src emacs-lisp
-  (use-package lsp-pyright
-    :hook (python-mode . (lambda ()
-                           (require 'lsp-pyright)
-                           (lsp))))  ; or lsp-deferred
 #+end_src
 ** Pipenv
 #+begin_src emacs-lisp
@@ -1136,6 +1100,51 @@
            ("\\.yml\\'" . yaml-mode))
     :bind ((:map yaml-mode-map
                  ("\C-m" . 'newline-and-indent))))
+#+end_src
+** LSP
+#+begin_src emacs-lisp
+  (setq gc-cons-threshold 100000000)
+  (setq read-process-output-max (* 1024 1024)) ;; 1mb
+  (defun efs/lsp-mode-setup ()
+    (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+    (lsp-headerline-breadcrumb-mode))
+
+  (use-package lsp-mode
+    :commands (lsp lsp-deferred)
+
+    :hook
+    (lsp-mode . efs/lsp-mode-setup)
+
+    :bind-keymap
+        ("C-c l" . lsp-command-map)
+
+    :bind (:map lsp-mode-map
+          ("C-!" . lsp-execute-code-action)
+          ("<tab>" . company-indent-or-complete-common))
+
+    :config
+    (setq lsp-idle-delay 0.5
+          ;;lsp-enable-symbol-highlighting t
+          ;;Not supported by company capf, which is the recommended company backend
+          lsp-enable-snippet nil)) 
+
+
+   ;;  (add-hook 'python-mode-hook
+   ;;            (lambda ()
+   ;;              (lsp-python-enable)))
+
+   ;;  (setq lsp-pyls-plugins-flake8-enabled t)
+   ;;  (lsp-register-custom-settings
+   ;; '(("pyls.plugins.pyls_mypy.enabled" t t)
+   ;;   ("pyls.plugins.pyls_mypy.live_mode" nil t)
+   ;;   ("pyls.plugins.pyls_black.enabled" t t)
+   ;;   ("pyls.plugins.pyls_isort.enabled" t t)
+
+   ;;   ;; Disable these as they're duplicated by flake8
+   ;;   ("pyls.plugins.pycodestyle.enabled" nil t)
+   ;;   ("pyls.plugins.mccabe.enabled" nil t)
+   ;;   ("pyls.plugins.pyflakes.enabled" nil t))))
+
 #+end_src
 * Version Control
 ** Magit
@@ -1662,6 +1671,8 @@
   (global-set-key (kbd "C-c c") 'org-capture)
   (use-package org
     :hook (org-mode . efs/org-mode-setup)
+
+
     :config
     (setq org-ellipsis " ⤸")
     (setq org-agenda-start-with-log-mode t)
@@ -1694,7 +1705,7 @@
 
     (setq org-tag-alist
           '((:startgroup)
-         ; Put mutually exclusive tags here
+                                          ; Put mutually exclusive tags here
             (:endgroup)
             ("@errand" . ?E)
             ("@home" . ?H)
@@ -1799,6 +1810,7 @@
   (use-package visual-fill-column
     :hook (org-mode . efs/org-mode-visual-fill))
 #+end_src
+
 ** Org Babel
 #+begin_src emacs-lisp
   (org-babel-do-load-languages
@@ -2093,7 +2105,10 @@
 #+end_src
 ** Speed Type
 #+begin_src emacs-lisp
-(use-package speed-type)
+  (use-package speed-type
+    :mode (("\\.typ\\'" . speed-type-buffer))
+    :hook (temp-buffer-show lambda ()
+                            (message "hook ran")))
 #+end_src
 
 * Misc
