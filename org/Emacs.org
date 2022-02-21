@@ -71,6 +71,7 @@
 
     ;; Do not use system clip board
     (setq x-select-enable-clipboard nil)
+
     ;; Enable recursive minibuffers
     (setq enable-recursive-minibuffers t))
 #+end_src
@@ -100,13 +101,13 @@
 #+begin_src emacs-lisp
   (defun efs/set-font-faces ()
     (message "Setting faces!")
-    (set-face-attribute 'default nil :font "FiraCode Nerd Font" :height 162)
+    (set-face-attribute 'default nil :font "FiraCode Nerd Font" :height 168)
 
     ;; Set the fixed pitch face
-    (set-face-attribute 'fixed-pitch nil :font "FiraCode Nerd Font" :height 162)
+    (set-face-attribute 'fixed-pitch nil :font "FiraCode Nerd Font" :height 168)
 
     ;; Set the variable pitch face
-    (set-face-attribute 'variable-pitch nil :font "FiraCode Nerd Font" :height 162 :weight 'regular))
+    (set-face-attribute 'variable-pitch nil :font "FiraCode Nerd Font" :height 168 :weight 'regular))
 
   (if (daemonp)
       (add-hook 'after-make-frame-functions
@@ -123,7 +124,7 @@
   ;; (set-face-attribute 'default nil :font "FiraCode Nerd Font" :height 160)
   (setq tab-bar-tab-hints t)
   (setq inhibit-startup-message t)
-  (menu-bar-mode 1)
+ ;; (menu-bar-mode 1)
   (scroll-bar-mode -1)
   (tool-bar-mode -1)
   (tooltip-mode -1)
@@ -224,10 +225,6 @@
       :after evil
       :config
       (evil-collection-init))
-
-    (use-package evil-nerd-commenter
-      :after evil
-      :bind ("M-/" . evilnc-comment-or-uncomment-lines))
 
     (use-package evil-matchit
       :after evil
@@ -2105,16 +2102,20 @@
 #+end_src
 ** Speed Type
 #+begin_src emacs-lisp
-  (use-package speed-type
-    :mode (("\\.typ\\'" . speed-type-buffer))
-    :hook (temp-buffer-show lambda ()
-                            (message "hook ran")))
+  (defun speed-type-ready ()
+    (interactive)
+    (text-scale-set 5)
+    (turn-off-evil-mode)
+    (show-paren-mode))
+
+  (use-package speed-type)
 #+end_src
 
 * Misc
 ** Line Number
 #+begin_src emacs-lisp
   (global-display-line-numbers-mode 0)
+  (menu-bar-mode)
 #+end_src
 
 ** Link Hint
