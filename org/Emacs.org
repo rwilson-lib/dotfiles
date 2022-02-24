@@ -302,7 +302,9 @@
     :config
     (general-evil-setup t)
 
+
     (general-nvmap
+      "; SPC" 'embark-act
       "; f" 'find-file
       "; b" 'switch-to-buffer
       "; ;" 'execute-extended-command
@@ -547,10 +549,7 @@
      ("C-h B" . embark-bindings) ;; alternative for `describe-bindings'
 
      :map minibuffer-local-map
-     ("C-b" . embark-become)       
-
-    :map evil-normal-state-map
-    ("; SPC" . embark-act))         ;; pick some comfortable binding
+     ("C-b" . embark-become)) 
 
     :init
     ;; Optionally replace the key help with a completing-read interface
