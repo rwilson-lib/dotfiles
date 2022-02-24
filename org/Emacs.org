@@ -217,10 +217,7 @@
     ;; (setq evil-disable-insert-state-bindings t)
     :config
     ;; example how to map a command in normal mode (called 'normal state' in evil)
-    (define-key evil-normal-state-map (kbd "; f") 'find-file)
-    (define-key evil-normal-state-map (kbd "; b") 'switch-to-buffer)
-    (define-key evil-normal-state-map (kbd "; ;") 'execute-extended-command)
-    (define-key evil-normal-state-map (kbd "; /") 'evilnc-comment-or-uncomment-lines)
+    ;; (define-key evil-normal-state-map (kbd "; f") 'find-file)
     (evil-mode 1))
 
   #+end_src
@@ -306,6 +303,10 @@
     (general-evil-setup t)
 
     (general-nvmap
+      "; f" 'find-file
+      "; b" 'switch-to-buffer
+      "; ;" 'execute-extended-command
+      "; /" 'evilnc-comment-or-uncomment-lines
       "; c" (general-simulate-key "C-c")
       "; a" (general-simulate-key "C-c")
       "; x" (general-simulate-key "C-x")
@@ -313,6 +314,7 @@
       "; w" (general-simulate-key "C-w")
       "; h" (general-simulate-key "C-h")
       "SPC s" (general-simulate-key "M-s"))
+
 
     (general-imap
       "C-j" 'next-line
@@ -543,6 +545,10 @@
     (("M-o" . embark-act)         ;; pick some comfortable binding
      ("M-O" . embark-dwim)        ;; good alternative: M-.
      ("C-h B" . embark-bindings) ;; alternative for `describe-bindings'
+
+     :map minibuffer-local-map
+     ("C-b" . embark-become)       
+
     :map evil-normal-state-map
     ("; SPC" . embark-act))         ;; pick some comfortable binding
 
@@ -569,8 +575,6 @@
     ;; auto-updating embark collect buffer
     :hook
     (embark-collect-mode . consult-preview-at-point-mode))
-
-
 #+end_src
 ** Treemacs
 #+begin_src emacs-lisp
@@ -775,6 +779,22 @@
   (use-package evil-tree-edit
     :after tree-edit)
 #+end_src
+** Todo
+#+begin_src emacs-lisp
+  (use-package hl-todo)
+  (use-package magit-todos)
+  (use-package todotxt-mode)
+
+  (use-package org-projectile
+    :bind (("C-c n p" . org-projectile-project-todo-completing-read)
+           ("C-c c" . org-capture))
+    :config
+    (progn
+      (setq org-projectile-projects-file "~/org/beorg/org/Projects.org")
+      (setq org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
+      (push (org-projectile-project-todo-entry) org-capture-templates)))
+#+end_src
+
 ** Programming
 #+begin_src emacs-lisp
   (use-package prog-mode
@@ -2021,22 +2041,6 @@
 #+begin_src emacs-lisp
 (use-package org-noter-pdftools)
 #+end_src
-** Todo
-#+begin_src emacs-lisp
-  (use-package hl-todo)
-  (use-package magit-todos)
-  (use-package todotxt-mode)
-
-  (use-package org-projectile
-    :bind (("C-c n p" . org-projectile-project-todo-completing-read)
-           ("C-c c" . org-capture))
-    :config
-    (progn
-      (setq org-projectile-projects-file "~/org/beorg/org/Projects.org")
-      (setq org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
-      (push (org-projectile-project-todo-entry) org-capture-templates)))
-#+end_src
-
 ** Flash card
 #+begin_src emacs-lisp
 (use-package org-anki)
