@@ -180,6 +180,8 @@
   ;; Emacs watch file on disk for changes
   (global-auto-revert-mode 1)
 
+  ;; turn on cursor line mode
+  (global-hl-line-mode 1)
   ;; Emacs auto refresh dired buffers
   (setq global-auto-revert-non-file-buffers t)
 #+end_src
@@ -207,7 +209,6 @@
 * Key Binding
 ** Evil
 #+begin_src emacs-lisp
-
   (use-package evil
     :init
     (setq evil-undo-system 'undo-fu)
@@ -302,21 +303,22 @@
     :config
     (general-evil-setup t)
 
-
     (general-nvmap
+      "g y" 'aya-create
+      "g Y" 'aya-expand
       "; SPC" 'embark-act
       "; f" 'find-file
       "; b" 'switch-to-buffer
       "; ;" 'execute-extended-command
-      "; /" 'evilnc-comment-or-uncomment-lines
+      "; /" 'comment-line
       "; c" (general-simulate-key "C-c")
       "; a" (general-simulate-key "C-c")
       "; x" (general-simulate-key "C-x")
       "; s" (general-simulate-key "C-x")
       "; w" (general-simulate-key "C-w")
       "; h" (general-simulate-key "C-h")
+      "; '" (general-simulate-key "C-c C-c")
       "SPC s" (general-simulate-key "M-s"))
-
 
     (general-imap
       "C-j" 'next-line
@@ -347,6 +349,10 @@
 ** All Icons
 #+begin_src emacs-lisp
   (use-package all-the-icons)
+  (use-package all-the-icons-completion)
+  (add-hook 'marginalia-mode-hook #'all-the-icons-completion-marginalia-setup)
+  (all-the-icons-completion-mode)
+
 #+end_src
 ** Doom Themes and Modeline
 #+begin_src emacs-lisp
@@ -759,7 +765,18 @@
     (prog-mode . aggressive-indent-mode)
     :config
     (add-to-list 'aggressive-indent-excluded-modes 'html-mode)
-    (add-to-list 'aggressive-indent-excluded-modes 'json-mode))
+    (add-to-list 'aggressive-indent-excluded-modes 'json-mode)
+    (add-to-list
+     'aggressive-indent-dont-indent-if
+     '(and (derived-mode-p 'c++-mode)
+           (null (string-match "\\([;{}]\\|\\b\\(if\\|for\\|while\\)\\b\\)"
+                               (thing-at-point 'line)))))
+    (add-to-list
+     'aggressive-indent-dont-indent-if
+     '(and (derived-mode-p 'python-mode)
+           (null (string-match "\\([:;{}]\\|\\b\\(if\\|for\\|while\\)\\b\\)"
+                               (thing-at-point 'line))))))
+
 #+end_src
 
 ** Treesitter
@@ -903,21 +920,40 @@
 #+end_src
 ** DAP
 #+begin_src emacs-lisp
-  (use-package dap-mode
-    :after lsp-mode
-    :config
-    (require 'dap-ui)
-    (dap-mode t)
-    (dap-ui-mode t)
-    ;; enables mouse hover support
-    (dap-tooltip-mode t)
-    ;; if it is not enabled `dap-mode' will use the minibuffer.
-    (tooltip-mode t)
-    :commands dap-debug
-    :custom
-    ;; (dap-python-executable "python3")
-    (dap-python-debugger 'debugpy)
-    (dap-auto-configure-features '(sessions locals controls tooltip)))
+    (use-package dap-mode
+      :after lsp-mode
+      :config
+      ;; Bind `C-c l d` to `dap-hydra` for easy access
+      (general-define-key
+       :keymaps 'lsp-mode-map
+       :prefix lsp-keymap-prefix
+       "d" '(dap-hydra t :wk "debugger"))
+      ;; Set up Node debugging
+      ;; (require 'dap-node)
+      ;; (dap-node-setup) ;; Automatically installs Node debug adapter if needed
+      ;; (require 'dap-go)
+      ;; (dap-go-setup)
+      ;; (require 'dap-hydra)
+      ;; (require 'dap-gdb-lldb)
+      ;; (dap-gdb-lldb-setup)
+      (require 'dap-ui)
+      (dap-mode t)
+      (dap-ui-mode t)
+      ;; enables mouse hover support
+      (dap-tooltip-mode t)
+      ;; if it is not enabled `dap-mode' will use the minibuffer.
+      (tooltip-mode t)
+      :commands dap-debug
+      :custom
+      ;; (lsp-enable-dap-auto-configure nil)
+      ;; (dap-python-executable "python3")
+      (dap-python-debugger 'debugpy)
+      (dap-auto-configure-features '(sessions locals controls tooltip)))
+
+  ;; (use-package dap-LANGUAGE) to load the dap adapter for your language
+
+  ;; base lang
+  (provide 'lang)
 #+end_src
 ** Web Mode
 #+begin_src emacs-lisp
@@ -1010,29 +1046,33 @@
 #+end_src
 ** Python
 #+begin_src emacs-lisp
-  ;; fix issues with python inferial process
-  (setq comint-process-echoes t)
+    ;; fix issues with python inferial process
+    (setq comint-process-echoes t)
 
-  (use-package python-mode
-    ;;:mode "\\.py\\'"
-    :hook (python-mode . lsp-deferred)
-    ;; :custom
-    ;; (dap-python-executable "python3")
-    ;; (dap-python-debugger 'debugpy)
-    :config
-    (setq python-guess-indent nil
-          python-indent-level 4
-          python-indent-def-block-scale 4
-          python-shell-interpreter "python3")
-    (require 'dap-python))
+    (use-package python-mode
+      ;;:mode "\\.py\\'"
+      :hook (python-mode . lsp-deferred)
+      ;; :custom
+      ;; (dap-python-executable "python3")
+      ;; (dap-python-debugger 'debugpy)
+      :config
+      (setq python-guess-indent nil
+            python-indent-level 4
+            python-indent-def-block-scale 4
+            python-shell-interpreter "python3")
+      )
 
-  (add-hook 'python-mode-hook #'evil-tree-edit-mode)
+    (add-hook 'python-mode-hook #'evil-tree-edit-mode)
 
-  (use-package live-py-mode
-    :init
-    (setq live-py-version "python3"))
+    (use-package live-py-mode
+      :init
+      (setq live-py-version "python3"))
 
-  (use-package ipython-shell-send)
+    (use-package ipython-shell-send)
+
+  (require 'dap-python)
+  ;; lang python
+  (provide 'lang-python)
 #+end_src
 *** LSP-Python-MS 
 #+begin_src emacs-lisp
@@ -2215,3 +2255,8 @@
 
 
 
+** Screen Saver
+#+begin_src emacs-lisp
+  ;;(require 'zone)
+  ;;(zone-when-idle 120)
+#+end_src
