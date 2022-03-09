@@ -74,7 +74,19 @@
     (setq x-select-enable-clipboard nil)
 
     ;; Enable recursive minibuffers
-    (setq enable-recursive-minibuffers t))
+    (setq enable-recursive-minibuffers t)
+
+    ;; horizontal split.
+    (setq split-width-threshold 1)
+
+    :config
+    (defun custom/display-buffer-at-bottom ()
+      (interactive)
+      (let ((buffer (current-buffer)))
+        (with-current-buffer buffer
+          ;; buffer '((window-parameters . ((mode-line-format . (" " "%buffer"))))))
+          (delete-window)
+          (display-buffer-at-bottom))))
 #+end_src
 
 ** Encoding
@@ -184,6 +196,7 @@
   (global-hl-line-mode 1)
   ;; Emacs auto refresh dired buffers
   (setq global-auto-revert-non-file-buffers t)
+  (setq tab-width 4)
 #+end_src
 ** Line Number
 #+begin_src emacs-lisp
@@ -217,6 +230,7 @@
     (setq evil-want-C-i-jump nil)
     ;; (setq evil-disable-insert-state-bindings t)
     :config
+    (setq evil-ex-search-case "insensitive")
     ;; example how to map a command in normal mode (called 'normal state' in evil)
     ;; (define-key evil-normal-state-map (kbd "; f") 'find-file)
     (evil-mode 1))
@@ -352,7 +366,6 @@
   (use-package all-the-icons-completion)
   (add-hook 'marginalia-mode-hook #'all-the-icons-completion-marginalia-setup)
   (all-the-icons-completion-mode)
-
 #+end_src
 ** Doom Themes and Modeline
 #+begin_src emacs-lisp
@@ -455,8 +468,7 @@
     :init
     (setq completion-styles '(orderless)
           completion-category-default nil
-          completion-category-overrides '((file (styles partial-completion)))))
-
+          completion-category-overrides '((file (styles . (partial-completion))))))
 #+end_src
 ** History 
 #+begin_src emacs-lisp
@@ -656,9 +668,102 @@
   ;;   (add-to-list 'company-backends #'company-tabnine)
   ;;   (setq company-idle-delay 0))
 #+end_src
+** Corfu
+#+begin_src emacs-lisp
+    (use-package corfu
+      ;; Optional customizations
+      :custom
+      (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+      (corfu-auto t)                 ;; Enable auto completion
+      ;; (corfu-separator ?\s)          ;; Orderless field separator
+      (corfu-quit-at-boundary t)   ;; Never quit at completion boundary
+      ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
+      (corfu-preview-current nil)    ;; Disable current candidate preview
+      ;; (corfu-preselect-first nil)    ;; Disable candidate preselection
+      ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+      (corfu-echo-documentation t) ;; Disable documentation in the echo area
+      (corfu-scroll-margin 5)        ;; Use scroll margin
+
+      ;; You may want to enable Corfu only for certain modes.
+      ;; :hook ((prog-mode . corfu-mode)
+      ;;        (shell-mode . corfu-mode)
+      ;;        (eshell-mode . corfu-mode))
+
+      ;; Recommended: Enable Corfu globally.
+      ;; This is recommended since dabbrev can be used globally (M-/).
+
+      :bind
+      (:map corfu-map
+            ("C-j" . corfu-next)
+            ("C-k" . corfu-previous))
+      ;; :init
+      ;; (corfu-global-mode)
+      )
+#+end_src
+** Cape
+#+begin_src emacs-lisp
+(use-package cape
+  ;; Bind dedicated completion commands
+  :bind (("C-c i p" . completion-at-point) ;; capf
+         ("C-c i t" . complete-tag)        ;; etags
+         ("C-c i d" . cape-dabbrev)        ;; or dabbrev-completion
+         ("C-c i f" . cape-file)
+         ("C-c i k" . cape-keyword)
+         ("C-c i s" . cape-symbol)
+         ("C-c i a" . cape-abbrev)
+         ("C-c i i" . cape-ispell)
+         ("C-c i l" . cape-line)
+         ("C-c i w" . cape-dict)
+         ("C-c i \\" . cape-tex)
+         ("C-c i _" . cape-tex)
+         ("C-c i ^" . cape-tex)
+         ("C-c i &" . cape-sgml)
+         ("C-c i r" . cape-rfc1345))
+  :init
+  ;; Add `completion-at-point-functions', used by `completion-at-point'.
+  (add-to-list 'completion-at-point-functions #'cape-file)
+  (add-to-list 'completion-at-point-functions #'cape-tex)
+  (add-to-list 'completion-at-point-functions #'cape-symbol)
+  (add-to-list 'completion-at-point-functions #'cape-keyword)
+  ;;(add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
+  ;;(add-to-list 'completion-at-point-functions #'cape-rfc1345)
+  ;;(add-to-list 'completion-at-point-functions #'cape-abbrev)
+  ;;(add-to-list 'completion-at-point-functions #'cape-ispell)
+  ;;(add-to-list 'completion-at-point-functions #'cape-dict)
+  ;;(add-to-list 'completion-at-point-functions #'cape-line)
+)
+#+end_src
 ** Popup
 #+begin_src emacs-lisp
 (use-package popup)
+#+end_src
+** Highlight
+#+begin_src emacs-lisp
+  (use-package hl-prog-extra)
+  (global-hl-prog-extra-mode)
+  ;; (use-package hl-block-mode)  ; activate in the current buffer.
+  ;; (global-hl-block-mode)       ; activate globally for all buffers.
+
+#+end_src
+** Windows
+#+begin_src emacs-lisp
+  (use-package window
+    :ensure nil
+    :custom
+    (display-buffer-alist '(("\\*\\(e?shell\\|vterm\\)\\*"
+                             (display-buffer-in-side-window)
+                             (window-height . 0.25)
+                             (side . bottom)
+                             ;; (window-parameters . ((mode-line-format . ("" "%b"))))
+                             (slot . -1))
+                            ("\\*\\(Backtrace\\|Warnings\\|Compile-log\\|[Hh]elp\\|Messages\\)\\*"
+                             (display-buffer-in-side-window)
+                             (window-height . 0.25)
+                             (side . bottom)
+                             (slot . 0))
+                            ))
+    :bind (("<f8>" . window-toggle-side-windows)))
 #+end_src
 * Devops SQL
 #+begin_src emacs-lisp
@@ -690,7 +795,6 @@
 #+end_src
 ** Term
 #+begin_src emacs-lisp
-
   (defun my-term-handle-exit (&optional process-name msg)
     (message "%s | %s" process-name msg)
     (kill-buffer (current-buffer)))
@@ -698,18 +802,18 @@
   (advice-add 'term-handle-exit :after 'my-term-handle-exit)
 
   (use-package term
-      :config
-      (setq explicit-shell-file-name "bash")
-      (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *")
-      (setq mode-line-format nil))
+    :config
+    (setq explicit-shell-file-name "zsh")
+    (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *")
+    (setq mode-line-format nil))
 
 
-    (use-package eterm-256color
-      :hook (term-mode . eterm-256color-mode))
+  (use-package eterm-256color
+    :hook (term-mode . eterm-256color-mode))
 
-    (use-package multi-term
-      :config
-      (setq multi-term-program "/bin/bash"))
+  (use-package multi-term
+    :config
+    (setq multi-term-program "/bin/zsh"))
 #+end_src
 ** Vterm
 #+begin_src emacs-lisp
@@ -747,7 +851,6 @@
 #+end_src
 * Searches
 #+begin_src emacs-lisp
-  (use-package fzf)
   (use-package ag)
   (use-package ripgrep)
   (use-package projectile-ripgrep)
@@ -760,25 +863,24 @@
     :config
     (add-hook 'prog-mode-hook 'format-all-mode))
 
-  (use-package aggressive-indent
-    :hook
-    (prog-mode . aggressive-indent-mode)
-    :config
-    (add-to-list 'aggressive-indent-excluded-modes 'html-mode)
-    (add-to-list 'aggressive-indent-excluded-modes 'json-mode)
-    (add-to-list
-     'aggressive-indent-dont-indent-if
-     '(and (derived-mode-p 'c++-mode)
-           (null (string-match "\\([;{}]\\|\\b\\(if\\|for\\|while\\)\\b\\)"
-                               (thing-at-point 'line)))))
-    (add-to-list
-     'aggressive-indent-dont-indent-if
-     '(and (derived-mode-p 'python-mode)
-           (null (string-match "\\([:;{}]\\|\\b\\(if\\|for\\|while\\)\\b\\)"
-                               (thing-at-point 'line))))))
+  ;; (use-package aggressive-indent
+  ;;   :hook
+  ;;   (prog-mode . aggressive-indent-mode)
+  ;;   :config
+  ;;   (add-to-list 'aggressive-indent-excluded-modes 'html-mode)
+  ;;   (add-to-list 'aggressive-indent-excluded-modes 'json-mode)
+  ;;   (add-to-list
+  ;;    'aggressive-indent-dont-indent-if
+  ;;    '(and (derived-mode-p 'c++-mode)
+  ;;          (null (string-match "\\([;{}]\\|\\b\\(if\\|for\\|while\\)\\b\\)"
+  ;;                              (thing-at-point 'line)))))
+  ;;   (add-to-list
+  ;;    'aggressive-indent-dont-indent-if
+  ;;    '(and (derived-mode-p 'python-mode)
+  ;;          (null (string-match "\\([:;{}]\\|\\b\\(if\\|for\\|while\\)\\b\\)"
+  ;;                              (thing-at-point 'line))))))
 
 #+end_src
-
 ** Treesitter
 #+begin_src emacs-lisp
   (use-package tree-sitter
@@ -810,7 +912,6 @@
       (setq org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
       (push (org-projectile-project-todo-entry) org-capture-templates)))
 #+end_src
-
 ** Programming
 #+begin_src emacs-lisp
   (use-package prog-mode
@@ -849,18 +950,21 @@
 
   (define-key yas-minor-mode-map (kbd "<tab>") nil)
   (define-key yas-minor-mode-map (kbd "TAB") nil)
-  ;; Bind `SPC' to `yas-expand' when snippet expansion available (it
-  ;; will still call `self-insert-command' otherwise).
+  ;; Bind 'SPC' to 'yas-expand' when snippet expansion available (it
+  ;; will still call 'self-insert-command' otherwise).
   (define-key yas-minor-mode-map (kbd "SPC") yas-maybe-expand)
-  ;; Bind `C-c y' to `yas-expand' ONLY.
+  ;; Bind `C-c y' to 'yas-expand' ONLY.
   (define-key yas-minor-mode-map (kbd "C-c y") #'yas-expand)
 
   (use-package yasnippet-snippets)
 
   (use-package auto-yasnippet)
 
+  (defun org-mode-allow-yas-snippet-src-hook ()
+    (setq-local yas-buffer-local-condition
+                '(not (org-in-src-block-p t))))
+  (add-hook 'org-mode-hook #'org-mode-allow-yas-snippet-src-hook)
 #+end_src
-
 ** Emmet
 #+begin_src emacs-lisp
   (use-package emmet-mode
@@ -1009,40 +1113,41 @@
 #+end_src
 ** JavaScript
 #+begin_src emacs-lisp
-  (use-package js-mode
-    ;; :mode "\\.js\\'"
-    :ensure nil
-    :hook (js-mode . lsp-deferred)
-    :config
-    (setq js-indent-level 4))
+    (use-package js-mode
+      ;; :mode "\\.js\\'"
+      :ensure nil
+      :hook (js-mode . lsp-deferred)
+      :config
+      (setq js-indent-level 4))
 
-  (use-package typescript-mode
-    :hook (typescript-mode . lsp-deferred)
-    :config
-    (setq typescript-indent-level 4))
+    (use-package typescript-mode
+      :hook (typescript-mode . lsp-deferred)
+      :config
+      (setq typescript-indent-level 4))
 
-  (use-package rjsx-mode
-    :mode "\\.js\\'"
-    :hook (rjsx-mode . lsp-deferred)
-    :bind (:map rjsx-mode-map
-                ("<" . self-insert-command))
-    :config
-    (setq js-jsx-indent-level 2))
+    (use-package rjsx-mode
+      :mode "\\.js\\'"
+      :hook (rjsx-mode . lsp-deferred)
+      :bind (:map rjsx-mode-map
+                  ("<" . self-insert-command))
+      :config
+      (setq js-jsx-indent-level 2))
 
-  (use-package prettier-js
-    :after rjsx-mode
-    :hook (rjsx-mode . prettier-js-mode))
+    (use-package prettier-js
+      :after rjsx-mode
+      :hook (rjsx-mode . prettier-js-mode))
 
-  (use-package json-mode
-    :mode "\\.json\\'"
-    :config
-    :hook (json-mode .
-                     (lambda ()
-                       (make-local-variable 'js-indent-level)
-                       (setq tab-width 2)
-                       (setq js-indent-level 2))))
+    (use-package json-mode
+      :mode "\\.json\\'"
+      :config
+      :hook (json-mode .
+                       (lambda ()
+                         (make-local-variable 'js-indent-level)
+                         (setq tab-width 2)
+                         (setq js-indent-level 2))))
 
-
+  ;; (require 'dap-firefox)
+  ;; (require 'dap-node)
 #+end_src
 ** Python
 #+begin_src emacs-lisp
@@ -1055,12 +1160,12 @@
       ;; :custom
       ;; (dap-python-executable "python3")
       ;; (dap-python-debugger 'debugpy)
+      :init
+      (setq python-guess-indent nil)
       :config
-      (setq python-guess-indent nil
-            python-indent-level 4
+      (setq python-indent-level 4
             python-indent-def-block-scale 4
-            python-shell-interpreter "python3")
-      )
+            python-shell-interpreter "python3"))
 
     (add-hook 'python-mode-hook #'evil-tree-edit-mode)
 
@@ -1134,8 +1239,10 @@
   ;;  :config (counsel-projectile-mode))
 
 #+end_src
-** UML
+** Universal Modeling Language
 #+begin_src emacs-lisp
+
+
   (use-package plantuml-mode
     :mode (("\\.pu\\'" . plantuml-mode)
            ("\\.puml\\'" . plantuml-mode))
@@ -1144,10 +1251,10 @@
 
     :config
     (add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
+
     (setq
      plantuml-indent-level 2
-     plantuml-output-type "png"
-     plantuml-output-type "svg"))
+     plantuml-output-type "png"))
 
   (use-package ob-napkin
     :config
@@ -1191,7 +1298,7 @@
     :bind ((:map yaml-mode-map
                  ("\C-m" . 'newline-and-indent))))
 #+end_src
-** LSP
+** Language Server Protocol
 #+begin_src emacs-lisp
   (setq gc-cons-threshold 100000000)
   (setq read-process-output-max (* 1024 1024)) ;; 1mb
@@ -1958,6 +2065,7 @@
   (add-to-list 'org-structure-template-alist '("py" . "src python"))
   (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
   (add-to-list 'org-structure-template-alist '("rc" . "src restclient"))
+  (add-to-list 'org-structure-template-alist '("puml" . "src plantuml"))
   (add-to-list 'org-structure-template-alist '("np" . "src napkin"))
   (add-to-list 'org-structure-template-alist '("npp". "src napkin-puml"))
 #+end_src
@@ -2073,8 +2181,7 @@
 #+end_src
 ** Org remark
 #+begin_src emacs-lisp
-;; TODO Install this package
-;; (use-package org-remark)
+(use-package org-remark)
 #+end_src
 ** Org Noter
 #+begin_src emacs-lisp
@@ -2084,6 +2191,12 @@
 #+begin_src emacs-lisp
 (use-package org-anki)
 #+end_src
+** Org Modern
+#+begin_src emacs-lisp
+;; (use-package org-modern)
+;; (add-hook 'org-mode-hook #'org-modern-mode)
+#+end_src
+
 * Pretty Symbols
 ** Org Symbols
 #+begin_src emacs-lisp
