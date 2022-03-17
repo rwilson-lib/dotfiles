@@ -129,11 +129,11 @@ cnoremap <C-j> <Down>
 cnoremap <C-k> <Up>
 cnoremap <C-l> <Right>
 
-nnoremap <silent> <c-w>t :tabnew<cr>
  
 " Tabs
 nmap <silent> <S-H> :tabprev<cr>
 nmap <silent> <S-L> :tabnext<cr>
+nnoremap <silent> <c-w>t :tabnew<cr>
 
 " ZFZ
 nmap <silent><nowait> <leader><space>t :ZTags<CR>
@@ -141,12 +141,22 @@ nmap <silent><nowait> <leader><space>f :ZFiles<CR>
 nmap <silent><nowait> <leader><space>w :ZWindows<CR>
 nmap <silent><nowait> <leader><space>b :ZBuffers<CR>
 
+nmap <silent><nowait> [s :GitGutterStageHunk<CR>
+nmap <silent><nowait> [j :GitGutterNextHunk<CR>
+nmap <silent><nowait> [k :GitGutterPrevHunk<CR>
+nmap <silent><nowait> [h :GitGutterLineHighlightsToggle<CR>
+
+"                [v git-gutter:mark-hunk
+"                [o git-gutter:end-of-hunk
+"                [d git-gutter:popup-hunk
+
 " Specify a directory for plugins
 " - For Neovim: stdpath('data') . '/plugged'
 " - Avoid using standard Vim directory names like 'plugin'
 
 call plug#begin('~/.vim/plugged')
 
+    Plug 'mbbill/undotree'
     Plug 'farmergreg/vim-lastplace'
 
     Plug 'vim-airline/vim-airline'
@@ -306,3 +316,4 @@ map  <Leader>w <Plug>(easymotion-bd-w)
 nmap <Leader>w <Plug>(easymotion-overwin-w)
 
 let g:coc_filetype_map = {'tex': 'latex'}
+
