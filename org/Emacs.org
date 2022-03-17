@@ -259,7 +259,7 @@
        ((eq evil-state 'normal) (keyboard-quit))
        (t (evil-force-normal-state))))
 
-    :bind (("<escape>" . custom/display-buffer-at-bottom))
+    :bind (("<escape>" . custom/force-normal-state-or-exit))
 
     :init
     (setq evil-undo-system 'undo-tree)
