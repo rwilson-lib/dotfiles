@@ -1,3 +1,4 @@
+
 #+TITLE: Emacs Configuration
 #+PROPERTY: header-args:emacs-lisp :tangle ~/.emacs.d/init.el
 
@@ -178,8 +179,7 @@
 
   (setq comint-terminfo-terminal "eterm-256color")
 
-  (setenv "EDITOR" "emacs -nw")
-  (setenv "VISUAL" "emacs -nw")
+  (setenv "GIT_EDITOR" "emacs")
 
   ;; (use-package exec-path-from-shell
   ;;   :config (exec-path-from-shell-initialize))
@@ -254,15 +254,16 @@
 * Key Binding
 ** Evil
 #+begin_src emacs-lisp
-  (use-package evil
-    :custom
-    (defun custom/force-normal-state-or-exit ()
-      (interactive)
-      (cond
-       ((eq evil-state 'normal) (keyboard-quit))
-       (t (evil-force-normal-state))))
+  (defun custom/force-normal-state-or-exit ()
+    (interactive)
+    (cond
+     ((eq evil-state 'normal) (keyboard-quit))
+     (t (evil-force-normal-state))))
 
-    :bind (("<escape>" . custom/force-normal-state-or-exit))
+  (use-package evil
+
+    :bind ((:map evil-normal-state-map
+                 ("<escape>" . custom/force-normal-state-or-exit)))
 
     :init
     (setq evil-undo-system 'undo-tree)
@@ -276,9 +277,29 @@
     :config
     (setq evil-ex-search-case "insensitive")
 
+    (evil-define-command evil-sfind (file)
+      "Open FILE in a split"
+      (interactive "<f>")
+      (find-file-other-window file))
+
+    (evil-define-command evil-tabedit (file)
+      "Open FILE in a new tab"
+      (interactive "<f>")
+      (find-file-other-tab file))
+
+    (evil-ex-define-cmd "sf[ind]" 'evil-sfind)
+    (evil-ex-define-cmd "tabedit" 'evil-tabedit)
+
     ;; example how to map a command in normal mode (called 'normal state' in evil)
     ;; (define-key evil-normal-state-map (kbd "; f") 'find-file)
     (evil-mode 1))
+
+  (defun moon-override-yank-pop (&optional arg)
+    "Delete the region before inserting poped string."
+    (when (and evil-mode (eq 'visual evil-state))
+      (kill-region (region-beginning) (region-end))))
+
+  (advice-add 'consult-yank-pop :before #'moon-override-yank-pop)
 
   (use-package goto-last-change)
   #+end_src
@@ -297,7 +318,6 @@
       :after evil
       :config
       (global-evil-surround-mode 1))
-
     #+end_src
 ** IEdit
     #+begin_src emacs-lisp
