@@ -75,9 +75,13 @@
 
     ;; Enable recursive minibuffers
     (setq enable-recursive-minibuffers t)
-
-    ;; horizontal split.
+    ;; Horizontal Split.
     (setq split-width-threshold 1)
+
+    :bind (("C-x C-b" . ibuffer)
+           ("s-<up>" . scroll-other-window)
+           ("s-<down>" . scroll-other-window-down)
+           ("C-`" . universal-argument))
 
     :config
     (defun custom/display-buffer-at-bottom ()
@@ -88,16 +92,15 @@
           (display-buffer-at-bottom
            buffer '(
                    ;; (window-parameters . ((mode-line-format . (" " "%b"))))
-                      (window-height . 0.25)
-                    ))
-           ))))
+                   ;; (window-height . 0.25)
+                    ))))))
 #+end_src
 ** Font and Windows
 #+begin_src emacs-lisp
   (use-package window
     :ensure nil
     :custom
-    (display-buffer-alist '(("\\*\\(e?shell\\|vterm\\)\\*"
+    (display-buffer-alist '(("\\*\\(e?shell\\|vterm\\|Python\\)\\*"
                              (display-buffer-in-side-window)
                              (window-height . 0.25)
                              (side . bottom)
@@ -185,20 +188,21 @@
 #+begin_src emacs-lisp
   ;; Treat clipboard input as UTF-8 string first; compound text next, etc.
   (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
-  (setq browse-url-browser-function 'browse-url-chrome
-        browse-url-chrome-program "chrome")
 
-  ;; (use-package undo-tree
-  ;;    :ensure nil
-  ;;    :config
-  ;;  (setq undo-tree-auto-save-history t))
-  (use-package undo-fu)
-
-  (use-package undo-fu-session
+  (use-package undo-tree
+    :init
+    (global-undo-tree-mode)
     :config
-    (setq undo-fu-session-incompatible-files '("/COMMIT_EDITMSG\\'" "/git-rebase-todo\\'")))
+    (setq undo-tree-auto-save-history t))
 
-  (global-undo-fu-session-mode)
+
+  ;; (use-package undo-fu)
+
+  ;; (use-package undo-fu-session
+  ;;   :config
+  ;;   (setq undo-fu-session-incompatible-files '("/COMMIT_EDITMSG\\'" "/git-rebase-todo\\'")))
+
+  ;; (global-undo-fu-session-mode)
 
 #+end_src
 ** Global Settings
@@ -213,11 +217,16 @@
   (global-auto-revert-mode 1)
 
   ;; turn on cursor line mode
-  (global-hl-line-mode 1)
+  ;; (global-hl-line-mode 1)
   ;; Emacs auto refresh dired buffers
   (setq global-auto-revert-non-file-buffers t)
   (setq tab-width 4)
+
+  (setq browse-url-browser-function 'browse-url-chrome
+        browse-url-chrome-program "chrome")
+
 #+end_src
+
 ** Line Number
 #+begin_src emacs-lisp
   ;; disable line number for some mode
@@ -243,18 +252,32 @@
 ** Evil
 #+begin_src emacs-lisp
   (use-package evil
+    :custom
+    (defun custom/force-normal-state-or-exit ()
+      (interactive)
+      (cond
+       ((eq evil-state 'normal) (keyboard-quit))
+       (t (evil-force-normal-state))))
+
+    :bind (("<escape>" . custom/display-buffer-at-bottom))
+
     :init
-    (setq evil-undo-system 'undo-fu)
+    (setq evil-undo-system 'undo-tree)
     (setq evil-want-integration t)
+    (setq evil-want-C-u-delete t)
+    (setq evil-want-C-u-scroll t)
     (setq evil-want-keybinding nil)
     (setq evil-want-C-i-jump nil)
     ;; (setq evil-disable-insert-state-bindings t)
+
     :config
     (setq evil-ex-search-case "insensitive")
+
     ;; example how to map a command in normal mode (called 'normal state' in evil)
     ;; (define-key evil-normal-state-map (kbd "; f") 'find-file)
     (evil-mode 1))
 
+  (use-package goto-last-change)
   #+end_src
 ** Evil Collection
   #+begin_src emacs-lisp
@@ -286,6 +309,8 @@
                        ("<escape>" . iedit--quit))
                  (:map evil-normal-state-map
                        ("g /" . iedit-mode-from-isearch)))) 
+        ;; iedit-goto-last-occurrences
+        ;; iedit-goto-first-occurrences
 
       (use-package evil-multiedit
         :bind ((:map evil-normal-state-map
@@ -293,10 +318,6 @@
                      ("g H" . evil-multiedit-match-symbol-and-prev)
                      ("g SPC" . evil-multiedit-match-all)))
         :after evil)
-
-
-        ;; iedit-goto-last-occurrences
-        ;; iedit-goto-first-occurrences
 #+end_src
 ** Hydra
 #+begin_src emacs-lisp
@@ -338,8 +359,8 @@
     (general-evil-setup t)
 
     (general-nvmap
-      "g y" 'aya-create
-      "g Y" 'aya-expand
+      "g Y" 'aya-create
+      "g y" 'aya-expand
       "; SPC" 'embark-act
       "; f" 'find-file
       "; b" 'switch-to-buffer
@@ -352,6 +373,7 @@
       "; w" (general-simulate-key "C-w")
       "; h" (general-simulate-key "C-h")
       "; '" (general-simulate-key "C-c C-c")
+      "SPC g" (general-simulate-key "M-g")
       "SPC s" (general-simulate-key "M-s"))
 
     (general-imap
@@ -449,14 +471,14 @@
 
 ** Avy
 #+begin_src emacs-lisp
-    (use-package avy
-      :bind ((:map evil-normal-state-map
-              ("s" . avy-goto-char)
-              ("S" . avy-goto-line))
-                 ("M-s c" . avy-goto-char-timer)))
+  (use-package avy
+    :bind ((:map evil-normal-state-map
+                 ("s" . avy-goto-char)
+                 ("S" . avy-goto-line))
+           ("M-s c" . avy-goto-char-timer)))
 
 
-    (use-package avy-flycheck)
+  (use-package avy-flycheck)
 #+end_src
 ** Vertico
 #+begin_src emacs-lisp
@@ -560,6 +582,7 @@
            ("M-s m" . consult-multi-occur)
            ("M-s k" . consult-keep-lines)
            ("M-s u" . consult-focus-lines)
+           ("M-s y" . consult-yasnippet)
            ("M-s a" . ag)
 
            ;; Isearch integration
@@ -576,7 +599,6 @@
   (use-package consult-yasnippet)
   (use-package consult-company)
   (use-package consult-projectile)
-
 #+End_src
 ** Embark
 #+begin_src emacs-lisp
@@ -657,9 +679,7 @@
   (use-package company
     :hook (prog-mode . company-mode)
     :bind (:map company-active-map
-                ("<tab>" . company-complete-selection)
-                :map company-mode-map
-                ("<backtab>" . company-yasnippet))
+                ("<tab>" . company-complete-selection))
 
     :custom
     (company-minimum-prefix-length 1)
@@ -690,69 +710,72 @@
 #+end_src
 ** Corfu
 #+begin_src emacs-lisp
-    (use-package corfu
-      ;; Optional customizations
-      :custom
-      (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-      (corfu-auto t)                 ;; Enable auto completion
-      ;; (corfu-separator ?\s)          ;; Orderless field separator
-      (corfu-quit-at-boundary t)   ;; Never quit at completion boundary
-      ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
-      (corfu-preview-current nil)    ;; Disable current candidate preview
-      ;; (corfu-preselect-first nil)    ;; Disable candidate preselection
-      ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
-      (corfu-echo-documentation t) ;; Disable documentation in the echo area
-      (corfu-scroll-margin 5)        ;; Use scroll margin
+  (use-package corfu
+    ;; Optional customizations
+    :custom
+    (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+    (corfu-auto t)                 ;; Enable auto completion
+    ;; (corfu-separator ?\s)          ;; Orderless field separator
+    (corfu-quit-at-boundary t)   ;; Never quit at completion boundary
+    ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
+    (corfu-preview-current nil)    ;; Disable current candidate preview
+    ;; (corfu-preselect-first nil)    ;; Disable candidate preselection
+    ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+    (corfu-echo-documentation t) ;; Disable documentation in the echo area
+    (corfu-scroll-margin 5)        ;; Use scroll margin
+    (corfu-auto-prefix 1)
+    (corfu-auto-delay 0.0)
 
-      ;; You may want to enable Corfu only for certain modes.
-      ;; :hook ((prog-mode . corfu-mode)
-      ;;        (shell-mode . corfu-mode)
-      ;;        (eshell-mode . corfu-mode))
 
-      ;; Recommended: Enable Corfu globally.
-      ;; This is recommended since dabbrev can be used globally (M-/).
+    ;; You may want to enable Corfu only for certain modes.
+    ;; :hook ((prog-mode . corfu-mode)
+    ;;        (shell-mode . corfu-mode)
+    ;;        (eshell-mode . corfu-mode))
 
-      :bind
-      (:map corfu-map
-            ("C-j" . corfu-next)
-            ("C-k" . corfu-previous))
-      ;; :init
-      ;; (corfu-global-mode)
-      )
+    ;; Recommended: Enable Corfu globally.
+    ;; This is recommended since dabbrev can be used globally (M-/).
+
+    :bind
+    (:map corfu-map
+          ("C-j" . corfu-next)
+          ("C-k" . corfu-previous))
+    ;; :init
+    ;; (corfu-global-mode)
+    )
 #+end_src
 ** Cape
 #+begin_src emacs-lisp
-(use-package cape
-  ;; Bind dedicated completion commands
-  :bind (("C-c i p" . completion-at-point) ;; capf
-         ("C-c i t" . complete-tag)        ;; etags
-         ("C-c i d" . cape-dabbrev)        ;; or dabbrev-completion
-         ("C-c i f" . cape-file)
-         ("C-c i k" . cape-keyword)
-         ("C-c i s" . cape-symbol)
-         ("C-c i a" . cape-abbrev)
-         ("C-c i i" . cape-ispell)
-         ("C-c i l" . cape-line)
-         ("C-c i w" . cape-dict)
-         ("C-c i \\" . cape-tex)
-         ("C-c i _" . cape-tex)
-         ("C-c i ^" . cape-tex)
-         ("C-c i &" . cape-sgml)
-         ("C-c i r" . cape-rfc1345))
-  :init
-  ;; Add `completion-at-point-functions', used by `completion-at-point'.
-  (add-to-list 'completion-at-point-functions #'cape-file)
-  (add-to-list 'completion-at-point-functions #'cape-tex)
-  (add-to-list 'completion-at-point-functions #'cape-symbol)
-  (add-to-list 'completion-at-point-functions #'cape-keyword)
-  ;;(add-to-list 'completion-at-point-functions #'cape-dabbrev)
-  ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
-  ;;(add-to-list 'completion-at-point-functions #'cape-rfc1345)
-  ;;(add-to-list 'completion-at-point-functions #'cape-abbrev)
-  ;;(add-to-list 'completion-at-point-functions #'cape-ispell)
-  ;;(add-to-list 'completion-at-point-functions #'cape-dict)
-  ;;(add-to-list 'completion-at-point-functions #'cape-line)
-)
+  (use-package cape
+    ;; Bind dedicated completion commands
+    :bind (("C-c i p" . completion-at-point) ;; capf
+           ("C-c i t" . complete-tag)        ;; etags
+           ("C-c i d" . cape-dabbrev)        ;; or dabbrev-completion
+           ("C-c i f" . cape-file)
+           ("C-c i k" . cape-keyword)
+           ("C-c i s" . cape-symbol)
+           ("C-c i a" . cape-abbrev)
+           ("C-c i i" . cape-ispell)
+           ("C-c i l" . cape-line)
+           ("C-c i w" . cape-dict)
+           ("C-c i \\" . cape-tex)
+           ("C-c i _" . cape-tex)
+           ("C-c i ^" . cape-tex)
+           ("C-c i &" . cape-sgml)
+           ("C-c i r" . cape-rfc1345))
+    :init
+    ;; Add `completion-at-point-functions', used by `completion-at-point'.
+    (add-to-list 'completion-at-point-functions #'cape-file)
+    (add-to-list 'completion-at-point-functions #'cape-tex)
+    (add-to-list 'completion-at-point-functions #'cape-symbol)
+    (add-to-list 'completion-at-point-functions #'cape-keyword)
+    ;;(add-to-list 'completion-at-point-functions #'cape-dabbrev)
+    ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
+    ;;(add-to-list 'completion-at-point-functions #'cape-rfc1345)
+    ;;(add-to-list 'completion-at-point-functions #'cape-abbrev)
+    ;;(add-to-list 'completion-at-point-functions #'cape-ispell)
+    ;;(add-to-list 'completion-at-point-functions #'cape-dict)
+    ;;(add-to-list 'completion-at-point-functions #'cape-line)
+  )
 #+end_src
 ** Popup
 #+begin_src emacs-lisp
@@ -765,6 +788,15 @@
   ;; (use-package hl-block-mode)  ; activate in the current buffer.
   ;; (global-hl-block-mode)       ; activate globally for all buffers.
 
+#+end_src
+** IBuffer
+#+begin_src emacs-lisp
+  (use-package ibuffer
+    :bind (:map ibuffer-mode-map 
+                ("j" . next-line)
+                ("k" . previous-line))
+    :hook (ibuffer-mode lambda ()
+                     (turn-off-evil-mode)))
 #+end_src
 * Devops SQL
 #+begin_src emacs-lisp
@@ -979,7 +1011,7 @@
 
     :hook
     (sgml-mode . emmet-mode) ;; Auto-start on any markup modes
-    (web-mode . emmet-mode)
+    (web-mode  . emmet-mode)
     (html-mode . emmet-mode)
     (rjsx-mode . emmet-mode)
     (css-mode  . emmet-mode)) ;; enable Emmet's css abbreviation.
@@ -1347,27 +1379,35 @@
 * Version Control
 ** Magit
 #+begin_src emacs-lisp
-      (use-package magit
-        :defer 10
-        :custom (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
-        :bind (:map evil-normal-state-map
-                    (";g" . magit-status)))
+  (use-package magit
+    :defer 10
+    :custom (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
+    :config
+    (setq git-gutter:hide-gutter t)
+    :bind (:map evil-normal-state-map
+                (";g" . magit-dispatch)))
 
-      (use-package git-gutter
-        :after magit
-        :init (global-git-gutter-mode +1)
-        :bind (:map evil-normal-state-map
-                    ("gs" . git-gutter:stage-hunk)
-                    ("g]" . git-gutter:next-hunk)
-                    ("g[" . git-gutter:previous-hunk)))
+  (use-package git-gutter
+    :after magit
+    :init (global-git-gutter-mode +1)
+    :bind (:map evil-normal-state-map
+                ("[s" . git-gutter:stage-hunk)
+                ("[r" . git-gutter:revert-hunk)
+                ("[v" . git-gutter:mark-hunk)
+                ("[o" . git-gutter:end-of-hunk)
+                ("[d" . git-gutter:popup-hunk)
+                ("[j" . git-gutter:next-hunk)
+                ("[k" . git-gutter:previous-hunk)))
 
-      (use-package git-timemachine
-        :after magit)
+  (use-package git-timemachine
+    :after magit
+    :bind (:map git-timemachine-mode-map 
+                ("<escape>" . git-timemachine-quit)))
 
-      (use-package forge
-        :after magit
-        :init
-        (setq forge-add-default-bindings nil))
+  (use-package forge
+    :after magit
+    :init
+    (setq forge-add-default-bindings nil))
 #+end_src
 * Writing
 ** Grammar 
@@ -1379,7 +1419,6 @@
     :ensure nil
     :hook (text-mode . flyspell-mode))
 
-
   (use-package lsp-ltex
     :init
     (setq lsp-ltex-version "15.2.0")
@@ -1388,7 +1427,7 @@
                          (lsp)))) ; or lsp-deferred
 
 #+end_src
-*** Lang tools
+** Lang tools
 #+begin_src emacs-lisp
   ;; (add-hook 'text-mode-hook
   ;;           (lambda () 
@@ -1397,36 +1436,36 @@
   ;; (dolist (hook '(change-log-mode-hook log-edit-mode-hook))
   ;;   (add-hook hook (lambda () (flyspell-mode -1))))
 
-  ;; (defun langtool-autoshow-detail-popup (overlays)
-  ;;   (when (require 'popup nil t)
-  ;;     ;; Do not interrupt current popup
-  ;;     (unless (or popup-instances
-  ;;                 ;; suppress popup after type `C-g` .
-  ;;                 (memq last-command '(keyboard-quit)))
-  ;;       (let ((msg (langtool-details-error-message overlays)))
-  ;;         (popup-tip msg)))))
+   (defun langtool-autoshow-detail-popup (overlays)
+     (when (require 'popup nil t)
+       ;; Do not interrupt current popup
+       (unless (or popup-instances
+                   ;; suppress popup after type `C-g` .
+                   (memq last-command '(keyboard-quit)))
+         (let ((msg (langtool-details-error-message overlays)))
+           (popup-tip msg)))))
 
-  ;;  (use-package langtool
-  ;;   :init
-  ;;   (setq langtool-language-tool-jar "~/bin/LanguageTool-5.6/languagetool-commandline.jar")
+    (use-package langtool
+     :init
+     ;; (setq langtool-language-tool-jar "~/bin/LanguageTool-5.6/languagetool-commandline.jar") 
+     (setq langtool-language-tool-jar "~/.emacs.d/.cache/lsp/ltex-ls/latest/bin/ltex-cli")
+     :config
+     (set-face-attribute 'langtool-errline nil
+                         :weight 'bold
+                         :slant 'italic
+                         :underline '(:color "pink" :style wave)
+                         :foreground nil
+                         :background nil)
+     (setq langtool-mother-tongue "en"
+           langtool-default-language "en-US"
+           langtool-autoshow-message-function 'langtool-autoshow-detail-popup))
 
-  ;;   :config
-  ;;   (set-face-attribute 'langtool-errline nil
-  ;;                       :weight 'bold
-  ;;                       :slant 'italic
-  ;;                       :underline '(:color "pink" :style wave)
-  ;;                       :foreground nil
-  ;;                       :background nil)
-  ;;   (setq langtool-mother-tongue "en"
-  ;;         langtool-default-language "en-US"
-  ;;         langtool-autoshow-message-function 'langtool-autoshow-detail-popup))
 
-
-  ;; (global-set-key "\C-x4w" 'langtool-check)
-  ;; (global-set-key "\C-x4W" 'langtool-check-done)
-  ;; (global-set-key "\C-x4l" 'langtool-switch-default-language)
-  ;; (global-set-key "\C-x44" 'langtool-show-message-at-point)
-  ;; (global-set-key "\C-x4c" 'langtool-correct-buffer)
+   (global-set-key "\C-x4w" 'langtool-check)
+   (global-set-key "\C-x4W" 'langtool-check-done)
+   (global-set-key "\C-x4l" 'langtool-switch-default-language)
+   (global-set-key "\C-x44" 'langtool-show-message-at-point)
+   (global-set-key "\C-x4c" 'langtool-correct-buffer)
 
 #+end_src
 
@@ -1434,12 +1473,14 @@
 #+begin_src emacs-lisp
   (use-package dictionary
     :bind ((:map evil-normal-state-map
+                ("Z?" . dictionary-lookup-definition)
                 ("z?" . dictionary-search))))
   #+end_src
 ** Synosaurus
   #+begin_src emacs-lisp
   (use-package synosaurus
     :bind ((:map evil-normal-state-map
+                ("zs" . synosaurus-lookup)
                 ("z-" . synosaurus-choose-and-insert)
                 ("z_" . synosaurus-choose-and-replace)))
     :config
@@ -1447,7 +1488,6 @@
 #+end_src
 ** Latex
 #+begin_src emacs-lisp
-
   (use-package lsp-latex
      :config
     ;; "texlab" must be located at a directory contained in `exec-path'.
@@ -1477,7 +1517,7 @@
      (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo"))
      (pdf-tools-install)
 #+end_src
-* Windows Management
+* Window Management
 ** Winum Mode
 #+begin_src emacs-lisp
   (use-package winum
@@ -1499,8 +1539,9 @@
           aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 
     :bind (:map evil-window-map
+           ("T" . tab-bar-move-window-to-tab)
+           ("SPC" . custom/display-buffer-at-bottom)
            ("a" . ace-window)))
-
 #+end_src
 * Email
 ** Email Global Variables
@@ -1838,6 +1879,7 @@
   ;; Org Mode Configuration ------------------------------------------------------
   (defun efs/org-mode-setup ()
     (org-indent-mode)
+    (hl-todo-mode)
     (variable-pitch-mode 1)
     (visual-line-mode 1))
 
@@ -1881,8 +1923,6 @@
     (setq org-log-into-drawer t)
     (setq org-startup-folded t)
     (setq org-hide-emphasis-markers t)
-
-
     (setq org-agenda-files
           '("~/org/beorg/org/Tasks.org"
             "~/org/beorg/org/Habits.org"
@@ -2014,12 +2054,12 @@
 
 ** Org Babel
 #+begin_src emacs-lisp
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((emacs-lisp . t)
-     (restclient . t)
-     (plantuml . t)
-     (python . t)))
+   (org-babel-do-load-languages
+    'org-babel-load-languages
+    '((emacs-lisp . t)
+      (restclient . t)
+      (plantuml . t)
+      (python . t)))
 #+end_src
 ** Org Bullets
 #+begin_src emacs-lisp
@@ -2066,9 +2106,10 @@
   (add-to-list 'org-structure-template-alist '("py" . "src python"))
   (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
   (add-to-list 'org-structure-template-alist '("rc" . "src restclient"))
-  (add-to-list 'org-structure-template-alist '("puml" . "src plantuml"))
   (add-to-list 'org-structure-template-alist '("np" . "src napkin"))
+  (add-to-list 'org-structure-template-alist '("cpp". "src C"))
   (add-to-list 'org-structure-template-alist '("npp". "src napkin-puml"))
+  (add-to-list 'org-structure-template-alist '("puml" . "src plantuml"))
 #+end_src
 
 ** Auto Tangle Configuration into files
@@ -2182,7 +2223,13 @@
 #+end_src
 ** Org remark
 #+begin_src emacs-lisp
-(use-package org-remark)
+  (use-package org-remark
+    :config
+    (org-remark-create "memorize"
+                        '(:foreground "white" :underline "black")
+                        '(CATEGORY "exam"))
+    (org-remark-create "magnet"
+                        '(modus-themes-nuanced-magenta)))
 #+end_src
 ** Org Noter
 #+begin_src emacs-lisp
@@ -2276,7 +2323,7 @@
     (async-shell-command "mpd"))
       ;; (global-set-key (kbd "M-m") 'my-compile)
 #+end_src
-**  Vuiet  
+** Vuiet  
 #+begin_src emacs-lisp
     (use-package  vuiet
       :config
@@ -2311,12 +2358,10 @@
   (global-display-line-numbers-mode 0)
   (menu-bar-mode)
 #+end_src
-
 ** Link Hint
 #+begin_src emacs-lisp
 (use-package link-hint)
 #+end_src
-
 ** Tab-Bar Mode
 #+begin_src emacs-lisp
   ;; (setq tab-bar-show 1)
@@ -2360,15 +2405,6 @@
 
 (add-hook 'emacs-startup-hook #'efs/display-startup-time)
 #+end_src
-
-
-
-
-
-<
-
-
-
 ** Screen Saver
 #+begin_src emacs-lisp
   ;;(require 'zone)
