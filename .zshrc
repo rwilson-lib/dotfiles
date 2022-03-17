@@ -6,8 +6,9 @@ export PATH=$HOME/bin:/usr/local/bin:$HOME/Library/Python/3.8/bin:$HOME/Library/
 # Path to your oh-my-zsh installation.
 export ZSH=$HOME/.oh-my-zsh
 export TERM=xterm-256color
-export EDITOR=/usr/local/bin/vim
-export VISUAL=/usr/local/bin/vim
+
+export VISUAL=vim
+export EDITOR="$VISUAL"
 
 export HISTTIMEFORMAT="%F %T "
 
