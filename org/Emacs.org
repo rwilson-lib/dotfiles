@@ -291,7 +291,7 @@
     (evil-ex-define-cmd "tabedit" 'evil-tabedit)
 
     ;; example how to map a command in normal mode (called 'normal state' in evil)
-    ;; (define-key evil-normal-state-map (kbd "; f") 'find-file)
+    (define-key evil-normal-state-map (kbd "z <return>") 'enlarge-window)
     (evil-mode 1))
 
   (defun moon-override-yank-pop (&optional arg)
@@ -699,32 +699,32 @@
 #+end_src
 ** Company
 #+begin_src emacs-lisp
-  (use-package company
-    :hook (prog-mode . company-mode)
-    :bind (:map company-active-map
-                ("<tab>" . company-complete-selection))
+  ;; (use-package company
+  ;;   :hook (prog-mode . company-mode)
+  ;;   :bind (:map company-active-map
+  ;;               ("<tab>" . company-complete-selection))
 
-    :custom
-    (company-minimum-prefix-length 1)
-    (company-idle-delay 0.0))
+  ;;   :custom
+  ;;   (company-minimum-prefix-length 1)
+  ;;   (company-idle-delay 0.0))
 
-  (use-package company-box
-    :after company
-    :hook (company-mode . company-box-mode))
+  ;; (use-package company-box
+  ;;   :after company
+  ;;   :hook (company-mode . company-box-mode))
 #+end_src
 ** Company Backends
 #+begin_src emacs-lisp
-  (use-package company-web
-    :after (web-mode)
-    :config
-    (add-to-list 'company-backends 'company-web-html)
-    (add-to-list 'company-backends 'company-web-jade)
-    (add-to-list 'company-backends 'company-web-slim))
+  ;; (use-package company-web
+  ;;   :after (web-mode)
+  ;;   :config
+  ;;   (add-to-list 'company-backends 'company-web-html)
+  ;;   (add-to-list 'company-backends 'company-web-jade)
+  ;;   (add-to-list 'company-backends 'company-web-slim))
 
-  (use-package company-restclient
-    :after restclient
-    :config
-    (add-to-list 'company-backends 'company-restclient))
+  ;; (use-package company-restclient
+  ;;   :after restclient
+  ;;   :config
+  ;;   (add-to-list 'company-backends 'company-restclient))
 
   ;; (use-package company-tabnine
   ;;   :config
@@ -733,38 +733,48 @@
 #+end_src
 ** Corfu
 #+begin_src emacs-lisp
-  (use-package corfu
-    ;; Optional customizations
-    :custom
-    (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-    (corfu-auto t)                 ;; Enable auto completion
-    ;; (corfu-separator ?\s)          ;; Orderless field separator
-    (corfu-quit-at-boundary t)   ;; Never quit at completion boundary
-    ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
-    (corfu-preview-current nil)    ;; Disable current candidate preview
-    ;; (corfu-preselect-first nil)    ;; Disable candidate preselection
-    ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
-    (corfu-echo-documentation t) ;; Disable documentation in the echo area
-    (corfu-scroll-margin 5)        ;; Use scroll margin
-    (corfu-auto-prefix 1)
-    (corfu-auto-delay 0.0)
+    (use-package corfu
+      ;; Optional customizations
+      :custom
+      (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+      (corfu-auto t)                 ;; Enable auto completion
+      ;; (corfu-separator ?\s)          ;; Orderless field separator
+      (corfu-quit-at-boundary t)   ;; Never quit at completion boundary
+      ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
+      (corfu-preview-current nil)    ;; Disable current candidate preview
+      ;; (corfu-preselect-first nil)    ;; Disable candidate preselection
+      ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+      (corfu-echo-documentation t) ;; Disable documentation in the echo area
+      (corfu-scroll-margin 5)        ;; Use scroll margin
+      (corfu-auto-prefix 1)
+      (corfu-auto-delay 0.0)
 
 
-    ;; You may want to enable Corfu only for certain modes.
-    ;; :hook ((prog-mode . corfu-mode)
-    ;;        (shell-mode . corfu-mode)
-    ;;        (eshell-mode . corfu-mode))
+      ;; You may want to enable Corfu only for certain modes.
+      ;; :hook ((prog-mode . corfu-mode)
+      ;;        (shell-mode . corfu-mode)
+      ;;        (eshell-mode . corfu-mode))
 
-    ;; Recommended: Enable Corfu globally.
-    ;; This is recommended since dabbrev can be used globally (M-/).
+      ;; Recommended: Enable Corfu globally.
+      ;; This is recommended since dabbrev can be used globally (M-/).
 
-    :bind
-    (:map corfu-map
-          ("C-j" . corfu-next)
-          ("C-k" . corfu-previous))
-    ;; :init
-    ;; (corfu-global-mode)
-    )
+      :bind
+      (:map corfu-map
+            ("C-j" . corfu-next)
+            ("C-k" . corfu-previous))
+      ;; :init
+      ;; (corfu-global-mode)
+      )
+    (use-package corfu-doc
+       :hook (corfu-mode . corfu-doc-mode))
+
+    (use-package kind-icon
+      :after corfu
+      :custom
+      (kind-icon-default-face 'corfu-default) ; to compute blended backgrounds correctly
+      :config
+      (setq kind-icon-use-icons nil)
+      (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
 #+end_src
 ** Cape
 #+begin_src emacs-lisp
@@ -936,6 +946,11 @@
   ;;                              (thing-at-point 'line))))))
 
 #+end_src
+** Tags
+#+begin_src emacs-lisp
+  (use-package ggtags
+    :load-path "/usr/local/share/gtags/gtags.el")
+#+end_src
 ** Treesitter
 #+begin_src emacs-lisp
   (use-package tree-sitter
@@ -952,20 +967,9 @@
   (use-package evil-tree-edit
     :after tree-edit)
 #+end_src
-** Todo
+** Doc String
 #+begin_src emacs-lisp
-  (use-package hl-todo)
-  (use-package magit-todos)
-  (use-package todotxt-mode)
-
-  (use-package org-projectile
-    :bind (("C-c n p" . org-projectile-project-todo-completing-read)
-           ("C-c c" . org-capture))
-    :config
-    (progn
-      (setq org-projectile-projects-file "~/org/beorg/org/Projects.org")
-      (setq org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
-      (push (org-projectile-project-todo-entry) org-capture-templates)))
+(use-package docstr)
 #+end_src
 ** Programming
 #+begin_src emacs-lisp
@@ -973,6 +977,8 @@
     :ensure nil
     :hook (prog-mode lambda ()
                      (hl-todo-mode)
+                     (corfu-mode)
+                     (docstr-mode)
                      (display-line-numbers-mode 1)
                      (flyspell-prog-mode)))
 
@@ -1336,7 +1342,7 @@
 #+begin_src emacs-lisp
   (use-package restclient
     :mode ("\\.http\\'" . restclient-mode)
-    :hook (restclient-mode . company-mode)
+    ;; :hook (restclient-mode . company-mode)
     :bind (:map restclient-mode-map
                 ("C-c C-f" . json-mode-beautify)))
 
@@ -1531,13 +1537,19 @@
 #+end_src
 ** PDF Tools
 #+begin_src emacs-lisp
-(use-package pdf-tools
-      :ensure t
-      :config
-      (custom-set-variables
-        '(pdf-tools-handle-upgrades nil)) ; Use brew upgrade pdf-tools instead.
-     (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo"))
-     (pdf-tools-install)
+  (use-package pdf-tools
+    :ensure t
+    :config
+    (custom-set-variables
+     '(pdf-tools-handle-upgrades nil)) ; Use brew upgrade pdf-tools instead.
+    (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo"))
+  (pdf-tools-install)
+#+end_src
+** Google
+#+begin_src emacs-lisp
+  (use-package google-this
+    :config
+    (google-this-mode 1))
 #+end_src
 * Window Management
 ** Winum Mode
@@ -1968,7 +1980,7 @@
 
     (setq org-tag-alist
           '((:startgroup)
-                                          ; Put mutually exclusive tags here
+       ; Put mutually exclusive tags here
             (:endgroup)
             ("@errand" . ?E)
             ("@home" . ?H)
@@ -2159,6 +2171,7 @@
 #+begin_src emacs-lisp
   (use-package org-alert
     :custom (alert-default-style 'notifications)
+    ;; :custom (alert-default-style 'fringe)
     :config
     (setq org-alert-interval 300
           org-alert-notification-title "Org Alert Reminder")
@@ -2374,6 +2387,10 @@
   (use-package speed-type)
 #+end_src
 
+** Chess
+#+begin_src emacs-lisp
+(use-package chess)
+#+end_src
 * Misc
 ** Line Number
 #+begin_src emacs-lisp
