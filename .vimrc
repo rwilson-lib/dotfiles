@@ -317,3 +317,12 @@ nmap <Leader>w <Plug>(easymotion-overwin-w)
 
 let g:coc_filetype_map = {'tex': 'latex'}
 
+" enable gtags module
+" let g:gutentags_modules = ['ctags', 'gtags_cscope']
+let g:gutentags_modules = ['gtags_cscope']
+
+" generate datebases in my cache directory, prevent gtags files polluting my project
+" let g:gutentags_cache_dir = expand('~/.cache/tags')
+
+" let g:gutentags_gtags_dbpath = "GTAGS"
+
