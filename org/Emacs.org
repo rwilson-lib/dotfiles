@@ -714,38 +714,42 @@
 #+end_src
 ** Company
 #+begin_src emacs-lisp
-  ;; (use-package company
-  ;;   :hook (prog-mode . company-mode)
-  ;;   :bind (:map company-active-map
-  ;;               ("<tab>" . company-complete-selection))
+   (use-package company
+     ;; :hook (prog-mode . company-mode)
+     :bind (:map company-active-map
+                 ("<tab>" . company-complete-selection))
 
-  ;;   :custom
-  ;;   (company-minimum-prefix-length 1)
-  ;;   (company-idle-delay 0.0))
+     :custom
+     (company-minimum-prefix-length 1)
+     (company-idle-delay 0.0))
 
-  ;; (use-package company-box
-  ;;   :after company
-  ;;   :hook (company-mode . company-box-mode))
+   (use-package company-box
+     :after company
+     :hook (company-mode . company-box-mode))
 #+end_src
-** Company Backends
-#+begin_src emacs-lisp
-  ;; (use-package company-web
-  ;;   :after (web-mode)
-  ;;   :config
-  ;;   (add-to-list 'company-backends 'company-web-html)
-  ;;   (add-to-list 'company-backends 'company-web-jade)
-  ;;   (add-to-list 'company-backends 'company-web-slim))
 
-  ;; (use-package company-restclient
-  ;;   :after restclient
-  ;;   :config
-  ;;   (add-to-list 'company-backends 'company-restclient))
+
+** Company Backends
+#+begin_src emacs-lisp :async t
+   (use-package company-web
+     :after (web-mode)
+     :config
+     (add-to-list 'company-backends 'company-web-html)
+     (add-to-list 'company-backends 'company-web-jade)
+     (add-to-list 'company-backends 'company-web-slim))
+
+   (use-package company-restclient
+     :after restclient
+     :config
+     (add-to-list 'company-backends 'company-restclient))
 
   ;; (use-package company-tabnine
   ;;   :config
   ;;   (add-to-list 'company-backends #'company-tabnine)
   ;;   (setq company-idle-delay 0))
 #+end_src
+
+
 ** Corfu
 #+begin_src emacs-lisp
   (use-package corfu
@@ -998,8 +1002,9 @@
   (use-package prog-mode
     :ensure nil
     :hook (prog-mode lambda ()
+                     ;; (corfu-mode)
                      (hl-todo-mode)
-                     (corfu-mode)
+                     (company-mode)
                      (docstr-mode)
                      (display-line-numbers-mode 1)
                      (flyspell-prog-mode)))
