@@ -82,7 +82,8 @@
     :bind (("C-x C-b" . ibuffer)
            ("s-<up>" . scroll-other-window)
            ("s-<down>" . scroll-other-window-down)
-           ("C-`" . universal-argument))
+           ("C-`" . universal-argument)
+           ("<f12>" . tmm-menubar))
 
     :config
     (defun custom/display-buffer-at-bottom ()
@@ -220,6 +221,8 @@
 
   ;; Emacs watch file on disk for changes
   (global-auto-revert-mode 1)
+  (setq auto-revert-verbose nil)
+
 
   ;; turn on cursor line mode
   ;; (global-hl-line-mode 1)
@@ -229,9 +232,8 @@
 
   (setq browse-url-browser-function 'browse-url-chrome
         browse-url-chrome-program "chrome")
-
+  
 #+end_src
-
 ** Line Number
 #+begin_src emacs-lisp
   ;; disable line number for some mode
@@ -450,7 +452,7 @@
              (doom-modeline-height 12)))
 
   (use-package doom-themes
-    :init (load-theme 'doom-homage-white t))
+    :init (load-theme 'leuven t))
 
   (use-package leuven-theme)
   (use-package tao-theme)
@@ -728,7 +730,6 @@
      :hook (company-mode . company-box-mode))
 #+end_src
 
-
 ** Company Backends
 #+begin_src emacs-lisp :async t
    (use-package company-web
@@ -748,7 +749,6 @@
   ;;   (add-to-list 'company-backends #'company-tabnine)
   ;;   (setq company-idle-delay 0))
 #+end_src
-
 
 ** Corfu
 #+begin_src emacs-lisp
@@ -1528,21 +1528,22 @@
 
 ** Dictionary
 #+begin_src emacs-lisp
-  (use-package dictionary
+  (use-package mw-thesaurus
     :bind ((:map evil-normal-state-map
-                ("Z?" . dictionary-lookup-definition)
-                ("z?" . dictionary-search))))
+                 ("Z?" . mw-thesaurus-lookup-at-point)
+                 ("z?" . mw-thesaurus-lookup-dwim))))
+
+  (use-package dictionary)
   #+end_src
-** Synosaurus
-  #+begin_src emacs-lisp
-  (use-package synosaurus
-    :bind ((:map evil-normal-state-map
-                ("zs" . synosaurus-lookup)
-                ("z-" . synosaurus-choose-and-insert)
-                ("z_" . synosaurus-choose-and-replace)))
-    :config
-        (setq  synosaurus-choose-method 'default))
+** Thesaurus
+  #+begin_src emacs-lisp 
+    (use-package  powerthesaurus 
+      :bind ((:map evil-normal-state-map
+                  ("zs" . powerthesaurus-lookup-dwim)
+                  ("z_" . powerthesaurus-lookup-synonyms-dwim))))
+
 #+end_src
+
 ** Latex
 #+begin_src emacs-lisp
   (use-package lsp-latex
@@ -1579,6 +1580,10 @@
   (use-package google-this
     :config
     (google-this-mode 1))
+#+end_src
+** Ledger
+#+begin_src emacs-lisp
+(use-package ledger-mode)
 #+end_src
 * Window Management
 ** Winum Mode
@@ -2010,14 +2015,14 @@
           '((:startgroup)
        ; Put mutually exclusive tags here
             (:endgroup)
-            ("@errand" . ?E)
+            ("note" . ?n)
             ("@home" . ?H)
             ("@work" . ?W)
-            ("agenda" . ?a)
-            ("planning" . ?p)
-            ("publish" . ?P)
             ("batch" . ?b)
-            ("note" . ?n)
+            ("agenda" . ?a)
+            ("publish" . ?P)
+            ("@errand" . ?E)
+            ("planning" . ?p)
             ("idea" . ?i)))
 
     ;; Configure custom agenda views
@@ -2115,7 +2120,6 @@
 #+end_src
 
 ** Org Babel 
-
 #+begin_src emacs-lisp
   (use-package ob-napkin
     :config
@@ -2138,7 +2142,9 @@
   (use-package org-tempo
     :ensure nil
     :config (progn
-              (add-to-list 'org-structure-template-alist '("cpp". "src C"))
+              (add-to-list 'org-structure-template-alist '("R" . "src R"))
+              (add-to-list 'org-structure-template-alist '("cl". "src C"))
+              (add-to-list 'org-structure-template-alist '("cp". "src C++"))
               (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
               (add-to-list 'org-structure-template-alist '("jp" . "src jupyter-python"))
               (add-to-list 'org-structure-template-alist '("jr" . "src jupyter-r"))
@@ -2152,30 +2158,31 @@
 #+end_src
 
 #+begin_src emacs-lisp
-    (use-package ob
-      :ensure nil
-      :config (progn
-                ;; load more languages for org-babel
-                (org-babel-do-load-languages
-                 'org-babel-load-languages
-                 '((C . t)
-                   (emacs-lisp . t)
-                   (julia . t)
-                   (latex . t)
-                   (plantuml . t)
-                   (python . t)
-                   (restclient . t)
-                   (shell . t)
-                   (jupyter . t)))
-                (setq org-babel-default-header-args:sh    '((:results . "output replace"))
-                      org-babel-default-header-args:bash  '((:results . "output replace"))
-                      org-babel-default-header-args:shell '((:results . "output replace"))
-                      org-babel-default-header-args:jupyter-python '((:async . "yes")
-                                                                     (:session . "py")
-                                                                     (:kernel . "sagemath")))
-                (add-to-list 'org-src-lang-modes (quote ("plantuml" . plantuml)))))
+  (use-package ob
+    :ensure nil
+    :config (progn
+              ;; load more languages for org-babel
+              (org-babel-do-load-languages
+               'org-babel-load-languages
+               '((C . t)
+                 (R . t)
+                 (shell . t)
+                 (julia . t)
+                 (latex . t)
+                 (python . t)
+                 ; (ledger . t)        
+                 (plantuml . t)
+                 (restclient . t)
+                 (emacs-lisp . t)
+                 (jupyter . t)))
+              (setq org-babel-default-header-args:sh    '((:results . "output replace"))
+                    org-babel-default-header-args:bash  '((:results . "output replace"))
+                    org-babel-default-header-args:shell '((:results . "output replace"))
+                    org-babel-default-header-args:python '((:results . "output"))
+                    org-babel-default-header-args:jupyter-python '((:async . "yes")
+                                                                   (:session . "py")))
+              (add-to-list 'org-src-lang-modes (quote ("plantuml" . plantuml)))))
 #+end_src
-
 ** Org Bullets
 #+begin_src emacs-lisp
   (use-package org-bullets
@@ -2347,6 +2354,16 @@
 ;; (use-package org-modern)
 ;; (add-hook 'org-mode-hook #'org-modern-mode)
 #+end_src
+** Org Table Color
+#+begin_src emacs-lisp
+(use-package org-table-color
+  :after org-table)
+#+end_src
+** Org Plot
+#+begin_src emacs-lisp
+(use-package gnuplot)
+(use-package gnuplot-mode)
+#+end_src
 * Pretty Symbols
 ** Org Symbols
 #+begin_src emacs-lisp
@@ -2516,3 +2533,4 @@
   ;;(require 'zone)
   ;;(zone-when-idle 120)
 #+end_src
+
