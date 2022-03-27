@@ -2,8 +2,7 @@
 #+TITLE: Emacs Configuration
 #+PROPERTY: header-args:emacs-lisp :tangle ~/.emacs.d/init.el
 
-* Utils Function
-** Utils Function
+* Utilities Function
 #+begin_src emacs-lisp
   (defun vim-open-buffer ()
     (interactive)
@@ -497,14 +496,15 @@
 
 ** Avy
 #+begin_src emacs-lisp
-  (use-package avy
-    :bind ((:map evil-normal-state-map
-                 ("s" . avy-goto-char)
-                 ("S" . avy-goto-line))
-           ("M-s c" . avy-goto-char-timer)))
+    (use-package avy
+      :bind ((:map evil-normal-state-map
+                   ("s" . avy-goto-char)
+                   ("S" . avy-goto-line))
+             ("M-s c" . avy-goto-char-timer)))
 
 
-  (use-package avy-flycheck)
+    (use-package avy-flycheck
+      :after avy)
 #+end_src
 ** Vertico
 #+begin_src emacs-lisp
@@ -642,38 +642,39 @@
 #+End_src
 ** Embark
 #+begin_src emacs-lisp
-  (use-package embark
-    :bind
-    (("M-o" . embark-act)         ;; pick some comfortable binding
-     ("M-O" . embark-dwim)        ;; good alternative: M-.
-     ("C-h B" . embark-bindings) ;; alternative for `describe-bindings'
+    (use-package embark
+      :bind
+      (("M-o" . embark-act)         ;; pick some comfortable binding
+       ("M-O" . embark-dwim)        ;; good alternative: M-.
+       ("C-h B" . embark-bindings) ;; alternative for `describe-bindings'
 
-     :map minibuffer-local-map
-     ("C-b" . embark-become)) 
+       :map minibuffer-local-map
+       ("C-b" . embark-become)) 
 
-    :init
-    ;; Optionally replace the key help with a completing-read interface
-    (setq prefix-help-command #'embark-prefix-help-command)
+      :init
+      ;; Optionally replace the key help with a completing-read interface
+      (setq prefix-help-command #'embark-prefix-help-command)
 
-    :config
-    ;; Hide the mode line of the Embark live/completions buffers
-    (add-to-list 'display-buffer-alist
-                 '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-                   nil
-                   (window-parameters (mode-line-format . none)))))
-  ;; use C-u to perform multiple action
+      :config
+      ;; Hide the mode line of the Embark live/completions buffers
+      (add-to-list 'display-buffer-alist
+                   '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                     nil
+                     (window-parameters (mode-line-format . none)))))
+    ;; use C-u to perform multiple action
 
-  (use-package avy-embark-collect)
+    (use-package avy-embark-collect
+      :after embark)
 
-  ;; Consult users will also want the embark-consult package.
-  (use-package embark-consult
-    :ensure t
-    :after (embark consult)
-    :demand t ; only necessary if you have the hook below
-    ;; if you want to have consult previews as you move around an
-    ;; auto-updating embark collect buffer
-    :hook
-    (embark-collect-mode . consult-preview-at-point-mode))
+    ;; Consult users will also want the embark-consult package.
+    (use-package embark-consult
+      :ensure t
+      :after (embark consult)
+      :demand t ; only necessary if you have the hook below
+      ;; if you want to have consult previews as you move around an
+      ;; auto-updating embark collect buffer
+      :hook
+      (embark-collect-mode . consult-preview-at-point-mode))
 #+end_src
 ** Tree macs
 #+begin_src emacs-lisp
@@ -716,18 +717,18 @@
 #+end_src
 ** Company
 #+begin_src emacs-lisp
-   (use-package company
-     ;; :hook (prog-mode . company-mode)
-     :bind (:map company-active-map
-                 ("<tab>" . company-complete-selection))
+  (use-package company
+    ;; :hook (prog-mode . company-mode)
+    :bind (:map company-active-map
+                ("<tab>" . company-complete-selection))
 
-     :custom
-     (company-minimum-prefix-length 1)
-     (company-idle-delay 0.0))
+    :custom
+    (company-minimum-prefix-length 1)
+    (company-idle-delay 0.0))
 
-   (use-package company-box
-     :after company
-     :hook (company-mode . company-box-mode))
+  (use-package company-box
+    :after company
+    :hook (company-mode . company-box-mode))
 #+end_src
 
 ** Company Backends
@@ -741,7 +742,7 @@
 
    (use-package company-restclient
      :after restclient
-     :config
+     :config 
      (add-to-list 'company-backends 'company-restclient))
 
   ;; (use-package company-tabnine
@@ -817,8 +818,6 @@
            ("C-c i l" . cape-line)
            ("C-c i w" . cape-dict)
            ("C-c i \\" . cape-tex)
-           ("C-c i _" . cape-tex)
-           ("C-c i ^" . cape-tex)
            ("C-c i &" . cape-sgml)
            ("C-c i r" . cape-rfc1345))
     :init
@@ -857,7 +856,7 @@
     :hook (ibuffer-mode lambda ()
                      (turn-off-evil-mode)))
 #+end_src
-* Devops SQL
+* SQL Servers Settings
 #+begin_src emacs-lisp
   (setq sql-connection-alist
         '((pgsql-prod (sql-product 'postgres)
@@ -1001,13 +1000,13 @@
 #+begin_src emacs-lisp
   (use-package prog-mode
     :ensure nil
-    :hook (prog-mode lambda ()
+    :hook (prog-mode . ( lambda ()
                      ;; (corfu-mode)
                      (hl-todo-mode)
                      (company-mode)
                      (docstr-mode)
                      (display-line-numbers-mode 1)
-                     (flyspell-prog-mode)))
+                     (flyspell-prog-mode))))
 
   (use-package rainbow-delimiters
     :hook (prog-mode . rainbow-delimiters-mode))
@@ -1469,7 +1468,6 @@
 * Writing
 ** Grammar 
 #+begin_src emacs-lisp
-
   (add-to-list 'ispell-skip-region-alist '("#\\+begin_src" . "#\\+end_src"))
 
   (use-package text-mode
@@ -1479,10 +1477,9 @@
   (use-package lsp-ltex
     :init
     (setq lsp-ltex-version "15.2.0")
-    :hook (latex-mode . (lambda ()
+    :hook (latex-mode-hook . (lambda ()
                          (require 'lsp-ltex)
                          (lsp)))) ; or lsp-deferred
-
 #+end_src
 ** Lang tools
 #+begin_src emacs-lisp
@@ -1504,8 +1501,7 @@
 
     (use-package langtool
      :init
-     ;; (setq langtool-language-tool-jar "~/bin/LanguageTool-5.6/languagetool-commandline.jar") 
-     (setq langtool-language-tool-jar "~/.emacs.d/.cache/lsp/ltex-ls/latest/bin/ltex-cli")
+     (setq langtool-language-tool-jar "~/bin/LanguageTool-5.6/languagetool-commandline.jar") 
      :config
      (set-face-attribute 'langtool-errline nil
                          :weight 'bold
@@ -1541,29 +1537,26 @@
       :bind ((:map evil-normal-state-map
                   ("zs" . powerthesaurus-lookup-dwim)
                   ("z_" . powerthesaurus-lookup-synonyms-dwim))))
-
 #+end_src
 
 ** Latex
 #+begin_src emacs-lisp
-  (use-package lsp-latex
-     :config
-    ;; "texlab" must be located at a directory contained in `exec-path'.
-    ;; If you want to put "texlab" somewhere else,
-    ;; you can specify the path to "texlab" as follows:
-    (setq lsp-latex-texlab-executable "~/.emacs.d/.cache/lsp/texlab"))
+  (use-package tex
+    :ensure auctex
 
-  (with-eval-after-load "tex-mode"
-   (add-hook 'tex-mode-hook 'lsp)
-   (add-hook 'latex-mode-hook 'lsp))
+    :hook (TeX-mode . ( lambda ()
+                        ;; (corfu-mode)
+                        (hl-todo-mode)
+                        (company-mode)
+                        (display-line-numbers-mode 1)))
 
-  ;; For YaTeX
-  (with-eval-after-load "yatex"
-   (add-hook 'yatex-mode-hook 'lsp))
+    :bind ((:map TeX-mode-map
+                 ("<tab>" . TeX-complete-symbol))))
 
-    (use-package latex-preview-pane
-      :config
-      (latex-preview-pane-enable))
+  (use-package latex-preview-pane
+    :config
+    (setq latex-preview-pane-use-frame t)
+    (latex-preview-pane-enable))
 #+end_src
 ** PDF Tools
 #+begin_src emacs-lisp
