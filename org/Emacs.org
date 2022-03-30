@@ -118,8 +118,7 @@
                              (display-buffer-in-side-window)
                              (window-height . 0.25)
                              (side . bottom)
-                             (slot . 0))
-                            ))
+                             (slot . 0))))
     :bind (("<f8>" . window-toggle-side-windows)))
 
   (defun efs/set-font-faces ()
@@ -417,29 +416,16 @@
       "C-l" 'right-char
       "C-h" 'left-char)
 
-    
+
     (general-define-key
      :keymaps '(normal insert visual emacs)
      :prefix "SPC"
      :non-normal-prefix "M-SPC"
      "y" '(hydra-aya/body :which-key "aya"))
 
-    ;; (general-define-key
-    ;;  :prefix "<tab>"
-    ;;  :keymaps 'override
-    ;;  "p" 'completion-at-point ;; capf
-    ;;  "t" 'complete-tag        ;; etags
-    ;;  "d" 'cape-dabbrev        ;; or dabbrev-completion
-    ;;  "f" 'cape-file
-    ;;  "k" 'cape-keyword
-    ;;  "s" 'cape-symbol
-    ;;  "a" 'cape-abbrev
-    ;;  "i" 'cape-ispell
-    ;; "l" 'cape-line
-    ;; "w" 'cape-dict
-    ;; "r" 'cape-rfc1345
-    ;; "&" 'cape-sgml
-    ;; "\\" 'cape-tex)
+    (general-define-key
+     :keymaps '(normal insert emacs)
+     :prefix "TAB")
 
     (nvmap :prefix "SPC"
       "m" '(:ignore t :which-key "music")
@@ -463,7 +449,8 @@
 #+end_src
 ** Doom Themes and Modeline
 #+begin_src emacs-lisp
-  (use-package hide-mode-line)
+  (use-package hide-mode-line
+    :hook ((calc-mode) . hide-mode-line))
 
   (setq display-time-day-and-date t
         display-time-24hr-format t)
@@ -475,7 +462,7 @@
     (setq find-file-visit-truename t)
     :custom ((mu4e-alert-enable-mode-line-display)
              (doom-modeline-mu4e t)
-             (doom-modeline-height 12)))
+             (doom-modeline-height 0)))
 
   (use-package doom-themes
     :init (load-theme 'leuven t))
@@ -541,6 +528,7 @@
                 ("C-k" . vertico-previous)
                 ("C-f" . vertico-exit)
                 ("C-SPC" . vertico-quick-jump)
+                ("<tab>" . vertico-insert)
                 :map minibuffer-local-map
                 ("M-h" . backward-kill-word))
     :config
@@ -755,7 +743,7 @@
   (use-package company-box
     :after company
     :hook (company-mode . company-box-mode))
-#+END_SRC
+#+end_src
 ** Company Back-ends
 #+begin_src emacs-lisp :async t
   (use-package company-web
@@ -832,26 +820,22 @@
 #+begin_src emacs-lisp
   (use-package cape
     ;; Bind dedicated completion commands
-    :bind (("C-c i p" . completion-at-point) ;; capf
-           ("C-c i t" . complete-tag)        ;; etags
-           ("C-c i d" . cape-dabbrev)        ;; or dabbrev-completion
-           ("C-c i f" . cape-file)
-           ("C-c i k" . cape-keyword)
-           ("C-c i s" . cape-symbol)
-           ("C-c i a" . cape-abbrev)
-           ("C-c i i" . cape-ispell)
-           ("C-c i l" . cape-line)
-           ("C-c i w" . cape-dict)
-           ("C-c i \\" . cape-tex)
-           ("C-c i &" . cape-sgml)
-           ("C-c i r" . cape-rfc1345))
-
+    :bind (("<tab> p" . completion-at-point) ;; capf
+           ("<tab> t" . complete-tag)        ;; etags
+           ("<tab> d" . cape-dabbrev)        ;; or dabbrev-completion
+           ("<tab> f" . cape-file)
+           ("<tab> k" . cape-keyword)
+           ("<tab> s" . cape-symbol)
+           ("<tab> a" . cape-abbrev)
+           ("<tab> i" . cape-ispell)
+           ("<tab> l" . cape-line)
+           ("<tab> w" . cape-dict)
+           ("<tab> \\" . cape-tex)
+           ("<tab> &" . cape-sgml)
+           ("<tab> r" . cape-rfc1345))
+    
     :init
     ;; Add `completion-at-point-functions', used by `completion-at-point'.
-    (add-to-list 'completion-at-point-functions #'cape-file)
-    (add-to-list 'completion-at-point-functions #'cape-tex)
-    (add-to-list 'completion-at-point-functions #'cape-symbol)
-    (add-to-list 'completion-at-point-functions #'cape-keyword)
     ;;(add-to-list 'completion-at-point-functions #'cape-dabbrev)
     ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
     ;;(add-to-list 'completion-at-point-functions #'cape-rfc1345)
@@ -859,7 +843,10 @@
     ;;(add-to-list 'completion-at-point-functions #'cape-ispell)
     ;;(add-to-list 'completion-at-point-functions #'cape-dict)
     ;;(add-to-list 'completion-at-point-functions #'cape-line)
-    )
+    (add-to-list 'completion-at-point-functions #'cape-file)
+    (add-to-list 'completion-at-point-functions #'cape-tex)
+    (add-to-list 'completion-at-point-functions #'cape-symbol)
+    (add-to-list 'completion-at-point-functions #'cape-keyword))
 #+end_src
 ** Popup
 #+begin_src emacs-lisp
@@ -1264,48 +1251,51 @@
 #+end_src
 ** Python
 #+begin_src emacs-lisp
-  ;; fix issues with python inferial process
-  (setq comint-process-echoes t)
+    ;; fix issues with python inferial process
+    (setq comint-process-echoes t)
 
-  (use-package python-mode
-    ;;:mode "\\.py\\'"
-    :hook (python-mode . lsp-deferred)
-    ;; :custom
-    ;; (dap-python-executable "python3")
-    ;; (dap-python-debugger 'debugpy)
-    :interpreter ("python3" . python-mode)
-    :init
-    (setq python-guess-indent nil)
-    :config
-    (setq python-indent-level 4
-          python-indent-def-block-scale 4))
 
-  (add-hook 'python-mode-hook #'evil-tree-edit-mode)
+    (use-package python-mode
+      ;;:mode "\\.py\\'"
+      :hook (python-mode . lsp-deferred)
+      ;; :custom
+      ;; (dap-python-executable "python3")
+      ;; (dap-python-debugger 'debugpy)
+      :interpreter ("python3" . python-mode)
+      :init
+      (setq python-guess-indent nil)
+      :config
+      (setq python-indent-level 4
+            python-indent-def-block-scale 4)
+            org-babel-python-command "python3"
+            dap-python-executable "python3")
 
-  (use-package live-py-mode
-    :init
-    (setq live-py-version "python3"))
+    (add-hook 'python-mode-hook #'evil-tree-edit-mode)
 
-  (use-package ipython-shell-send)
+    (use-package live-py-mode
+      :init
+      (setq live-py-version "python3"))
 
-  (use-package jupyter
-    :commands (jupyter-run-server-repl
-               jupyter-run-repl
-               jupyter-server-list-kernels)
-    :init (eval-after-load 'jupyter-org-extensions ; conflicts with my helm config, I use <f2 #>
-            '(unbind-key "C-c h" jupyter-org-interaction-mode-map)))
+    (use-package ipython-shell-send)
 
-  (use-package conda
-    :config (progn
-              (conda-env-initialize-interactive-shells)
-              (conda-env-initialize-eshell)
-              (conda-env-autoactivate-mode t)
-              (setq conda-env-home-directory (expand-file-name "~/anaconda3/"))
-              (custom-set-variables '(conda-anaconda-home "~/anaconda3/"))))
+    (use-package jupyter
+      :commands (jupyter-run-server-repl
+                 jupyter-run-repl
+                 jupyter-server-list-kernels)
+      :init (eval-after-load 'jupyter-org-extensions ; conflicts with my helm config, I use <f2 #>
+              '(unbind-key "C-c h" jupyter-org-interaction-mode-map)))
 
-  (require 'dap-python)
-  ;; lang python
-  (provide 'lang-python)
+    (use-package conda
+      :config (progn
+                (conda-env-initialize-interactive-shells)
+                (conda-env-initialize-eshell)
+                (conda-env-autoactivate-mode t)
+                (setq conda-env-home-directory (expand-file-name "~/anaconda3/"))
+                (custom-set-variables '(conda-anaconda-home "~/anaconda3/"))))
+
+    (require 'dap-python)
+    ;; lang python
+    (provide 'lang-python)
 #+end_src
 *** LSP-Python-MS 
 #+begin_src emacs-lisp
@@ -1432,7 +1422,7 @@
 
     :bind (:map lsp-mode-map
                 ("C-!" . lsp-execute-code-action)
-                ("<tab>" . company-indent-or-complete-common))
+                ("C-<tab>" . company-indent-or-complete-common))
 
     :config
     (setq lsp-idle-delay 0.5
