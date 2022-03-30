@@ -48,6 +48,12 @@
   (require 'use-package)
 
   (setq use-package-always-ensure t)
+
+  (use-package auto-package-update
+    :config
+    (setq auto-package-update-delete-old-versions t)
+    (setq auto-package-update-hide-results t)
+    (auto-package-update-maybe))
 #+end_src
 ** Emacs
 #+begin_src emacs-lisp
@@ -739,24 +745,8 @@
 ** Company
 #+begin_src emacs-lisp
   (use-package company
-    :init
-    ;; (define-prefix-command 'company-active-map)
-    ;; (define-key global-map (kbd "<tab>") 'company-active-map)
-
-    ;; :hook (prog-mode . company-mode)
     :bind (:map company-active-map
-                ("SPC t" . complete-tag)        ;; etags
-                ("SPC d" . cape-dabbrev)        ;; or dabbrev-completion
-                ("SPC f" . cape-file)
-                ("SPC k" . cape-keyword)
-                ("SPC s" . cape-symbol)
-                ("SPC a" . cape-abbrev)
-                ("SPC i" . cape-ispell)
-                ("SPC l" . cape-line)
-                ("SPC w" . cape-dict)
-                ("SPC \\" . cape-tex)
-                ("SPC &" . cape-sgml)
-                ("SPC r" . cape-rfc1345)
+                ("<escape>" . company-abort)
                 ("<tab>" . company-complete-selection))
     :custom
     (company-minimum-prefix-length 1)
@@ -766,7 +756,6 @@
     :after company
     :hook (company-mode . company-box-mode))
 #+END_SRC
-
 ** Company Back-ends
 #+begin_src emacs-lisp :async t
   (use-package company-web
@@ -856,6 +845,7 @@
            ("C-c i \\" . cape-tex)
            ("C-c i &" . cape-sgml)
            ("C-c i r" . cape-rfc1345))
+
     :init
     ;; Add `completion-at-point-functions', used by `completion-at-point'.
     (add-to-list 'completion-at-point-functions #'cape-file)
@@ -1283,12 +1273,12 @@
     ;; :custom
     ;; (dap-python-executable "python3")
     ;; (dap-python-debugger 'debugpy)
+    :interpreter ("python3" . python-mode)
     :init
     (setq python-guess-indent nil)
     :config
     (setq python-indent-level 4
-          python-indent-def-block-scale 4
-          python-shell-interpreter "python3"))
+          python-indent-def-block-scale 4))
 
   (add-hook 'python-mode-hook #'evil-tree-edit-mode)
 
