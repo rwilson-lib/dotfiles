@@ -51,50 +51,51 @@
 #+end_src
 ** Emacs
 #+begin_src emacs-lisp
-  ;; A few more useful configurations...
-  (use-package emacs
-    :init
-    ;; Add prompt indicator to `completing-read-multiple'.
-    ;; Alternatively try `consult-completing-read-multiple'.
-    (defun crm-indicator (args)
-      (cons (concat "[CRM] " (car args)) (cdr args)))
-    (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
+    ;; A few more useful configurations...
+    (use-package emacs
+      :init
+      ;; Add prompt indicator to `completing-read-multiple'.
+      ;; Alternatively try `consult-completing-read-multiple'.
+      (defun crm-indicator (args)
+        (cons (concat "[CRM] " (car args)) (cdr args)))
+      (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
 
-    ;; Do not allow the cursor in the minibuffer prompt
-    (setq minibuffer-prompt-properties
-          '(read-only t cursor-intangible t face minibuffer-prompt))
-    (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+      ;; Do not allow the cursor in the minibuffer prompt
+      (setq minibuffer-prompt-properties
+            '(read-only t cursor-intangible t face minibuffer-prompt))
+      (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
 
-    ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
-    ;; Vertico commands are hidden in normal buffers.
-    (setq read-extended-command-predicate
-           #'command-completion-default-include-p)
+      ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
+      ;; Vertico commands are hidden in normal buffers.
+      (setq read-extended-command-predicate
+            #'command-completion-default-include-p)
 
-    ;; Do not use system clip board
-    (setq x-select-enable-clipboard nil)
+      ;; Do not use system clip board
+      (setq x-select-enable-clipboard nil)
 
-    ;; Enable recursive minibuffers
-    (setq enable-recursive-minibuffers t)
-    ;; Horizontal Split.
-    (setq split-width-threshold 1)
+      ;; Enable recursive minibuffers
+      (setq enable-recursive-minibuffers t)
+      ;; Horizontal Split.
+      (setq split-width-threshold 1)
 
-    :bind (("C-x C-b" . ibuffer)
-           ("s-<up>" . scroll-other-window)
-           ("s-<down>" . scroll-other-window-down)
-           ("C-`" . universal-argument)
-           ("<f12>" . tmm-menubar))
+      :bind (("C-x C-b" . ibuffer)
+             ("s-<up>" . scroll-other-window)
+             ("s-<down>" . scroll-other-window-down)
+             ("C-`" . universal-argument)
+             ("<f12>" . tmm-menubar))
 
-    :config
-    (defun custom/display-buffer-at-bottom ()
-      (interactive)
-      (let ((buffer (current-buffer)))
-        (with-current-buffer buffer
-          (delete-window)
-          (display-buffer-at-bottom
-           buffer '(
-                   ;; (window-parameters . ((mode-line-format . (" " "%b"))))
-                   ;; (window-height . 0.25)
-                    ))))))
+      :config
+      (defun custom/display-buffer-at-bottom ()
+        (interactive)
+        (let ((buffer (current-buffer)))
+          (with-current-buffer buffer
+            (delete-window)
+            (display-buffer-at-bottom
+             buffer '(
+                      ;; (window-parameters . ((mode-line-format . (" " "%b"))))
+                      ;; (window-height . 0.25)
+                      ))))))
+
 #+end_src
 ** Font and Windows
 #+begin_src emacs-lisp
@@ -161,7 +162,7 @@
   ;; (set-face-attribute 'default nil :font "FiraCode Nerd Font" :height 160)
   (setq tab-bar-tab-hints t)
   (setq inhibit-startup-message t)
- ;; (menu-bar-mode 1)
+  ;; (menu-bar-mode 1)
   (scroll-bar-mode -1)
   (tool-bar-mode -1)
   (tooltip-mode -1)
@@ -174,7 +175,7 @@
 #+begin_src emacs-lisp
   (setenv "PATH" (concat (getenv "PATH") "/Users/rwilson/anaconda3/condabin:/Users/rwilson/bin:/usr/local/bin:/Users/rwilson/Library/Python/3.8/bin:/Users/rwilson/Library/Python/3.9/bin:/Library/PostgreSQL/13/bin:/usr/local/opt/mysql-client/bin:/Users/rwilson/go/bin:./node_modules/.bin:/Applications/Emacs.app/Contents/MacOS/bin:/opt/local/bin:/opt/local/sbin:/Library/Frameworks/Python.framework/Versions/3.9/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin:/usr/local/go/bin:/usr/local/MacGPG2/bin:/opt/X11/bin:/Library/Apple/usr/bin:/Users/rwilson/.cargo/bin"))
 
-   (setq exec-path (append exec-path '("/Users/rwilson/anaconda3/condabin/" "/Users/rwilson/bin/" "/usr/local/bin/" "/Users/rwilson/Library/Python/3.8/bin/" "/Users/rwilson/Library/Python/3.9/bin/" "/Library/PostgreSQL/13/bin/" "/usr/local/opt/mysql-client/bin/" "/Users/rwilson/go/bin/" "./node_modules/.bin/" "/Applications/Emacs.app/Contents/MacOS/bin/" "/opt/local/bin/" "/opt/local/sbin/" "/Library/Frameworks/Python.framework/Versions/3.9/bin/" "/usr/local/bin/" "/usr/bin/" "/bin/" "/usr/sbin/" "/sbin/" "/Library/TeX/texbin/" "/usr/local/go/bin/" "/usr/local/MacGPG2/bin/" "/opt/X11/bin/" "/Library/Apple/usr/bin/" "/Users/rwilson/.cargo/bin/" "/Applications/Emacs.app/Contents/MacOS/libexec/")))
+  (setq exec-path (append exec-path '("/Users/rwilson/anaconda3/condabin/" "/Users/rwilson/bin/" "/usr/local/bin/" "/Users/rwilson/Library/Python/3.8/bin/" "/Users/rwilson/Library/Python/3.9/bin/" "/Library/PostgreSQL/13/bin/" "/usr/local/opt/mysql-client/bin/" "/Users/rwilson/go/bin/" "./node_modules/.bin/" "/Applications/Emacs.app/Contents/MacOS/bin/" "/opt/local/bin/" "/opt/local/sbin/" "/Library/Frameworks/Python.framework/Versions/3.9/bin/" "/usr/local/bin/" "/usr/bin/" "/bin/" "/usr/sbin/" "/sbin/" "/Library/TeX/texbin/" "/usr/local/go/bin/" "/usr/local/MacGPG2/bin/" "/opt/X11/bin/" "/Library/Apple/usr/bin/" "/Users/rwilson/.cargo/bin/" "/Applications/Emacs.app/Contents/MacOS/libexec/")))
 
 
   (setq comint-terminfo-terminal "eterm-256color")
@@ -187,22 +188,22 @@
 #+end_src
 ** Clipboard & Undo
 #+begin_src emacs-lisp
-    ;; Treat clipboard input as UTF-8 string first; compound text next, etc.
-    (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
+  ;; Treat clipboard input as UTF-8 string first; compound text next, etc.
+  (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
 
-    ;; (use-package undo-tree
-    ;;   :init
-    ;;   (global-undo-tree-mode)
-    ;;   :config
-    ;;   (setq undo-tree-auto-save-history t))
+  ;; (use-package undo-tree
+  ;;   :init
+  ;;   (global-undo-tree-mode)
+  ;;   :config
+  ;;   (setq undo-tree-auto-save-history t))
 
-    (use-package undo-fu)
+  (use-package undo-fu)
 
-    (use-package undo-fu-session
-       :init
-       (global-undo-fu-session-mode)
-       :config
-       (setq undo-fu-session-incompatible-files '("/COMMIT_EDITMSG\\'" "/git-rebase-todo\\'")))
+  (use-package undo-fu-session
+    :init
+    (global-undo-fu-session-mode)
+    :config
+    (setq undo-fu-session-incompatible-files '("/COMMIT_EDITMSG\\'" "/git-rebase-todo\\'")))
 
 
 #+end_src
@@ -231,7 +232,7 @@
 
   (setq browse-url-browser-function 'browse-url-chrome
         browse-url-chrome-program "chrome")
-  
+
 #+end_src
 ** Line Number
 #+begin_src emacs-lisp
@@ -252,7 +253,9 @@
 #+end_src
 ** Async
 #+begin_src emacs-lisp
-(use-package async-await)
+  (use-package async-await
+    :config
+    (async-bytecomp-package-mode 1))
 #+end_src
 * Key Binding
 ** Evil
@@ -275,7 +278,7 @@
     (setq evil-want-keybinding nil)
     (setq evil-want-C-i-jump nil)
     ;; (setq evil-disable-insert-state-bindings t)
-  
+
     (setq evil-undo-system 'undo-fu)
     (setq evil-want-fine-undo t) 
 
@@ -307,45 +310,45 @@
   (advice-add 'consult-yank-pop :before #'moon-override-yank-pop)
 
   (use-package goto-last-change)
-  #+end_src
+#+end_src
 ** Evil Collection
-  #+begin_src emacs-lisp
-    (use-package evil-collection
-      :after evil
-      :config
-      (evil-collection-init))
+#+begin_src emacs-lisp
+  (use-package evil-collection
+    :after evil
+    :config
+    (evil-collection-init))
 
-    (use-package evil-matchit
-      :after evil
-      :config (global-evil-matchit-mode 1))
+  (use-package evil-matchit
+    :after evil
+    :config (global-evil-matchit-mode 1))
 
-    (use-package evil-surround
-      :after evil
-      :config
-      (global-evil-surround-mode 1))
-    #+end_src
+  (use-package evil-surround
+    :after evil
+    :config
+    (global-evil-surround-mode 1))
+#+end_src
 ** IEdit
-    #+begin_src emacs-lisp
-        (global-set-key (kbd "C-*") 'iedit-mode)
-        (global-set-key (kbd "M-*") 'iedit-mode-toggle-on-function)
-        (use-package iedit
-          :bind ((:map iedit-occurrence-keymap-default
-                       ("M-u" . iedit-downcase-occurrences)
-                       ("M-U" . iedit-upcase-occurrences)
-                       ("<tab>" . iedit-next-occurrence)
-                       ("<S-tab>" . iedit-prev-occurrence)
-                       ("<escape>" . iedit--quit))
-                 (:map evil-normal-state-map
-                       ("g /" . iedit-mode-from-isearch)))) 
-        ;; iedit-goto-last-occurrences
-        ;; iedit-goto-first-occurrences
+#+begin_src emacs-lisp
+  (global-set-key (kbd "C-*") 'iedit-mode)
+  (global-set-key (kbd "M-*") 'iedit-mode-toggle-on-function)
+  (use-package iedit
+    :bind ((:map iedit-occurrence-keymap-default
+                 ("M-u" . iedit-downcase-occurrences)
+                 ("M-U" . iedit-upcase-occurrences)
+                 ("<tab>" . iedit-next-occurrence)
+                 ("<S-tab>" . iedit-prev-occurrence)
+                 ("<escape>" . iedit--quit))
+           (:map evil-normal-state-map
+                 ("g /" . iedit-mode-from-isearch)))) 
+  ;; iedit-goto-last-occurrences
+  ;; iedit-goto-first-occurrences
 
-      (use-package evil-multiedit
-        :bind ((:map evil-normal-state-map
-                     ("g h" . evil-multiedit-match-symbol-and-next)
-                     ("g H" . evil-multiedit-match-symbol-and-prev)
-                     ("g SPC" . evil-multiedit-match-all)))
-        :after evil)
+  (use-package evil-multiedit
+    :bind ((:map evil-normal-state-map
+                 ("g h" . evil-multiedit-match-symbol-and-next)
+                 ("g H" . evil-multiedit-match-symbol-and-prev)
+                 ("g SPC" . evil-multiedit-match-all)))
+    :after evil)
 #+end_src
 ** Hydra
 #+begin_src emacs-lisp
@@ -408,11 +411,29 @@
       "C-l" 'right-char
       "C-h" 'left-char)
 
+    
     (general-define-key
      :keymaps '(normal insert visual emacs)
      :prefix "SPC"
      :non-normal-prefix "M-SPC"
      "y" '(hydra-aya/body :which-key "aya"))
+
+    ;; (general-define-key
+    ;;  :prefix "<tab>"
+    ;;  :keymaps 'override
+    ;;  "p" 'completion-at-point ;; capf
+    ;;  "t" 'complete-tag        ;; etags
+    ;;  "d" 'cape-dabbrev        ;; or dabbrev-completion
+    ;;  "f" 'cape-file
+    ;;  "k" 'cape-keyword
+    ;;  "s" 'cape-symbol
+    ;;  "a" 'cape-abbrev
+    ;;  "i" 'cape-ispell
+    ;; "l" 'cape-line
+    ;; "w" 'cape-dict
+    ;; "r" 'cape-rfc1345
+    ;; "&" 'cape-sgml
+    ;; "\\" 'cape-tex)
 
     (nvmap :prefix "SPC"
       "m" '(:ignore t :which-key "music")
@@ -496,15 +517,15 @@
 
 ** Avy
 #+begin_src emacs-lisp
-    (use-package avy
-      :bind ((:map evil-normal-state-map
-                   ("s" . avy-goto-char)
-                   ("S" . avy-goto-line))
-             ("M-s c" . avy-goto-char-timer)))
+  (use-package avy
+    :bind ((:map evil-normal-state-map
+                 ("s" . avy-goto-char)
+                 ("S" . avy-goto-line))
+           ("M-s c" . avy-goto-char-timer)))
 
 
-    (use-package avy-flycheck
-      :after avy)
+  (use-package avy-flycheck
+    :after avy)
 #+end_src
 ** Vertico
 #+begin_src emacs-lisp
@@ -535,13 +556,13 @@
 #+end_src
 ** Ivy
 #+begin_src emacs-lisp
-  (use-package ivy
-    :bind (;;("C-s" . swiper)
-           :map ivy-minibuffer-map
-           ("TAB" . ivy-alt-done)
-           ("C-l" . ivy-alt-done)
-           ("C-j" . ivy-next-line)
-           ("C-k" . ivy-previous-line)))
+  ;; (use-package ivy
+  ;;   :bind (;;("C-s" . swiper)
+  ;;          :map ivy-minibuffer-map
+  ;;          ("TAB" . ivy-alt-done)
+  ;;          ("C-l" . ivy-alt-done)
+  ;;          ("C-j" . ivy-next-line)
+  ;;          ("C-k" . ivy-previous-line)))
 #+end_src
 ** Orderless
 #+begin_src emacs-lisp
@@ -642,39 +663,39 @@
 #+End_src
 ** Embark
 #+begin_src emacs-lisp
-    (use-package embark
-      :bind
-      (("M-o" . embark-act)         ;; pick some comfortable binding
-       ("M-O" . embark-dwim)        ;; good alternative: M-.
-       ("C-h B" . embark-bindings) ;; alternative for `describe-bindings'
+  (use-package embark
+    :bind
+    (("M-o" . embark-act)         ;; pick some comfortable binding
+     ("M-O" . embark-dwim)        ;; good alternative: M-.
+     ("C-h B" . embark-bindings) ;; alternative for `describe-bindings'
 
-       :map minibuffer-local-map
-       ("C-b" . embark-become)) 
+     :map minibuffer-local-map
+     ("C-b" . embark-become)) 
 
-      :init
-      ;; Optionally replace the key help with a completing-read interface
-      (setq prefix-help-command #'embark-prefix-help-command)
+    :init
+    ;; Optionally replace the key help with a completing-read interface
+    (setq prefix-help-command #'embark-prefix-help-command)
 
-      :config
-      ;; Hide the mode line of the Embark live/completions buffers
-      (add-to-list 'display-buffer-alist
-                   '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-                     nil
-                     (window-parameters (mode-line-format . none)))))
-    ;; use C-u to perform multiple action
+    :config
+    ;; Hide the mode line of the Embark live/completions buffers
+    (add-to-list 'display-buffer-alist
+                 '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                   nil
+                   (window-parameters (mode-line-format . none)))))
+  ;; use C-u to perform multiple action
 
-    (use-package avy-embark-collect
-      :after embark)
+  (use-package avy-embark-collect
+    :after embark)
 
-    ;; Consult users will also want the embark-consult package.
-    (use-package embark-consult
-      :ensure t
-      :after (embark consult)
-      :demand t ; only necessary if you have the hook below
-      ;; if you want to have consult previews as you move around an
-      ;; auto-updating embark collect buffer
-      :hook
-      (embark-collect-mode . consult-preview-at-point-mode))
+  ;; Consult users will also want the embark-consult package.
+  (use-package embark-consult
+    :ensure t
+    :after (embark consult)
+    :demand t ; only necessary if you have the hook below
+    ;; if you want to have consult previews as you move around an
+    ;; auto-updating embark collect buffer
+    :hook
+    (embark-collect-mode . consult-preview-at-point-mode))
 #+end_src
 ** Tree macs
 #+begin_src emacs-lisp
@@ -700,7 +721,7 @@
   (treemacs-load-theme "all-the-icons")
 #+end_src
 
-** Keycast
+** Key-cast
 #+begin_src emacs-lisp
   (use-package keycast
     :config
@@ -718,10 +739,25 @@
 ** Company
 #+begin_src emacs-lisp
   (use-package company
+    :init
+    ;; (define-prefix-command 'company-active-map)
+    ;; (define-key global-map (kbd "<tab>") 'company-active-map)
+
     ;; :hook (prog-mode . company-mode)
     :bind (:map company-active-map
+                ("SPC t" . complete-tag)        ;; etags
+                ("SPC d" . cape-dabbrev)        ;; or dabbrev-completion
+                ("SPC f" . cape-file)
+                ("SPC k" . cape-keyword)
+                ("SPC s" . cape-symbol)
+                ("SPC a" . cape-abbrev)
+                ("SPC i" . cape-ispell)
+                ("SPC l" . cape-line)
+                ("SPC w" . cape-dict)
+                ("SPC \\" . cape-tex)
+                ("SPC &" . cape-sgml)
+                ("SPC r" . cape-rfc1345)
                 ("<tab>" . company-complete-selection))
-
     :custom
     (company-minimum-prefix-length 1)
     (company-idle-delay 0.0))
@@ -729,21 +765,21 @@
   (use-package company-box
     :after company
     :hook (company-mode . company-box-mode))
-#+end_src
+#+END_SRC
 
-** Company Backends
+** Company Back-ends
 #+begin_src emacs-lisp :async t
-   (use-package company-web
-     :after (web-mode)
-     :config
-     (add-to-list 'company-backends 'company-web-html)
-     (add-to-list 'company-backends 'company-web-jade)
-     (add-to-list 'company-backends 'company-web-slim))
+  (use-package company-web
+    :after (web-mode)
+    :config
+    (add-to-list 'company-backends 'company-web-html)
+    (add-to-list 'company-backends 'company-web-jade)
+    (add-to-list 'company-backends 'company-web-slim))
 
-   (use-package company-restclient
-     :after restclient
-     :config 
-     (add-to-list 'company-backends 'company-restclient))
+  (use-package company-restclient
+    :after restclient
+    :config 
+    (add-to-list 'company-backends 'company-restclient))
 
   ;; (use-package company-tabnine
   ;;   :config
@@ -833,11 +869,11 @@
     ;;(add-to-list 'completion-at-point-functions #'cape-ispell)
     ;;(add-to-list 'completion-at-point-functions #'cape-dict)
     ;;(add-to-list 'completion-at-point-functions #'cape-line)
-  )
+    )
 #+end_src
 ** Popup
 #+begin_src emacs-lisp
-(use-package popup)
+  (use-package popup)
 #+end_src
 ** Highlight
 #+begin_src emacs-lisp
@@ -854,7 +890,7 @@
                 ("j" . next-line)
                 ("k" . previous-line))
     :hook (ibuffer-mode lambda ()
-                     (turn-off-evil-mode)))
+                        (turn-off-evil-mode)))
 #+end_src
 * SQL Servers Settings
 #+begin_src emacs-lisp
@@ -919,9 +955,9 @@
 #+end_src
 ** Coterm
 #+begin_src emacs-lisp
-    (use-package  coterm
-      :config
-      (coterm-mode t))
+  (use-package  coterm
+    :config
+    (coterm-mode t))
 #+end_src
 * Editor
 #+begin_src emacs-lisp
@@ -994,19 +1030,19 @@
 #+end_src
 ** Doc String
 #+begin_src emacs-lisp
-(use-package docstr)
+  (use-package docstr)
 #+end_src
 ** Programming
 #+begin_src emacs-lisp
   (use-package prog-mode
     :ensure nil
     :hook (prog-mode . ( lambda ()
-                     ;; (corfu-mode)
-                     (hl-todo-mode)
-                     (company-mode)
-                     (docstr-mode)
-                     (display-line-numbers-mode 1)
-                     (flyspell-prog-mode))))
+                         ;; (corfu-mode)
+                         (hl-todo-mode)
+                         (company-mode)
+                         (docstr-mode)
+                         (display-line-numbers-mode 1)
+                         (flyspell-prog-mode))))
 
   (use-package rainbow-delimiters
     :hook (prog-mode . rainbow-delimiters-mode))
@@ -1091,10 +1127,10 @@
                   lsp-ui-doc-include-signature t
                   lsp-ui-doc-use-childframe t)
     :bind ((:map evil-normal-state-map
-                ("gd" . lsp-ui-peek-find-definitions)
-                ("gr" . lsp-ui-peek-find-references)
-                ("gi" . lsp-ui-peek-find-implementation)
-                ("Ni" . lsp-ui-imenu))
+                 ("gd" . lsp-ui-peek-find-definitions)
+                 ("gr" . lsp-ui-peek-find-references)
+                 ("gi" . lsp-ui-peek-find-implementation)
+                 ("Ni" . lsp-ui-imenu))
            (:map lsp-ui-peek-mode-map
                  ("C-k" . lsp-ui-peek--select-prev)
                  ("C-j" . lsp-ui-peek--select-next)
@@ -1111,35 +1147,35 @@
 #+end_src
 ** DAP
 #+begin_src emacs-lisp
-    (use-package dap-mode
-      :after lsp-mode
-      :config
-      ;; Bind `C-c l d` to `dap-hydra` for easy access
-      (general-define-key
-       :keymaps 'lsp-mode-map
-       :prefix lsp-keymap-prefix
-       "d" '(dap-hydra t :wk "debugger"))
-      ;; Set up Node debugging
-      ;; (require 'dap-node)
-      ;; (dap-node-setup) ;; Automatically installs Node debug adapter if needed
-      ;; (require 'dap-go)
-      ;; (dap-go-setup)
-      ;; (require 'dap-hydra)
-      ;; (require 'dap-gdb-lldb)
-      ;; (dap-gdb-lldb-setup)
-      (require 'dap-ui)
-      (dap-mode t)
-      (dap-ui-mode t)
-      ;; enables mouse hover support
-      (dap-tooltip-mode t)
-      ;; if it is not enabled `dap-mode' will use the minibuffer.
-      (tooltip-mode t)
-      :commands dap-debug
-      :custom
-      ;; (lsp-enable-dap-auto-configure nil)
-      ;; (dap-python-executable "python3")
-      (dap-python-debugger 'debugpy)
-      (dap-auto-configure-features '(sessions locals controls tooltip)))
+  (use-package dap-mode
+    :after lsp-mode
+    :config
+    ;; Bind `C-c l d` to `dap-hydra` for easy access
+    (general-define-key
+     :keymaps 'lsp-mode-map
+     :prefix lsp-keymap-prefix
+     "d" '(dap-hydra t :wk "debugger"))
+    ;; Set up Node debugging
+    ;; (require 'dap-node)
+    ;; (dap-node-setup) ;; Automatically installs Node debug adapter if needed
+    ;; (require 'dap-go)
+    ;; (dap-go-setup)
+    ;; (require 'dap-hydra)
+    ;; (require 'dap-gdb-lldb)
+    ;; (dap-gdb-lldb-setup)
+    (require 'dap-ui)
+    (dap-mode t)
+    (dap-ui-mode t)
+    ;; enables mouse hover support
+    (dap-tooltip-mode t)
+    ;; if it is not enabled `dap-mode' will use the minibuffer.
+    (tooltip-mode t)
+    :commands dap-debug
+    :custom
+    ;; (lsp-enable-dap-auto-configure nil)
+    ;; (dap-python-executable "python3")
+    (dap-python-debugger 'debugpy)
+    (dap-auto-configure-features '(sessions locals controls tooltip)))
 
   ;; (use-package dap-LANGUAGE) to load the dap adapter for your language
 
@@ -1195,43 +1231,43 @@
     :init (setq markdown-command "multimarkdown"))
 
   (use-package css-mode)
-    ;; :config
-    ;; (add-to-list 'company-backends 'company-css))
+  ;; :config
+  ;; (add-to-list 'company-backends 'company-css))
 #+end_src
 ** JavaScript
 #+begin_src emacs-lisp
-    (use-package js-mode
-      ;; :mode "\\.js\\'"
-      :ensure nil
-      :hook (js-mode . lsp-deferred)
-      :config
-      (setq js-indent-level 4))
+  (use-package js-mode
+    ;; :mode "\\.js\\'"
+    :ensure nil
+    :hook (js-mode . lsp-deferred)
+    :config
+    (setq js-indent-level 4))
 
-    (use-package typescript-mode
-      :hook (typescript-mode . lsp-deferred)
-      :config
-      (setq typescript-indent-level 4))
+  (use-package typescript-mode
+    :hook (typescript-mode . lsp-deferred)
+    :config
+    (setq typescript-indent-level 4))
 
-    (use-package rjsx-mode
-      :mode "\\.js\\'"
-      :hook (rjsx-mode . lsp-deferred)
-      :bind (:map rjsx-mode-map
-                  ("<" . self-insert-command))
-      :config
-      (setq js-jsx-indent-level 2))
+  (use-package rjsx-mode
+    :mode "\\.js\\'"
+    :hook (rjsx-mode . lsp-deferred)
+    :bind (:map rjsx-mode-map
+                ("<" . self-insert-command))
+    :config
+    (setq js-jsx-indent-level 2))
 
-    (use-package prettier-js
-      :after rjsx-mode
-      :hook (rjsx-mode . prettier-js-mode))
+  (use-package prettier-js
+    :after rjsx-mode
+    :hook (rjsx-mode . prettier-js-mode))
 
-    (use-package json-mode
-      :mode "\\.json\\'"
-      :config
-      :hook (json-mode .
-                       (lambda ()
-                         (make-local-variable 'js-indent-level)
-                         (setq tab-width 2)
-                         (setq js-indent-level 2))))
+  (use-package json-mode
+    :mode "\\.json\\'"
+    :config
+    :hook (json-mode .
+                     (lambda ()
+                       (make-local-variable 'js-indent-level)
+                       (setq tab-width 2)
+                       (setq js-indent-level 2))))
 
   ;; (require 'dap-firefox)
   ;; (require 'dap-node)
@@ -1293,8 +1329,8 @@
 ** Pipenv
 #+begin_src emacs-lisp
   (use-package pipenv
-   :after python-mode 
-   :hook (python-mode . pipenv-mode))
+    :after python-mode 
+    :hook (python-mode . pipenv-mode))
   ;;   :init
   ;;   (setq
   ;;    pipenv-projectile-after-switch-function
@@ -1402,11 +1438,11 @@
     (lsp-mode . efs/lsp-mode-setup)
 
     :bind-keymap
-        ("C-c l" . lsp-command-map)
+    ("C-c l" . lsp-command-map)
 
     :bind (:map lsp-mode-map
-          ("C-!" . lsp-execute-code-action)
-          ("<tab>" . company-indent-or-complete-common))
+                ("C-!" . lsp-execute-code-action)
+                ("<tab>" . company-indent-or-complete-common))
 
     :config
     (setq lsp-idle-delay 0.5
@@ -1415,22 +1451,21 @@
           lsp-enable-snippet nil)) 
 
 
-   ;;  (add-hook 'python-mode-hook
-   ;;            (lambda ()
-   ;;              (lsp-python-enable)))
+  ;;  (add-hook 'python-mode-hook
+  ;;            (lambda ()
+  ;;              (lsp-python-enable)))
 
-   ;;  (setq lsp-pyls-plugins-flake8-enabled t)
-   ;;  (lsp-register-custom-settings
-   ;; '(("pyls.plugins.pyls_mypy.enabled" t t)
-   ;;   ("pyls.plugins.pyls_mypy.live_mode" nil t)
-   ;;   ("pyls.plugins.pyls_black.enabled" t t)
-   ;;   ("pyls.plugins.pyls_isort.enabled" t t)
+  ;;  (setq lsp-pyls-plugins-flake8-enabled t)
+  ;;  (lsp-register-custom-settings
+  ;; '(("pyls.plugins.pyls_mypy.enabled" t t)
+  ;;   ("pyls.plugins.pyls_mypy.live_mode" nil t)
+  ;;   ("pyls.plugins.pyls_black.enabled" t t)
+  ;;   ("pyls.plugins.pyls_isort.enabled" t t)
 
-   ;;   ;; Disable these as they're duplicated by flake8
-   ;;   ("pyls.plugins.pycodestyle.enabled" nil t)
-   ;;   ("pyls.plugins.mccabe.enabled" nil t)
-   ;;   ("pyls.plugins.pyflakes.enabled" nil t))))
-
+  ;;   ;; Disable these as they're duplicated by flake8
+  ;;   ("pyls.plugins.pycodestyle.enabled" nil t)
+  ;;   ("pyls.plugins.mccabe.enabled" nil t)
+  ;;   ("pyls.plugins.pyflakes.enabled" nil t))))
 #+end_src
 * Version Control
 ** Magit
@@ -1478,8 +1513,8 @@
     :init
     (setq lsp-ltex-version "15.2.0")
     :hook (latex-mode-hook . (lambda ()
-                         (require 'lsp-ltex)
-                         (lsp)))) ; or lsp-deferred
+                               (require 'lsp-ltex)
+                               (lsp)))) ; or lsp-deferred
 #+end_src
 ** Lang tools
 #+begin_src emacs-lisp
@@ -1490,35 +1525,35 @@
   ;; (dolist (hook '(change-log-mode-hook log-edit-mode-hook))
   ;;   (add-hook hook (lambda () (flyspell-mode -1))))
 
-   (defun langtool-autoshow-detail-popup (overlays)
-     (when (require 'popup nil t)
-       ;; Do not interrupt current popup
-       (unless (or popup-instances
-                   ;; suppress popup after type `C-g` .
-                   (memq last-command '(keyboard-quit)))
-         (let ((msg (langtool-details-error-message overlays)))
-           (popup-tip msg)))))
+  (defun langtool-autoshow-detail-popup (overlays)
+    (when (require 'popup nil t)
+      ;; Do not interrupt current popup
+      (unless (or popup-instances
+                  ;; suppress popup after type `C-g` .
+                  (memq last-command '(keyboard-quit)))
+        (let ((msg (langtool-details-error-message overlays)))
+          (popup-tip msg)))))
 
-    (use-package langtool
-     :init
-     (setq langtool-language-tool-jar "~/bin/LanguageTool-5.6/languagetool-commandline.jar") 
-     :config
-     (set-face-attribute 'langtool-errline nil
-                         :weight 'bold
-                         :slant 'italic
-                         :underline '(:color "pink" :style wave)
-                         :foreground nil
-                         :background nil)
-     (setq langtool-mother-tongue "en"
-           langtool-default-language "en-US"
-           langtool-autoshow-message-function 'langtool-autoshow-detail-popup))
+  (use-package langtool
+    :init
+    (setq langtool-language-tool-jar "~/bin/LanguageTool-5.6/languagetool-commandline.jar") 
+    :config
+    (set-face-attribute 'langtool-errline nil
+                        :weight 'bold
+                        :slant 'italic
+                        :underline '(:color "pink" :style wave)
+                        :foreground nil
+                        :background nil)
+    (setq langtool-mother-tongue "en"
+          langtool-default-language "en-US"
+          langtool-autoshow-message-function 'langtool-autoshow-detail-popup))
 
 
-   (global-set-key "\C-x4w" 'langtool-check)
-   (global-set-key "\C-x4W" 'langtool-check-done)
-   (global-set-key "\C-x4l" 'langtool-switch-default-language)
-   (global-set-key "\C-x44" 'langtool-show-message-at-point)
-   (global-set-key "\C-x4c" 'langtool-correct-buffer)
+  (global-set-key "\C-x4w" 'langtool-check)
+  (global-set-key "\C-x4W" 'langtool-check-done)
+  (global-set-key "\C-x4l" 'langtool-switch-default-language)
+  (global-set-key "\C-x44" 'langtool-show-message-at-point)
+  (global-set-key "\C-x4c" 'langtool-correct-buffer)
 
 #+end_src
 
@@ -1530,13 +1565,13 @@
                  ("z?" . mw-thesaurus-lookup-dwim))))
 
   (use-package dictionary)
-  #+end_src
+#+end_src
 ** Thesaurus
-  #+begin_src emacs-lisp 
-    (use-package  powerthesaurus 
-      :bind ((:map evil-normal-state-map
-                  ("zs" . powerthesaurus-lookup-dwim)
-                  ("z_" . powerthesaurus-lookup-synonyms-dwim))))
+#+begin_src emacs-lisp 
+  (use-package  powerthesaurus 
+    :bind ((:map evil-normal-state-map
+                 ("zs" . powerthesaurus-lookup-dwim)
+                 ("z_" . powerthesaurus-lookup-synonyms-dwim))))
 #+end_src
 
 ** Latex
@@ -1576,7 +1611,7 @@
 #+end_src
 ** Ledger
 #+begin_src emacs-lisp
-(use-package ledger-mode)
+  (use-package ledger-mode)
 #+end_src
 * Window Management
 ** Winum Mode
@@ -1600,9 +1635,9 @@
           aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 
     :bind (:map evil-window-map
-           ("T" . tab-bar-move-window-to-tab)
-           ("SPC" . custom/display-buffer-at-bottom)
-           ("a" . ace-window)))
+                ("T" . tab-bar-move-window-to-tab)
+                ("SPC" . custom/display-buffer-at-bottom)
+                ("a" . ace-window)))
 #+end_src
 * Email
 ** Email Global Variables
@@ -1624,30 +1659,30 @@
 #+end_src
 ** Mu4e Function
 #+begin_src emacs-lisp
-   (defun do.mail.html/render-pdf (msg)
-     "Attempt to render body of MSG as PDF and display in current buffer."
-     (let ((msg2pdf (executable-find "wkhtmltopdf"))
-           (buf (get-buffer-create "*rendered mail*"))
-           (tmpfile (make-temp-file "pdfmailrender")))
-       (unless msg2pdf
-         (mu4e-error "wkhtmltopdf not found"))
-       (unless (mu4e-message-has-field msg :body-html)
-         (mu4e-error "message has no html."))
-       ;; convert message body to PDF
-       (with-temp-buffer
-         (insert (mu4e-message-field msg :body-html))
-         (shell-command-on-region
-          (point-min) (point-max)
-          (concat msg2pdf " -s Letter --quiet - "
-                  tmpfile
-                  " 2>/dev/null") nil nil nil nil nil))
-       ;; display in current window
-       (switch-to-buffer buf)
-       (read-only-mode -1)
-       (erase-buffer)
-       (insert-file-contents tmpfile)
-       (doc-view-mode)
-       (delete-file tmpfile)))
+  (defun do.mail.html/render-pdf (msg)
+    "Attempt to render body of MSG as PDF and display in current buffer."
+    (let ((msg2pdf (executable-find "wkhtmltopdf"))
+          (buf (get-buffer-create "*rendered mail*"))
+          (tmpfile (make-temp-file "pdfmailrender")))
+      (unless msg2pdf
+        (mu4e-error "wkhtmltopdf not found"))
+      (unless (mu4e-message-has-field msg :body-html)
+        (mu4e-error "message has no html."))
+      ;; convert message body to PDF
+      (with-temp-buffer
+        (insert (mu4e-message-field msg :body-html))
+        (shell-command-on-region
+         (point-min) (point-max)
+         (concat msg2pdf " -s Letter --quiet - "
+                 tmpfile
+                 " 2>/dev/null") nil nil nil nil nil))
+      ;; display in current window
+      (switch-to-buffer buf)
+      (read-only-mode -1)
+      (erase-buffer)
+      (insert-file-contents tmpfile)
+      (doc-view-mode)
+      (delete-file tmpfile)))
 
 #+end_src
 ** Email Context
@@ -1684,12 +1719,12 @@
     ;; (setq mu4e-headers-signed-mark    `("s" . ,(char-to-string #xf040)))
 
     (setq
-          ;; mu4e-view-html-plaintext-ratio-heuristic most-positive-fixnum
-          ;; if only html, render in emacs
-          ;; mu4e-html2text-command 'mu4e-shr2text
-          ;; shr-color-visible-luminance-min 80
-          ;; always prefer plaintext
-          mu4e-view-prefer-html nil)
+     ;; mu4e-view-html-plaintext-ratio-heuristic most-positive-fixnum
+     ;; if only html, render in emacs
+     ;; mu4e-html2text-command 'mu4e-shr2text
+     ;; shr-color-visible-luminance-min 80
+     ;; always prefer plaintext
+     mu4e-view-prefer-html nil)
 
 
 
@@ -1830,9 +1865,9 @@
               (use-hard-newlines -1)))
 
 
-  #+end_src
+#+end_src
 ** Bookmarks
-  #+begin_src emacs-lisp
+#+begin_src emacs-lisp
   (setq mu4e-bookmarks
         '(("date:today" "Today" ?t)
           ("flag:unread"  "Unread" ?u)
@@ -1845,21 +1880,21 @@
 #+end_src
 ** MU4E Marker-Icons
 #+begin_src emacs-lisp
-    (use-package mu4e-marker-icons
-      :init
-      (mu4e-marker-icons-mode 1)
-      :config
-      (setq mu4e-marker-icons-use-unicode nil))
+  (use-package mu4e-marker-icons
+    :init
+    (mu4e-marker-icons-mode 1)
+    :config
+    (setq mu4e-marker-icons-use-unicode nil))
 #+end_src
 ** MU4E Alert
 #+begin_src emacs-lisp
   (use-package mu4e-alert
-     :after mu4e
-     :config
-     ;; (setq mu4e-alert-icon "~/.emacs.d/e-mail.svg")
-     ;; (mu4e-alert-set-default-style 'notifier)
-     ;; (add-hook 'after-init-hook #'mu4e-alert-enable-notifications)
-     (add-hook 'after-init-hook #'mu4e-alert-enable-mode-line-display))
+    :after mu4e
+    :config
+    ;; (setq mu4e-alert-icon "~/.emacs.d/e-mail.svg")
+    ;; (mu4e-alert-set-default-style 'notifier)
+    ;; (add-hook 'after-init-hook #'mu4e-alert-enable-notifications)
+    (add-hook 'after-init-hook #'mu4e-alert-enable-mode-line-display))
 #+end_src
 ** GNUS function
 #+begin_src emacs-lisp
@@ -1880,7 +1915,7 @@
   (setq gnus-dired-mail-mode 'mu4e-user-agent)
   (add-hook 'dired-mode-hook 'turn-on-gnus-dired-mode)
 #+end_src
-** Epg Config
+** Epg Configuration
 #+begin_src emacs-lisp
   ;; (require 'epg-config)
   ;; (setq mml2015-use 'epg
@@ -1888,14 +1923,13 @@
   ;;       mml2015-encrypt-to-self t
   ;;       mml2015-sign-with-sender t)
 #+end_src
-
 ** Org Mine
 #+begin_src emacs-lisp
   (use-package org-mime
     :config
     (setq org-mime-export-options '(:section-numbers nil
-                                    :with-author nil
-                                    :with-toc nil))
+                                                     :with-author nil
+                                                     :with-toc nil))
     (add-hook 'org-mime-html-hook
               (lambda ()
                 (org-mime-change-element-style
@@ -2006,7 +2040,7 @@
 
     (setq org-tag-alist
           '((:startgroup)
-       ; Put mutually exclusive tags here
+                                          ; Put mutually exclusive tags here
             (:endgroup)
             ("note" . ?n)
             ("@home" . ?H)
@@ -2163,7 +2197,7 @@
                  (julia . t)
                  (latex . t)
                  (python . t)
-                 ; (ledger . t)        
+                                          ; (ledger . t)        
                  (plantuml . t)
                  (restclient . t)
                  (emacs-lisp . t)
@@ -2287,18 +2321,18 @@
     (setq text-scale-mode-amount 3)
     (text-scale-mode 1))
 
-    ;; This option is more advanced, allows you to scale other faces too
-    ;; (setq-local face-remapping-alist '((default (:height 2.0) variable-pitch)
-    ;;                                    (org-verbatim (:height 1.75) org-verbatim)
-    ;;                                    (org-block (:height 1.25) org-block))))
+  ;; This option is more advanced, allows you to scale other faces too
+  ;; (setq-local face-remapping-alist '((default (:height 2.0) variable-pitch)
+  ;;                                    (org-verbatim (:height 1.75) org-verbatim)
+  ;;                                    (org-block (:height 1.25) org-block))))
 
   (defun efs/presentation-end ()
     ;; Turn off text scale mode (or use the next line if you didn't use text-scale-mode)
     (text-scale-mode 0)
     ;; Show the mode line again
     (hide-mode-line-mode 0))
-    ;; If you use face-remapping-alist, this clears the scaling:
-    ;; (setq-local face-remapping-alist '((default variable-pitch default))))
+  ;; If you use face-remapping-alist, this clears the scaling:
+  ;; (setq-local face-remapping-alist '((default variable-pitch default))))
 
 
 
@@ -2329,33 +2363,33 @@
   (use-package org-remark
     :config
     (org-remark-create "memorize"
-                        '(:foreground "white" :underline "black")
-                        '(CATEGORY "exam"))
+                       '(:foreground "white" :underline "black")
+                       '(CATEGORY "exam"))
     (org-remark-create "magnet"
-                        '(modus-themes-nuanced-magenta)))
+                       '(modus-themes-nuanced-magenta)))
 #+end_src
 ** Org Noter
 #+begin_src emacs-lisp
-(use-package org-noter-pdftools)
+  (use-package org-noter-pdftools)
 #+end_src
 ** Flash card
 #+begin_src emacs-lisp
-(use-package org-anki)
+  (use-package org-anki)
 #+end_src
 ** Org Modern
 #+begin_src emacs-lisp
-;; (use-package org-modern)
-;; (add-hook 'org-mode-hook #'org-modern-mode)
+  ;; (use-package org-modern)
+  ;; (add-hook 'org-mode-hook #'org-modern-mode)
 #+end_src
 ** Org Table Color
 #+begin_src emacs-lisp
-(use-package org-table-color
-  :after org-table)
+  (use-package org-table-color
+    :after org-table)
 #+end_src
 ** Org Plot
 #+begin_src emacs-lisp
-(use-package gnuplot)
-(use-package gnuplot-mode)
+  (use-package gnuplot)
+  (use-package gnuplot-mode)
 #+end_src
 * Pretty Symbols
 ** Org Symbols
@@ -2416,33 +2450,33 @@
 * Music
 ** Function
 #+begin_src emacs-lisp
-      ;; (defun mpd-start ()
-      ;;   (interactive)
-      ;;   ;; Switch to `*shell*'
-      ;;   (shell)
-      ;;   ;; Goto last prompt, clear old input if any, and insert new one
-      ;;   (goto-char (point-max))
-      ;;   (comint-kill-input)
-      ;;   (insert "mpd")
-      ;;   ;; Execute
-      ;;   (comint-send-input))
+  ;; (defun mpd-start ()
+  ;;   (interactive)
+  ;;   ;; Switch to `*shell*'
+  ;;   (shell)
+  ;;   ;; Goto last prompt, clear old input if any, and insert new one
+  ;;   (goto-char (point-max))
+  ;;   (comint-kill-input)
+  ;;   (insert "mpd")
+  ;;   ;; Execute
+  ;;   (comint-send-input))
 
-    ;; (add-to-list 'display-buffer-alist '("*Async Shell Command*" . (display-buffer-no-window . nil)) )
+  ;; (add-to-list 'display-buffer-alist '("*Async Shell Command*" . (display-buffer-no-window . nil)) )
 
   (defun mpd-start ()
     (interactive)
     (setq-local display-buffer-alist '("*Async Shell Command*" . (display-buffer-no-window . nil)) )
     (async-shell-command "mpd"))
-      ;; (global-set-key (kbd "M-m") 'my-compile)
+  ;; (global-set-key (kbd "M-m") 'my-compile)
 #+end_src
 ** Vuiet  
 #+begin_src emacs-lisp
-    (use-package  vuiet
-      :config
-      (setq vuiet-update-mode-line-automatically t)
-      (setq vuiet-update-mode-line-interval 1))
+  (use-package  vuiet
+    :config
+    (setq vuiet-update-mode-line-automatically t)
+    (setq vuiet-update-mode-line-interval 1))
 
-    (use-package lastfm)
+  (use-package lastfm)
 #+end_src
 ** MPC
 #+begin_src emacs-lisp
@@ -2451,7 +2485,7 @@
 * Games
 ** Key-quiz
 #+begin_src emacs-lisp
-(use-package key-quiz)
+  (use-package key-quiz)
 #+end_src
 ** Speed Type
 #+begin_src emacs-lisp
@@ -2466,7 +2500,7 @@
 
 ** Chess
 #+begin_src emacs-lisp
-(use-package chess)
+  (use-package chess)
 #+end_src
 * Misc
 ** Line Number
@@ -2476,7 +2510,7 @@
 #+end_src
 ** Link Hint
 #+begin_src emacs-lisp
-(use-package link-hint)
+  (use-package link-hint)
 #+end_src
 ** Tab-Bar Mode
 #+begin_src emacs-lisp
@@ -2507,23 +2541,28 @@
 
 ** Scanner
 #+begin_src emacs-lisp
-(use-package scanner)
+  (use-package scanner)
 #+end_src
 
 ** Measure Load Time
 #+begin_src emacs-lisp
-(defun efs/display-startup-time ()
-  (message "Emacs loaded in %s with %d garbage collections."
-           (format "%.2f seconds"
-                   (float-time
-                   (time-subtract after-init-time before-init-time)))
-           gcs-done))
+  (defun efs/display-startup-time ()
+    (message "Emacs loaded in %s with %d garbage collections."
+             (format "%.2f seconds"
+                     (float-time
+                      (time-subtract after-init-time before-init-time)))
+             gcs-done))
 
-(add-hook 'emacs-startup-hook #'efs/display-startup-time)
+  (add-hook 'emacs-startup-hook #'efs/display-startup-time)
 #+end_src
 ** Screen Saver
 #+begin_src emacs-lisp
   ;;(require 'zone)
   ;;(zone-when-idle 120)
 #+end_src
+
+
+
+
+
 
