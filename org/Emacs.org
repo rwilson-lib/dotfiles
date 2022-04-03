@@ -54,6 +54,8 @@
     (setq auto-package-update-delete-old-versions t)
     (setq auto-package-update-hide-results t)
     (auto-package-update-maybe))
+
+  (use-package use-package-ensure-system-package)
 #+end_src
 ** Emacs
 #+begin_src emacs-lisp
@@ -449,32 +451,30 @@
 #+end_src
 ** Doom Themes and Modeline
 #+begin_src emacs-lisp
-  (use-package hide-mode-line
-    :hook ((calc-mode) . hide-mode-line))
+    (use-package hide-mode-line
+      :hook ((calc-mode) . hide-mode-line))
 
-  (setq display-time-day-and-date t
-        display-time-24hr-format t)
-  ;; (display-time)
+    (setq display-time-day-and-date t
+          display-time-24hr-format t)
+    ;; (display-time)
 
-  (use-package doom-modeline
-    :init (doom-modeline-mode 1)
-    :config
-    (setq find-file-visit-truename t)
-    :custom ((mu4e-alert-enable-mode-line-display)
-             (doom-modeline-mu4e t)
-             (doom-modeline-height 0)))
+    (use-package doom-modeline
+      :init (doom-modeline-mode 1)
+      :config
+      (setq find-file-visit-truename t)
+      :custom ((doom-modeline-height 0)))
 
-  (use-package doom-themes
-    :config
-    (doom-themes-visual-bell-config)
-    (load-theme 'doom-one t))
+    (use-package doom-themes
+      :config
+      (doom-themes-visual-bell-config)
+      (load-theme 'doom-one t))
 
-  (use-package solaire-mode)
+    (use-package solaire-mode)
 
-  (use-package leuven-theme)
-  (use-package tao-theme)
-  (use-package jazz-theme)
-  (use-package exotica-theme)
+    (use-package leuven-theme)
+    (use-package tao-theme)
+    (use-package jazz-theme)
+    (use-package exotica-theme)
 
 #+end_src
 ** Counsel Ivy
@@ -942,7 +942,10 @@
 #+end_src
 * Editor
 #+begin_src emacs-lisp
-  (use-package crdt)
+  (use-package crdt
+    :defer 5
+    :config
+    (message "CRDT ready"))
 
   (use-package vimish-fold
     :after evil)
@@ -961,6 +964,11 @@
   (use-package ag)
   (use-package ripgrep)
   (use-package projectile-ripgrep)
+
+  ;;(use-package rg
+  ;;  :ensure-system-package
+  ;;  (rg . ripgrep))
+
 #+end_src
 * Developer Packages
 ** Format all
@@ -1001,13 +1009,16 @@
 
     :config 
     (global-tree-sitter-mode)
-    (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
+    (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
+    (message "Tree-Sitter ready"))
+
 
   (use-package tree-edit
     :after tree-sitter)
 
   (use-package evil-tree-edit
-    :after tree-edit)
+    :defer 2
+    :after (evil tree-edit))
 #+end_src
 ** Doc String
 #+begin_src emacs-lisp
@@ -1454,35 +1465,37 @@
 * Version Control
 ** Magit
 #+begin_src emacs-lisp
-  (use-package magit
-    :defer 10
-    :custom (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
-    :config
-    (setq git-gutter:hide-gutter t)
-    :bind (:map evil-normal-state-map
-                (";g" . magit-dispatch)))
+    (use-package magit
+      :defer 2
+      :bind (:map evil-normal-state-map
+                  (";g" . magit-dispatch))
+      :custom (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
+      :config
+      (setq git-gutter:hide-gutter t)
+      (message "Magit ready"))
 
-  (use-package git-gutter
-    :after magit
-    :init (global-git-gutter-mode +1)
-    :bind (:map evil-normal-state-map
-                ("[s" . git-gutter:stage-hunk)
-                ("[r" . git-gutter:revert-hunk)
-                ("[v" . git-gutter:mark-hunk)
-                ("[o" . git-gutter:end-of-hunk)
-                ("[d" . git-gutter:popup-hunk)
-                ("[j" . git-gutter:next-hunk)
-                ("[k" . git-gutter:previous-hunk)))
+    (use-package git-gutter
+      :after magit
+      :init (global-git-gutter-mode +1)
+      :bind (:map evil-normal-state-map
+                  ("[s" . git-gutter:stage-hunk)
+                  ("[r" . git-gutter:revert-hunk)
+                  ("[v" . git-gutter:mark-hunk)
+                  ("[o" . git-gutter:end-of-hunk)
+                  ("[d" . git-gutter:popup-hunk)
+                  ("[j" . git-gutter:next-hunk)
+                  ("[k" . git-gutter:previous-hunk)))
 
-  (use-package git-timemachine
-    :after magit
-    :bind (:map git-timemachine-mode-map 
-                ("<escape>" . git-timemachine-quit)))
+    (use-package git-timemachine
+      :after magit
+      :bind (:map git-timemachine-mode-map 
+                  ("<escape>" . git-timemachine-quit)))
 
-  (use-package forge
-    :after magit
-    :init
-    (setq forge-add-default-bindings nil))
+    (use-package forge
+      :defer 10
+      :after magit
+      :init
+      (setq forge-add-default-bindings nil))
 #+end_src
 * Writing
 ** Grammar 
@@ -1519,8 +1532,14 @@
           (popup-tip msg)))))
 
   (use-package langtool
+    :defer 10
     :init
     (setq langtool-language-tool-jar "~/bin/LanguageTool-5.6/languagetool-commandline.jar") 
+    :bind (("\C-x4w" . langtool-check)
+           ("\C-x4W" . langtool-check-done)
+           ("\C-x4l" . langtool-switch-default-language)
+           ("\C-x44" . langtool-show-message-at-point)
+           ("\C-x4c" . langtool-correct-buffer))
     :config
     (set-face-attribute 'langtool-errline nil
                         :weight 'bold
@@ -1533,11 +1552,6 @@
           langtool-autoshow-message-function 'langtool-autoshow-detail-popup))
 
 
-  (global-set-key "\C-x4w" 'langtool-check)
-  (global-set-key "\C-x4W" 'langtool-check-done)
-  (global-set-key "\C-x4l" 'langtool-switch-default-language)
-  (global-set-key "\C-x44" 'langtool-show-message-at-point)
-  (global-set-key "\C-x4c" 'langtool-correct-buffer)
 
 #+end_src
 
@@ -1638,7 +1652,6 @@
    smtpmail-smtp-service        587
    smtpmail-stream-type         'starttls
 
-   read-mail-command 'mu4e
    mail-user-agent 'mu4e-user-agent)
 #+end_src
 ** Mu4e Function
@@ -1668,130 +1681,6 @@
       (doc-view-mode)
       (delete-file tmpfile)))
 
-#+end_src
-** Email Context
-#+begin_src emacs-lisp
-  (use-package mu4e
-    :ensure nil
-    :load-path "/usr/local/share/emacs/site-lisp/mu/mu4e"
-
-    ;; :defer 20
-
-    :config
-
-    (setq mu4e-maildir "~/Mail"
-          mu4e-get-mail-command "mbsync -a"
-          mu4e-use-fancy-chars t
-          mu4e-change-filenames-when-moving t
-          mu4e-compose-format-flowed t
-          message-kill-buffer-on-exit t
-          ;; Refresh mail using isync every 10 minutes
-          mu4e-update-interval (* 10 60)
-          shr-color-visible-luminance-min 80
-          mu4e-context-policy 'pick-first)
-
-    ;; (setq mu4e-headers-attach-mark    `("a" . ,(char-to-string #xf8e1)))
-    ;; (setq mu4e-headers-unread-mark    `("u" . ,(char-to-string #xf6ef)))
-    ;; (setq mu4e-headers-flagged-mark   `("F" . ,(char-to-string #xf73a)))
-    ;; (setq mu4e-headers-seen-mark      `("S" . ,(char-to-string #xfaee)))
-    ;; (setq mu4e-headers-draft-mark     `("D" . ,(char-to-string #xf0f6)))
-    ;; (setq mu4e-headers-new-mark       `("N" . ,(char-to-string #x26a1)))
-    ;; (setq mu4e-headers-passed-mark    `("P" . ,(char-to-string #xf064)))
-    ;; (setq mu4e-headers-replied-mark   `("R" . ,(char-to-string #xf112)))
-    ;; (setq mu4e-headers-trashed-mark   `("T" . ,(char-to-string #xf014)))
-    ;; (setq mu4e-headers-encrypted-mark `("x" . ,(char-to-string #xf023)))
-    ;; (setq mu4e-headers-signed-mark    `("s" . ,(char-to-string #xf040)))
-
-    (setq
-     ;; mu4e-view-html-plaintext-ratio-heuristic most-positive-fixnum
-     ;; if only html, render in emacs
-     ;; mu4e-html2text-command 'mu4e-shr2text
-     ;; shr-color-visible-luminance-min 80
-     ;; always prefer plaintext
-     mu4e-view-prefer-html nil)
-
-
-
-    ;; set mailbox context
-    (setq mu4e-contexts
-          (list
-           ;; Personal Gmail account
-           (make-mu4e-context
-            :name "Gmail"
-            :match-func
-            (lambda (msg)
-              (when msg
-                (string-prefix-p "/Gmail" (mu4e-message-field msg :maildir))))
-            :vars '((user-mail-address . "ramuswilson@gmail.com")
-
-                    (smtpmail-smtp-server  . "smtp.gmail.com")
-                    (smtpmail-smtp-service . 587)
-                    (smtpmail-stream-type  . starttls)
-
-                    (mu4e-drafts-folder  . "/Gmail/[Gmail]/Drafts")
-                    (mu4e-sent-folder  . "/Gmail/[Gmail]/Sent Mail")
-                    (mu4e-refile-folder  . "/Gmail/[Gmail]/All Mail")
-                    (mu4e-trash-folder  . "/Gmail/[Gmail]/Trash")
-
-                    ;; (mu4e-maildir-shortcuts . (("/Gmail/Inbox"            . ?i)
-                    ;;                            ("/Gmail/[Gmail]/Sent Mail" . ?s)
-                    ;;                            ("/Gmail/[Gmail]/Trash"     . ?t)
-                    ;;                            ("/Gmail/[Gmail]/Drafts"    . ?d)
-                    ;;                            ("/Gmail/[Gmail]/All Mail"  . ?a)))
-                    ))
-
-           ;; Personl Outlook account
-           (make-mu4e-context
-            :name "Outlook"
-            :match-func
-            (lambda (msg)
-              (when msg
-                (string-prefix-p "/Outlook" (mu4e-message-field msg :maildir))))
-            :vars '((user-mail-address . "ramuswilson@outlook.com")
-
-                    (smtpmail-smtp-server  . "smtp.office365.com")
-                    (smtpmail-smtp-service . 587)
-                    (smtpmail-stream-type  . starttls)
-
-                    (mu4e-drafts-folder  . "/Outlook/Drafts")
-                    (mu4e-sent-folder  . "/Outlook/Sent")
-                    (mu4e-refile-folder  . "/Outlook/Inbox")
-                    (mu4e-trash-folder  . "/Outlook/Archive")
-
-                    ;; (mu4e-maildir-shortcuts . (("/Outlook/Inbox"           . ?i)
-                    ;;                            ("/Outlook/Sent"            . ?s)
-                    ;;                            ("/Outlook/Archive"         . ?t)
-                    ;;                            ("/Outlook/Drafts"          . ?d)
-                    ;;                            ("/Outlook"                 . ?a)))
-                    ))
-
-
-           (make-mu4e-context
-            :name "Icloud"
-            :match-func
-            (lambda (msg)
-              (when msg
-                (string-prefix-p "/Icloud" (mu4e-message-field msg :maildir))))
-            :vars '((user-mail-address . "ramus@rjlwjr.com")
-                    (mu4e-drafts-folder  . "/Icloud/Drafts")
-                    (mu4e-sent-folder  . "/Icloud/Sent Messages")
-                    (mu4e-refile-folder  . "/Icloud/Inbox")
-                    (mu4e-trash-folder  . "/Icloud/Archive")
-
-                    (smtpmail-smtp-server  . "smtp.mail.me.com")
-                    (smtpmail-smtp-service . 587)
-                    (smtpmail-stream-type  . starttls)
-
-                    ;; (mu4e-maildir-shortcuts . (("/Icloud/Inbox"           . ?i)
-                    ;;                            ("/Icloud/Sent Messages"   . ?s)
-                    ;;                            ("/Icloud/Archive"         . ?t)
-                    ;;                            ("/Icloud/Drafts"          . ?d)
-                    ;;                            ("/Icloud"                 . ?a)))
-                    )))))
-#+end_src
-** Email Functions
-#+begin_src emacs-lisp
-
   (defun efs/store-link-to-mu4e-query ()
     (interactive)
     (let ((org-mu4e-link-query-in-headers-mode t))
@@ -1819,52 +1708,167 @@
 
   ;; add option to view as pdf.
   ;; (add-to-list 'mu4e-view-actions '("Save to PDF" . mu4e-action-save-to-pdf) t)
-  (add-to-list 'mu4e-view-actions
-               '("Save to PDF" . do.mail.html/render-pdf) t)
-
-  ;; add option to view a message in the browser.
-  (add-to-list 'mu4e-view-actions
-               '("View in browser" . mu4e-action-view-in-browser) t)
-
-  ;; Add custom actions for our capture templates
-  (add-to-list 'mu4e-headers-actions
-               '("follow up" . efs/capture-mail-follow-up) t)
-
-  (add-to-list 'mu4e-headers-actions
-               '("read later" . efs/capture-mail-read-later) t)
-
-  (add-to-list 'mu4e-view-actions
-               '("follow up" . efs/capture-mail-follow-up) t)
-
-  (add-to-list 'mu4e-view-actions
-               '("read later" . efs/capture-mail-read-later) t)
-
-  ;; Wrap text in messages
-  (add-hook 'mu4e-view-mode-hook
-            (lambda () (setq-local truncate-lines nil)))
-
-  (add-hook 'mu4e-compose-mode-hook
-            (lambda ()
-              (turn-off-auto-fill)
-              (use-hard-newlines -1)))
-
-
 #+end_src
-** Bookmarks
+** Email Context
 #+begin_src emacs-lisp
-  (setq mu4e-bookmarks
-        '(("date:today" "Today" ?t)
-          ("flag:unread"  "Unread" ?u)
-          ("flag:unread to:ramus@rjlwjr.com OR ramus_wilson@icloud.com" "Icloud Unread" ?i)
-          ("flag:unread to:ramuswilson@gmail.com" "Gmail Unread" ?g)
-          ("flag:unread to:ramuswilson@outlook.com" "Outlook Unread" ?o)
-          ("prio:high" "High priority" ?h)
-          ("flag:attach" "Attachment" ?a)
-          ("flag:trashed" "Trashed" ?x)))
+    (use-package mu4e
+      :ensure nil
+      :load-path "/usr/local/share/emacs/site-lisp/mu/mu4e"
+      :defer 3                                     ;:defer 3
+      :config
+      (setq mu4e-maildir "~/Mail"
+            mu4e-get-mail-command "mbsync -a"
+            mu4e-use-fancy-chars t
+            mu4e-change-filenames-when-moving t
+            mu4e-compose-format-flowed t
+            message-kill-buffer-on-exit t
+            ;; Refresh mail using isync every 10 minutes
+            mu4e-update-interval (* 10 60)
+            shr-color-visible-luminance-min 80
+            mu4e-context-policy 'pick-first
+            read-mail-command 'mu4e)
+
+      ;; (setq mu4e-headers-attach-mark    `("a" . ,(char-to-string #xf8e1)))
+      ;; (setq mu4e-headers-unread-mark    `("u" . ,(char-to-string #xf6ef)))
+      ;; (setq mu4e-headers-flagged-mark   `("F" . ,(char-to-string #xf73a)))
+      ;; (setq mu4e-headers-seen-mark      `("S" . ,(char-to-string #xfaee)))
+      ;; (setq mu4e-headers-draft-mark     `("D" . ,(char-to-string #xf0f6)))
+      ;; (setq mu4e-headers-new-mark       `("N" . ,(char-to-string #x26a1)))
+      ;; (setq mu4e-headers-passed-mark    `("P" . ,(char-to-string #xf064)))
+      ;; (setq mu4e-headers-replied-mark   `("R" . ,(char-to-string #xf112)))
+      ;; (setq mu4e-headers-trashed-mark   `("T" . ,(char-to-string #xf014)))
+      ;; (setq mu4e-headers-encrypted-mark `("x" . ,(char-to-string #xf023)))
+      ;; (setq mu4e-headers-signed-mark    `("s" . ,(char-to-string #xf040)))
+
+      (setq
+       ;; mu4e-view-html-plaintext-ratio-heuristic most-positive-fixnum
+       ;; if only html, render in emacs
+       ;; mu4e-html2text-command 'mu4e-shr2text
+       ;; shr-color-visible-luminance-min 80
+       ;; always prefer plaintext
+       mu4e-view-prefer-html nil)
+
+      (add-to-list 'mu4e-view-actions
+                   '("Save to PDF" . do.mail.html/render-pdf) t)
+
+      ;; add option to view a message in the browser.
+      (add-to-list 'mu4e-view-actions
+                   '("View in browser" . mu4e-action-view-in-browser) t)
+
+      ;; Add custom actions for our capture templates
+      (add-to-list 'mu4e-headers-actions
+                   '("follow up" . efs/capture-mail-follow-up) t)
+
+      (add-to-list 'mu4e-headers-actions
+                   '("read later" . efs/capture-mail-read-later) t)
+
+      (add-to-list 'mu4e-view-actions
+                   '("follow up" . efs/capture-mail-follow-up) t)
+
+      (add-to-list 'mu4e-view-actions
+                   '("read later" . efs/capture-mail-read-later) t)
+
+      ;; Wrap text in messages
+      (add-hook 'mu4e-view-mode-hook
+                (lambda () (setq-local truncate-lines nil)))
+
+      (add-hook 'mu4e-compose-mode-hook
+                (lambda ()
+                  (turn-off-auto-fill)
+                  (use-hard-newlines -1)))
+
+      (setq mu4e-bookmarks
+            '(("date:today" "Today" ?t)
+              ("flag:unread"  "Unread" ?u)
+              ("flag:unread to:ramus@rjlwjr.com OR ramus_wilson@icloud.com" "Icloud Unread" ?i)
+              ("flag:unread to:ramuswilson@gmail.com" "Gmail Unread" ?g)
+              ("flag:unread to:ramuswilson@outlook.com" "Outlook Unread" ?o)
+              ("prio:high" "High priority" ?h)
+              ("flag:attach" "Attachment" ?a)
+              ("flag:trashed" "Trashed" ?x)))
+
+      ;; set mailbox context
+      (setq mu4e-contexts
+            (list
+             ;; Personal Gmail account
+             (make-mu4e-context
+              :name "Gmail"
+              :match-func
+              (lambda (msg)
+                (when msg
+                  (string-prefix-p "/Gmail" (mu4e-message-field msg :maildir))))
+              :vars '((user-mail-address . "ramuswilson@gmail.com")
+
+                      (smtpmail-smtp-server  . "smtp.gmail.com")
+                      (smtpmail-smtp-service . 587)
+                      (smtpmail-stream-type  . starttls)
+
+                      (mu4e-drafts-folder  . "/Gmail/[Gmail]/Drafts")
+                      (mu4e-sent-folder  . "/Gmail/[Gmail]/Sent Mail")
+                      (mu4e-refile-folder  . "/Gmail/[Gmail]/All Mail")
+                      (mu4e-trash-folder  . "/Gmail/[Gmail]/Trash")
+
+                      ;; (mu4e-maildir-shortcuts . (("/Gmail/Inbox"            . ?i)
+                      ;;                            ("/Gmail/[Gmail]/Sent Mail" . ?s)
+                      ;;                            ("/Gmail/[Gmail]/Trash"     . ?t)
+                      ;;                            ("/Gmail/[Gmail]/Drafts"    . ?d)
+                      ;;                            ("/Gmail/[Gmail]/All Mail"  . ?a)))
+                      ))
+
+             ;; Personl Outlook account
+             (make-mu4e-context
+              :name "Outlook"
+              :match-func
+              (lambda (msg)
+                (when msg
+                  (string-prefix-p "/Outlook" (mu4e-message-field msg :maildir))))
+              :vars '((user-mail-address . "ramuswilson@outlook.com")
+
+                      (smtpmail-smtp-server  . "smtp.office365.com")
+                      (smtpmail-smtp-service . 587)
+                      (smtpmail-stream-type  . starttls)
+
+                      (mu4e-drafts-folder  . "/Outlook/Drafts")
+                      (mu4e-sent-folder  . "/Outlook/Sent")
+                      (mu4e-refile-folder  . "/Outlook/Inbox")
+                      (mu4e-trash-folder  . "/Outlook/Archive")
+
+                      ;; (mu4e-maildir-shortcuts . (("/Outlook/Inbox"           . ?i)
+                      ;;                            ("/Outlook/Sent"            . ?s)
+                      ;;                            ("/Outlook/Archive"         . ?t)
+                      ;;                            ("/Outlook/Drafts"          . ?d)
+                      ;;                            ("/Outlook"                 . ?a)))
+                      ))
+
+
+             (make-mu4e-context
+              :name "Icloud"
+              :match-func
+              (lambda (msg)
+                (when msg
+                  (string-prefix-p "/Icloud" (mu4e-message-field msg :maildir))))
+              :vars '((user-mail-address . "ramus@rjlwjr.com")
+                      (mu4e-drafts-folder  . "/Icloud/Drafts")
+                      (mu4e-sent-folder  . "/Icloud/Sent Messages")
+                      (mu4e-refile-folder  . "/Icloud/Inbox")
+                      (mu4e-trash-folder  . "/Icloud/Archive")
+
+                      (smtpmail-smtp-server  . "smtp.mail.me.com")
+                      (smtpmail-smtp-service . 587)
+                      (smtpmail-stream-type  . starttls)
+
+                      ;; (mu4e-maildir-shortcuts . (("/Icloud/Inbox"           . ?i)
+                      ;;                            ("/Icloud/Sent Messages"   . ?s)
+                      ;;                            ("/Icloud/Archive"         . ?t)
+                      ;;                            ("/Icloud/Drafts"          . ?d)
+                      ;;                            ("/Icloud"                 . ?a)))
+                      ))))
+          (message "mu4e loaded"))
 #+end_src
 ** MU4E Marker-Icons
 #+begin_src emacs-lisp
   (use-package mu4e-marker-icons
+    :after mu4e
     :init
     (mu4e-marker-icons-mode 1)
     :config
@@ -1874,6 +1878,7 @@
 #+begin_src emacs-lisp
   (use-package mu4e-alert
     :after mu4e
+    :custom((doom-modeline-mu4e t))
     :config
     ;; (setq mu4e-alert-icon "~/.emacs.d/e-mail.svg")
     ;; (mu4e-alert-set-default-style 'notifier)
@@ -1910,16 +1915,18 @@
 ** Org Mine
 #+begin_src emacs-lisp
   (use-package org-mime
+    :after mu4e
     :config
     (setq org-mime-export-options '(:section-numbers nil
-                                                     :with-author nil
-                                                     :with-toc nil))
+						     :with-author nil
+						     :with-toc nil))
     (add-hook 'org-mime-html-hook
-              (lambda ()
-                (org-mime-change-element-style
-                 "pre" (format "color: %s; background-color: %s; padding: 0.5em;"
-                               "#E6E1DC" "#232323")))))
+	      (lambda ()
+		(org-mime-change-element-style
+		 "pre" (format "color: %s; background-color: %s; padding: 0.5em;"
+			       "#E6E1DC" "#232323")))))
 #+end_src
+
 #+begin_src emacs-lisp
   (require 'mu4e-icalendar)
   (mu4e-icalendar-setup)
@@ -1950,7 +1957,6 @@
           (when (or noconfirm (y-or-n-p "Snarf diary entry? "))
             (diary-from-outlook-internal subject body)
             (message "Diary entry added"))))))
-
 #+end_src
 * Org Mode
 ** Custom function
@@ -2133,10 +2139,12 @@
 ** Org Babel 
 #+begin_src emacs-lisp
   (use-package ob-napkin
+    :after ob
     :config
     (add-to-list 'org-src-lang-modes '("napkin-puml" . plantuml)))
 
   (use-package ob-sql-mode
+    :after ob
     :init (require 'ob-sql-mode)
     :config
     (setq org-confirm-babel-evaluate
@@ -2144,7 +2152,7 @@
             (not (string= lang "sql-mode")))))
 
   (use-package ob-restclient
-    :after org 
+    :after ob
     :config
     (add-to-list 'org-src-lang-modes '("restclient" . restclient)))
 #+end_src
@@ -2456,20 +2464,27 @@
 ** Vuiet  
 #+begin_src emacs-lisp
   (use-package  vuiet
+    :defer 5
     :config
     (setq vuiet-update-mode-line-automatically t)
-    (setq vuiet-update-mode-line-interval 1))
+    (setq vuiet-update-mode-line-interval 1)
+    (message "vuiet ready"))
 
-  (use-package lastfm)
+  (use-package lastfm
+    :after vuiet)
 #+end_src
 ** MPC
 #+begin_src emacs-lisp
-  (use-package mpc)
+        (use-package mpc
+          :defer 5
+          :config
+          (message "mpc ready"))
 #+end_src
 * Games
 ** Key-quiz
 #+begin_src emacs-lisp
-  (use-package key-quiz)
+  (use-package key-quiz
+    :defer 6)
 #+end_src
 ** Speed Type
 #+begin_src emacs-lisp
@@ -2479,12 +2494,13 @@
     (turn-off-evil-mode)
     (show-paren-mode))
 
-  (use-package speed-type)
+  (use-package speed-type
+    :defer 6)
 #+end_src
-
 ** Chess
 #+begin_src emacs-lisp
-  (use-package chess)
+  (use-package chess
+    :defer 6)
 #+end_src
 * Misc
 ** Line Number
