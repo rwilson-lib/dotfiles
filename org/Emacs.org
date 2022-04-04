@@ -926,7 +926,6 @@
 #+end_src
 ** Vterm
 #+begin_src emacs-lisp
-
   (use-package vterm
     :commands vterm
     :config
@@ -1437,7 +1436,7 @@
 
     :bind (:map lsp-mode-map
                 ("C-!" . lsp-execute-code-action)
-                ("C-<tab>" . company-indent-or-complete-common))
+                ("<tab> TAB" . company-indent-or-complete-common))
 
     :config
     (setq lsp-idle-delay 0.5
@@ -2000,6 +1999,9 @@
   (use-package org
     :hook (org-mode . efs/org-mode-setup)
 
+    :bind (:map org-mode-map
+                ("<tab> TAB" . org-cycle))
+
     :config
     (setq org-ellipsis " ⤸")
     (setq org-agenda-start-with-log-mode t)
@@ -2133,6 +2135,7 @@
     (visual-fill-column-mode 1))
 
   (use-package visual-fill-column
+  
     :hook (org-mode . efs/org-mode-visual-fill))
 #+end_src
 
