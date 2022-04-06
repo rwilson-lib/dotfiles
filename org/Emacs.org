@@ -1088,7 +1088,7 @@
      emmet-move-cursor-between-quotes t)
     :bind (:map emmet-mode-keymap 
                 ("C-c C-c p" . emmet-preview-mode)
-                ("C-<tab>" . emmet-expand-line))
+                ("<tab> TAB" . emmet-expand-line))
 
     :hook
     (sgml-mode . emmet-mode) ;; Auto-start on any markup modes
@@ -1265,51 +1265,47 @@
 #+end_src
 ** Python
 #+begin_src emacs-lisp
-    ;; fix issues with python inferial process
-    (setq comint-process-echoes t)
+  ;; fix issues with python inferial process
 
 
-    (use-package python-mode
-      ;;:mode "\\.py\\'"
-      :hook (python-mode . lsp-deferred)
-      ;; :custom
-      ;; (dap-python-executable "python3")
-      ;; (dap-python-debugger 'debugpy)
-      :interpreter ("python3" . python-mode)
-      :init
-      (setq python-guess-indent nil)
-      :config
-      (setq python-indent-level 4
-            python-indent-def-block-scale 4)
-            org-babel-python-command "python3"
-            dap-python-executable "python3")
+  (use-package python-mode
+    ;;:mode "\\.py\\'"
+    :hook (python-mode . lsp-deferred)
+    ;; :custom
+    ;; (dap-python-executable "python3")
+    ;; (dap-python-debugger 'debugpy)
+    :interpreter ("python3" . python-mode))
 
-    (add-hook 'python-mode-hook #'evil-tree-edit-mode)
+  (setq python-indent-level 4
+        python-indent-def-block-scale 4
+        python-shell-completion-native-enable nil
+        python-guess-indent nil
+        org-babel-python-command "python3"
+        dap-python-executable "python3"
+        comint-process-echoes t)
 
-    (use-package live-py-mode
-      :init
-      (setq live-py-version "python3"))
+  (when (executable-find "ipython")
+    (setq python-shell-interpreter "ipython"
+          python-shell-interpreter-args "-i --simple-prompt --InteractiveShell.display_page=True"))
 
-    (use-package ipython-shell-send)
+  (add-hook 'python-mode-hook #'evil-tree-edit-mode)
 
-    (use-package jupyter
-      :commands (jupyter-run-server-repl
-                 jupyter-run-repl
-                 jupyter-server-list-kernels)
-      :init (eval-after-load 'jupyter-org-extensions ; conflicts with my helm config, I use <f2 #>
-              '(unbind-key "C-c h" jupyter-org-interaction-mode-map)))
+  (use-package live-py-mode
+    :init
+    (setq live-py-version "python3"))
 
-    (use-package conda
-      :config (progn
-                (conda-env-initialize-interactive-shells)
-                (conda-env-initialize-eshell)
-                (conda-env-autoactivate-mode t)
-                (setq conda-env-home-directory (expand-file-name "~/anaconda3/"))
-                (custom-set-variables '(conda-anaconda-home "~/anaconda3/"))))
+  (use-package ipython-shell-send)
 
-    (require 'dap-python)
-    ;; lang python
-    (provide 'lang-python)
+  (use-package jupyter
+    :commands (jupyter-run-server-repl
+               jupyter-run-repl
+               jupyter-server-list-kernels)
+    :init (eval-after-load 'jupyter-org-extensions ; conflicts with my helm config, I use <f2 #>
+            '(unbind-key "C-c h" jupyter-org-interaction-mode-map)))
+
+  (require 'dap-python)
+  ;; lang python
+  (provide 'lang-python)
 #+end_src
 *** LSP-Python-MS 
 #+begin_src emacs-lisp
@@ -1320,35 +1316,46 @@
   ;;                          (lsp))))  ; or lsp-deferred
 
 #+end_src
-** Pipenv
+** Virtual Envs
 #+begin_src emacs-lisp
-  (use-package pipenv
-    :after python-mode 
-    :hook (python-mode . pipenv-mode))
-  ;;   :init
-  ;;   (setq
-  ;;    pipenv-projectile-after-switch-function
-  ;;    #'pipenv-projectile-after-switch-extended))
+
+    (use-package conda
+      :config (progn
+                (conda-env-initialize-interactive-shells)
+                (conda-env-initialize-eshell)
+                (conda-env-autoactivate-mode t)
+                (setq conda-env-home-directory (expand-file-name "~/anaconda3/"))
+                (custom-set-variables '(conda-anaconda-home "~/anaconda3/"))))
+
+    (use-package pipenv
+      :after python-mode 
+      :hook (python-mode . pipenv-mode))
+    ;;   :init
+    ;;   (setq
+    ;;    pipenv-projectile-after-switch-function
+    ;;    #'pipenv-projectile-after-switch-extended))
 
 
-#+end_src
-** Pyvenv
-#+begin_src emacs-lisp
-  (use-package pyvenv
-    :after python-mode
-    :config
-    (pyvenv-mode 1)
-    ;; Set correct Python interpreter
-    (setq pyvenv-post-activate-hooks
-          (list (lambda ()
-                  (setq python-shell-interpreter (concat pyvenv-virtual-env "bin/python")))))
-    (setq pyvenv-post-deactivate-hooks
-          (list (lambda ()
-                  (setq python-shell-interpreter (concat pyvenv-virtual-env "python3")))))
+    (use-package pyvenv
+      :demand t
+      :config
+      (pyvenv-tracking-mode 1)
+      (pyvenv-mode))  ; Automatically use pyvenv-workon via dir-locals
 
-    (pyvenv-tracking-mode 1))
+    ;; (use-package pyvenv
+    ;;   :after python-mode
+    ;;   :config
+    ;;   (pyvenv-mode 1)
+    ;;   ;; Set correct Python interpreter
+    ;;   (setq pyvenv-post-activate-hooks
+    ;;         (list (lambda ()
+    ;;                 (setq python-shell-interpreter (concat pyvenv-virtual-env "bin/python")))))
+    ;;   (setq pyvenv-post-deactivate-hooks
+    ;;         (list (lambda ()
+    ;;                 (setq python-shell-interpreter (concat pyvenv-virtual-env "python3")))))
 
-  (setq python-shell-completion-native-enable nil)
+    ;;   (pyvenv-tracking-mo de 1))
+
 
 #+end_src
 ** Projectile
@@ -1421,6 +1428,7 @@
 #+begin_src emacs-lisp
   (setq gc-cons-threshold 100000000)
   (setq read-process-output-max (* 1024 1024)) ;; 1mb
+
   (defun efs/lsp-mode-setup ()
     (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
     (lsp-headerline-breadcrumb-mode))
@@ -1442,7 +1450,8 @@
     (setq lsp-idle-delay 0.5
           ;;lsp-enable-symbol-highlighting t
           ;;Not supported by company capf, which is the recommended company backend
-          lsp-enable-snippet nil)) 
+          lsp-enable-snippet nil))
+
 
 
   ;;  (add-hook 'python-mode-hook
@@ -1530,27 +1539,32 @@
         (let ((msg (langtool-details-error-message overlays)))
           (popup-tip msg)))))
 
-  (use-package langtool
+  ;; (use-package langtool
+  ;;   :defer 10
+  ;;   :init
+  ;;   (setq langtool-language-tool-jar "~/bin/LanguageTool-5.6/languagetool-commandline.jar") 
+  ;;   :bind (("\C-x4w" . langtool-check)
+  ;;          ("\C-x4W" . langtool-check-done)
+  ;;          ("\C-x4l" . langtool-switch-default-language)
+  ;;          ("\C-x44" . langtool-show-message-at-point)
+  ;;          ("\C-x4c" . langtool-correct-buffer))
+  ;;   :config
+  ;;   (set-face-attribute 'langtool-errline nil
+  ;;                       :weight 'bold
+  ;;                       :slant 'italic
+  ;;                       :underline '(:color "pink" :style wave)
+  ;;                       :foreground nil
+  ;;                       :background nil)
+  ;;   (setq langtool-mother-tongue "en"
+  ;;         langtool-default-language "en-US"
+  ;;         langtool-autoshow-message-function 'langtool-autoshow-detail-popup))
+
+  (use-package flycheck-languagetool
     :defer 10
+    :ensure t
+    :hook (text-mode . flycheck-languagetool-setup)
     :init
-    (setq langtool-language-tool-jar "~/bin/LanguageTool-5.6/languagetool-commandline.jar") 
-    :bind (("\C-x4w" . langtool-check)
-           ("\C-x4W" . langtool-check-done)
-           ("\C-x4l" . langtool-switch-default-language)
-           ("\C-x44" . langtool-show-message-at-point)
-           ("\C-x4c" . langtool-correct-buffer))
-    :config
-    (set-face-attribute 'langtool-errline nil
-                        :weight 'bold
-                        :slant 'italic
-                        :underline '(:color "pink" :style wave)
-                        :foreground nil
-                        :background nil)
-    (setq langtool-mother-tongue "en"
-          langtool-default-language "en-US"
-          langtool-autoshow-message-function 'langtool-autoshow-detail-popup))
-
-
+    (setq flycheck-languagetool-server-jar "~/bin/LanguageTool-5.6/languagetool-server.jar"))
 
 #+end_src
 
@@ -1583,7 +1597,7 @@
                         (display-line-numbers-mode 1)))
 
     :bind ((:map TeX-mode-map
-                 ("<tab>" . TeX-complete-symbol))))
+                 ("<tab> TAB" . TeX-complete-symbol))))
 
   (use-package latex-preview-pane
     :config
@@ -1877,12 +1891,14 @@
 #+begin_src emacs-lisp
   (use-package mu4e-alert
     :after mu4e
+    :defer 3         
     :custom((doom-modeline-mu4e t))
     :config
     ;; (setq mu4e-alert-icon "~/.emacs.d/e-mail.svg")
     ;; (mu4e-alert-set-default-style 'notifier)
     ;; (add-hook 'after-init-hook #'mu4e-alert-enable-notifications)
-    (add-hook 'after-init-hook #'mu4e-alert-enable-mode-line-display))
+    (add-hook 'after-init-hook #'mu4e-alert-enable-mode-line-display)
+    (message "mu4e alert ready"))
 #+end_src
 ** GNUS function
 #+begin_src emacs-lisp
@@ -2258,15 +2274,18 @@
 
 ** Ox Reveal
 #+begin_src emacs-lisp
-  (use-package ox-reveal)
+    (use-package ox-reveal
+      :defer 3)
 #+end_src
 ** Org Present
 #+begin_src emacs-lisp
-  (use-package org-present)
+    (use-package org-present
+      :defer 3)
 #+end_src
 ** Org Alert
 #+begin_src emacs-lisp
   (use-package org-alert
+    :defer 3
     :custom (alert-default-style 'notifications)
     ;; :custom (alert-default-style 'fringe)
     :config
@@ -2277,6 +2296,7 @@
 ** Org Roam
 #+begin_src emacs-lisp
   (use-package org-roam
+    :defer 3
     :init
     (setq org-roam-v2-ack t)
     :custom
@@ -2332,6 +2352,7 @@
 
 
   (use-package org-tree-slide
+    :defer 3
     :hook ((org-tree-slide-play . efs/presentation-setup)
            (org-tree-slide-stop . efs/presentation-end))
     :custom
@@ -2346,7 +2367,7 @@
 #+begin_src emacs-lisp
   (use-package evil-org
     :ensure t
-    :after org
+    :after (org evil)
     :hook (org-mode . (lambda () evil-org-mode))
     :config
     (setq evil-want-C-i-jump nil)
@@ -2356,6 +2377,7 @@
 ** Org remark
 #+begin_src emacs-lisp
   (use-package org-remark
+    :defer 3
     :config
     (org-remark-create "memorize"
                        '(:foreground "white" :underline "black")
@@ -2369,12 +2391,8 @@
 #+end_src
 ** Flash card
 #+begin_src emacs-lisp
-  (use-package org-anki)
-#+end_src
-** Org Modern
-#+begin_src emacs-lisp
-  ;; (use-package org-modern)
-  ;; (add-hook 'org-mode-hook #'org-modern-mode)
+    (use-package org-anki
+      :defer 5)
 #+end_src
 ** Org Table Color
 #+begin_src emacs-lisp
