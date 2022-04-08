@@ -2041,7 +2041,6 @@
     (setq org-preview-latex-default-process 'dvisvgm)
     (setq org-format-latex-options (plist-put org-format-latex-options
                                     :scale my/org-latex-scale))
-
     (setq org-todo-keywords
           '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
             (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
