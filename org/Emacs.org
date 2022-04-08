@@ -1316,6 +1316,16 @@
   ;;                          (lsp))))  ; or lsp-deferred
 
 #+end_src
+** R
+#+begin_src emacs-lisp
+  (use-package ess
+    :defer 3
+    :config
+    (setq ess-use-auto-complete nil))
+
+  (use-package julia-mode
+    :defer 3)
+#+end_src
 ** Virtual Envs
 #+begin_src emacs-lisp
 
@@ -1452,8 +1462,6 @@
           ;;Not supported by company capf, which is the recommended company backend
           lsp-enable-snippet nil))
 
-
-
   ;;  (add-hook 'python-mode-hook
   ;;            (lambda ()
   ;;              (lsp-python-enable)))
@@ -1565,9 +1573,7 @@
     :hook (text-mode . flycheck-languagetool-setup)
     :init
     (setq flycheck-languagetool-server-jar "~/bin/LanguageTool-5.6/languagetool-server.jar"))
-
 #+end_src
-
 ** Dictionary
 #+begin_src emacs-lisp
   (use-package mw-thesaurus
@@ -2031,6 +2037,8 @@
             "~/org/beorg/org/Mails.org"
             "~/org/beorg/org/Birthdays.org"))
 
+    (setq org-preview-latex-default-process 'dvisvgm)
+
     (require 'org-habit)
     (add-to-list 'org-modules 'org-habit)
     (setq org-habit-graph-column 60)
@@ -2151,7 +2159,7 @@
     (visual-fill-column-mode 1))
 
   (use-package visual-fill-column
-  
+
     :hook (org-mode . efs/org-mode-visual-fill))
 #+end_src
 
@@ -2293,25 +2301,6 @@
           org-alert-notification-title "Org Alert Reminder")
     (org-alert-enable))
 #+end_src
-** Org Roam
-#+begin_src emacs-lisp
-  (use-package org-roam
-    :defer 3
-    :init
-    (setq org-roam-v2-ack t)
-    :custom
-    (org-roam-directory "~/RoamNotes")
-    (org-roam-completion-everywhere t)
-    :bind (("C-c n l" . org-roam-buffer-toggle)
-           ("C-c n f" . org-roam-node-find)
-           ("C-c n i" . org-roam-node-insert)
-           :map org-mode-map
-           ("C-M-i"    . completion-at-point))
-    :config
-    (org-roam-db-autosync-enable))
-
-  (use-package org-roam-ui)
-#+end_src
 ** Org Dired Attachment
 #+begin_src emacs-lisp
   (add-hook 'dired-mode-hook
@@ -2403,6 +2392,32 @@
 #+begin_src emacs-lisp
   (use-package gnuplot)
   (use-package gnuplot-mode)
+#+end_src
+** Org Roam
+#+begin_src emacs-lisp
+
+  (use-package org-roam
+    :ensure t
+    :init
+    (setq org-roam-v2-ack t)
+    :custom
+    (org-roam-directory "~/RoamNotes")
+    (org-roam-completion-everywhere t)
+    :bind (("C-c n l" . org-roam-buffer-toggle)
+           ("C-c n f" . org-roam-node-find)
+           ("C-c n i" . org-roam-node-insert)
+           :map org-mode-map
+           ("C-M-i" . completion-at-point)
+           :map org-roam-dailies-map
+           ("Y" . org-roam-dailies-capture-yesterday)
+           ("T" . org-roam-dailies-capture-tomorrow))
+    :bind-keymap
+    ("C-c n d" . org-roam-dailies-map)
+    :config
+    (require 'org-roam-dailies) ;; Ensure the keymap is available
+    (org-roam-db-autosync-mode))
+
+  (use-package org-roam-ui)
 #+end_src
 * Pretty Symbols
 ** Org Symbols
