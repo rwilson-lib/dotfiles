@@ -2020,7 +2020,6 @@
   (global-set-key (kbd "C-c c") 'org-capture)
   (use-package org
     :hook (org-mode . efs/org-mode-setup)
-
     :bind (:map org-mode-map
                 ("<tab> TAB" . org-cycle))
 
