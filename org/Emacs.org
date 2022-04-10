@@ -866,12 +866,7 @@
 #+end_src
 ** IBuffer
 #+begin_src emacs-lisp
-  (use-package ibuffer
-    :bind (:map ibuffer-mode-map 
-                ("j" . next-line)
-                ("k" . previous-line))
-    :hook (ibuffer-mode lambda ()
-                        (turn-off-evil-mode)))
+  (use-package ibuffer)
 #+end_src
 * SQL Servers Settings
 #+begin_src emacs-lisp
