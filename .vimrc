@@ -326,3 +326,6 @@ let g:gutentags_modules = ['gtags_cscope']
 
 " let g:gutentags_gtags_dbpath = "GTAGS"
 
+" let g:gutentags_gtags_dbpath = "GTAGS"
+
+set rtp+=/usr/local/opt/fzf

@@ -215,9 +215,6 @@
 
 #+end_src
 
-#+RESULTS:
-: t
-
 ** Global Settings
 #+begin_src emacs-lisp
   ;; change all prompts to y or n
@@ -870,27 +867,29 @@
 #+end_src
 * SQL Servers Settings
 #+begin_src emacs-lisp
-  (setq sql-connection-alist
-        '((pgsql-prod (sql-product 'postgres)
-                      (sql-port 5432)
-                      (sql-server "localhost")
-                      (sql-user "postgres")
-                      (sql-password "root")
-                      (sql-database ""))
-          (pgsql-staging (sql-product 'postgres)
-                         (sql-port 5432)
-                         (sql-server "db.staging.com")
-                         (sql-user "user")
-                         (sql-password "password")
-                         (sql-database "my-app"))
-          (mysql-dev (sql-product 'mysql)
-                     (sql-port 3306)
-                     (sql-server "localhost")
-                     (sql-user "root")
-                     (sql-password "root")
-                     (sql-mysql-options '("--protocol=tcp"))
-                     (sql-database ""))))
+    (setq sql-sqlite-options '("-table"))
+    (setq sql-connection-alist
+          '((pgsql-prod (sql-product 'postgres)
+                        (sql-port 5432)
+                        (sql-server "localhost")
+                        (sql-user "postgres")
+                        (sql-password "root")
+                        (sql-database ""))
+            (pgsql-staging (sql-product 'postgres)
+                           (sql-port 5432)
+                           (sql-server "db.staging.com")
+                           (sql-user "user")
+                           (sql-password "password")
+                           (sql-database "my-app"))
+            (mysql-dev (sql-product 'mysql)
+                       (sql-port 3306)
+                       (sql-server "localhost")
+                       (sql-user "root")
+                       (sql-password "root")
+                       (sql-mysql-options '("--protocol=tcp"))
+                       (sql-database ""))))
 #+end_src
+
 * Terminal
 ** Eshell
 #+begin_src emacs-lisp
@@ -1605,6 +1604,34 @@
     (setq latex-preview-pane-use-frame t)
     (latex-preview-pane-enable))
 #+end_src
+** Bibtex
+#+begin_src emacs-lisp
+  (use-package org-ref)
+
+  (use-package gscholar-bibtex
+    :defer 5
+    :bind ((:map gscholar-bibtex-mode-map
+                 ("k" . gscholar-bibtex-previous-item)
+                 ("j" . gscholar-bibtex-next-item)))
+    :config
+    (message "gscholar bibtex ready"))
+
+  (use-package citar
+    :defer 5
+    :bind (("C-c b" . citar-insert-citation)
+           :map minibuffer-local-map
+           ("M-b" . citar-insert-preset))
+    :custom
+    (citar-bibliography '("~/bib/references.bib")))
+
+
+  (use-package org-roam-bibtex
+    :defer 5
+    :after org-roam
+    :config
+    (require 'org-ref)) ; optional: if using Org-ref v2 or v3 citation links
+#+end_src
+
 ** PDF Tools
 #+begin_src emacs-lisp
   (use-package pdf-tools
@@ -2155,7 +2182,6 @@
     :hook (org-mode . efs/org-mode-visual-fill))
 #+end_src
 
-** Org Babel 
 ** Org Habit
 #+begin_src emacs-lisp
   (use-package org-habit
@@ -2164,6 +2190,7 @@
               (add-to-list 'org-modules 'org-habit)
               (setq org-habit-graph-column 60)))
 #+end_src
+** Org Babel 
 #+begin_src emacs-lisp
   (use-package ob-napkin
     :after ob
@@ -2183,6 +2210,7 @@
     :config
     (add-to-list 'org-src-lang-modes '("restclient" . restclient)))
 #+end_src
+
 #+begin_src emacs-lisp
   (use-package org-tempo
     :ensure nil
@@ -2201,6 +2229,7 @@
               (add-to-list 'org-structure-template-alist '("npp". "src napkin-puml"))
               (add-to-list 'org-structure-template-alist '("sql". "src sql-mode"))))
 #+end_src
+
 #+begin_src emacs-lisp
   (use-package ob
     :ensure nil
@@ -2214,7 +2243,7 @@
                  (julia . t)
                  (latex . t)
                  (python . t)
-                                          ; (ledger . t)        
+              ;; (ledger . t)        
                  (plantuml . t)
                  (restclient . t)
                  (emacs-lisp . t)

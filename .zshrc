@@ -154,3 +154,5 @@ GPG_TTY=`tty`
 export GPG_TTY
 
 alias config='/usr/bin/git --git-dir=/Users/rwilson/.cfg/ --work-tree=/Users/rwilson'
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
