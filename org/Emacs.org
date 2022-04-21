@@ -79,7 +79,7 @@
             #'command-completion-default-include-p)
 
       ;; Do not use system clip board
-      (setq x-select-enable-clipboard nil)
+      ;; (setq x-select-enable-clipboard nil)
 
       ;; Enable recursive minibuffers
       (setq enable-recursive-minibuffers t)
@@ -1595,6 +1595,11 @@
                         (hl-todo-mode)
                         (company-mode)
                         (display-line-numbers-mode 1)))
+    :config
+    ;; Turn on RefTeX in AUCTeX
+    (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+    ;; Activate nice interface between RefTeX and AUCTeX
+    (setq reftex-plug-into-AUCTeX t)
 
     :bind ((:map TeX-mode-map
                  ("<tab> TAB" . TeX-complete-symbol))))
@@ -1606,30 +1611,65 @@
 #+end_src
 ** Bibtex
 #+begin_src emacs-lisp
-  (use-package org-ref)
-
-  (use-package gscholar-bibtex
-    :defer 5
-    :bind ((:map gscholar-bibtex-mode-map
-                 ("k" . gscholar-bibtex-previous-item)
-                 ("j" . gscholar-bibtex-next-item)))
-    :config
-    (message "gscholar bibtex ready"))
+  (use-package citeproc)
 
   (use-package citar
-    :defer 5
-    :bind (("C-c b" . citar-insert-citation)
-           :map minibuffer-local-map
-           ("M-b" . citar-insert-preset))
+ ;;  :no-require
     :custom
-    (citar-bibliography '("~/bib/references.bib")))
-
+    (org-cite-global-bibliography'("~/Documents/bib/emacs-bibs/references.bib"
+                                   "~/Documents/bib/emacs-bibs/dei.bib"
+                                   "~/Documents/bib/emacs-bibs/master.bib"
+                                   "~/Documents/bib/emacs-bibs/archive.bib"))
+    (org-cite-insert-processor 'citar)
+    (org-cite-follow-processor 'citar)
+    (org-cite-activate-processor 'citar)
+    (citar-bibliography org-cite-global-bibliography)
+    ;; optional: org-cite-insert is also bound to C-c C-x C-@
+    :bind
+    (:map org-mode-map :package org ("C-c b" . #'org-cite-insert)))
 
   (use-package org-roam-bibtex
     :defer 5
-    :after org-roam
+    :after org-roam)
+  ;;:config
+  ;;(require 'org-ref)) ; optional: if using Org-ref v2 or v3 citation links
+
+  (use-package bibtex
+    :ensure nil
     :config
-    (require 'org-ref)) ; optional: if using Org-ref v2 or v3 citation links
+    (setq bibtex-autokey-year-length 4
+          bibtex-autokey-name-year-separator "-"
+          bibtex-autokey-year-title-separator "-"
+          bibtex-autokey-titleword-separator "-"
+          bibtex-autokey-titlewords 2
+          bibtex-autokey-titlewords-stretch 1
+          bibtex-autokey-titleword-length 5)
+
+    (setq bibtex-completion-bibliography '("~/Documents/bib/emacs-bibs/references.bib"
+                                           "~/Documents/bib/emacs-bibs/dei.bib"
+                                           "~/Documents/bib/emacs-bibs/master.bib"
+                                           "~/Documents/bib/emacs-bibs/archive.bib")
+          bibtex-completion-library-path '("~/Documents/bib/bibtex-pdfs/")
+          bibtex-completion-notes-path "~/Documents/bib/bibtex-notes/"
+          bibtex-completion-notes-template-multiple-files "* ${author-or-editor}, ${title}, ${journal}, (${year}) :${=type=}: \n\nSee [[cite:&${=key=}]]\n"
+
+          bibtex-completion-additional-search-fields '(keywords)
+          bibtex-completion-display-formats
+          '((article       . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${journal:40}")
+            (inbook        . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} Chapter ${chapter:32}")
+            (incollection  . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+            (inproceedings . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+            (t             . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*}"))
+          bibtex-completion-pdf-open-function
+          (lambda (fpath)
+            (call-process "open" nil 0 nil fpath))))
+
+  (use-package org-ref
+    :bind (:map bibtex-mode-map
+                ("H-b" . org-ref-bibtex-hydra/body))
+    :config
+    (setq org-ref-bibtex-hydra-key-binding (kbd "H-b"))
+    (require 'org-ref-pdf))
 #+end_src
 
 ** PDF Tools
@@ -2062,6 +2102,9 @@
     (setq org-preview-latex-default-process 'dvisvgm)
     (setq org-format-latex-options (plist-put org-format-latex-options
                                     :scale my/org-latex-scale))
+
+    (setq org-cite-csl-styles-dir "~/Zotero/styles")
+
     (setq org-todo-keywords
           '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
             (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
