@@ -329,3 +329,6 @@ let g:gutentags_modules = ['gtags_cscope']
 " let g:gutentags_gtags_dbpath = "GTAGS"
 
 set rtp+=/usr/local/opt/fzf
+
+" define an abbreviation for write and delete
+cnorea wd w\|:bd

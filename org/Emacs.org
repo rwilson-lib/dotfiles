@@ -234,9 +234,8 @@
   (setq global-auto-revert-non-file-buffers t)
   (setq tab-width 4)
 
-  (setq browse-url-browser-function 'browse-url-chrome
-        browse-url-chrome-program "chrome")
-
+  (setq browse-url-browser-function 'browse-url-firefox
+        browse-url-firefox-program "firefox")
 #+end_src
 ** Line Number
 #+begin_src emacs-lisp
@@ -299,6 +298,48 @@
       (interactive "<f>")
       (find-file-other-tab file))
 
+    (evil-define-operator evil-write-delete-buffer (beg end type file-or-append &optional bang)
+      "Save the current buffer, from BEG to END, to FILE-OR-APPEND.
+  If FILE-OR-APPEND is of the form \" FILE\", append to FILE
+  instead of overwriting.  The current buffer's filename is not
+  changed unless it has no associated file and no region is
+  specified.  If the file already exists and the BANG argument is
+  non-nil, it is overwritten without confirmation."
+      :motion nil
+      :move-point nil
+      :type line
+      :repeat nil
+      (interactive "<R><fsh><!>")
+      (let* ((append-and-filename (evil-extract-append file-or-append))
+             (append (car append-and-filename))
+             (filename (cdr append-and-filename))
+             (bufname (buffer-file-name (buffer-base-buffer))))
+        (when (zerop (length filename))
+          (setq filename bufname))
+        (cond
+         ((zerop (length filename))
+          (user-error "Please specify a file name for the buffer"))
+         ;; execute command on region
+         ((eq (aref filename 0) ?!)
+          (shell-command-on-region beg end (substring filename 1)))
+         ;; with region or append, always save to file without resetting
+         ;; modified flag
+         ((or append (and beg end))
+          (write-region beg end filename append nil nil (not (or append bang))))
+         ;; no current file
+         ((null bufname)
+          (write-file filename (not bang)))
+         ;; save current buffer to its file
+         ((string= filename bufname)
+          (if (not bang) (save-buffer) (write-file filename)))
+         ;; save to another file
+         (t
+          (write-region nil nil filename
+                        nil (not bufname) nil
+                        (not bang))))))
+    
+    (evil-ex-define-cmd "wd[elete]" 'evil-write-delete-buffer)
+  
     (evil-ex-define-cmd "sf[ind]" 'evil-sfind)
     (evil-ex-define-cmd "tabedit" 'evil-tabedit)
 
@@ -1610,11 +1651,14 @@
     (latex-preview-pane-enable))
 #+end_src
 ** Bibtex
+:PROPERTIES:
+:NOTER_DOCUMENT: Emacs.org
+:END:
 #+begin_src emacs-lisp
   (use-package citeproc)
 
   (use-package citar
- ;;  :no-require
+    ;;  :no-require
     :custom
     (org-cite-global-bibliography'("~/Documents/bib/emacs-bibs/references.bib"
                                    "~/Documents/bib/emacs-bibs/dei.bib"
@@ -1625,14 +1669,16 @@
     (org-cite-activate-processor 'citar)
     (citar-bibliography org-cite-global-bibliography)
     ;; optional: org-cite-insert is also bound to C-c C-x C-@
+    :config
+    (setq citar-notes-paths '("~/Documents/bib/bibtex-notes/")
+          citar-library-paths '("~/Documents/bib/bibtex-pdfs/"))
     :bind
     (:map org-mode-map :package org ("C-c b" . #'org-cite-insert)))
 
   (use-package org-roam-bibtex
-    :defer 5
-    :after org-roam)
-  ;;:config
-  ;;(require 'org-ref)) ; optional: if using Org-ref v2 or v3 citation links
+    :after org-roam
+    :config
+    (require 'org-ref)) ; optional: if using Org-ref v2 or v3 citation links
 
   (use-package bibtex
     :ensure nil
@@ -1792,160 +1838,162 @@
 #+end_src
 ** Email Context
 #+begin_src emacs-lisp
-    (use-package mu4e
-      :ensure nil
-      :load-path "/usr/local/share/emacs/site-lisp/mu/mu4e"
-      :defer 3                                     ;:defer 3
-      :config
-      (setq mu4e-maildir "~/Mail"
-            mu4e-get-mail-command "mbsync -a"
-            mu4e-use-fancy-chars t
-            mu4e-change-filenames-when-moving t
-            mu4e-compose-format-flowed t
-            message-kill-buffer-on-exit t
-            ;; Refresh mail using isync every 10 minutes
-            mu4e-update-interval (* 10 60)
-            shr-color-visible-luminance-min 80
-            mu4e-context-policy 'pick-first
-            read-mail-command 'mu4e)
+  (use-package mu4e
+    :ensure nil
+    :load-path "/usr/local/share/emacs/site-lisp/mu/mu4e"
+    :defer 3                                     ;:defer 3
+    :config
+    (setq mu4e-maildir "~/Mail"
+          mu4e-get-mail-command "mbsync -a"
+          mu4e-use-fancy-chars t
+          mu4e-change-filenames-when-moving t
+          mu4e-compose-format-flowed t
+          message-kill-buffer-on-exit t
+          ;; Refresh mail using isync every 10 minutes
+          mu4e-update-interval (* 10 60)
+          shr-color-visible-luminance-min 80
+          mu4e-context-policy 'pick-first
+          read-mail-command 'mu4e)
 
-      ;; (setq mu4e-headers-attach-mark    `("a" . ,(char-to-string #xf8e1)))
-      ;; (setq mu4e-headers-unread-mark    `("u" . ,(char-to-string #xf6ef)))
-      ;; (setq mu4e-headers-flagged-mark   `("F" . ,(char-to-string #xf73a)))
-      ;; (setq mu4e-headers-seen-mark      `("S" . ,(char-to-string #xfaee)))
-      ;; (setq mu4e-headers-draft-mark     `("D" . ,(char-to-string #xf0f6)))
-      ;; (setq mu4e-headers-new-mark       `("N" . ,(char-to-string #x26a1)))
-      ;; (setq mu4e-headers-passed-mark    `("P" . ,(char-to-string #xf064)))
-      ;; (setq mu4e-headers-replied-mark   `("R" . ,(char-to-string #xf112)))
-      ;; (setq mu4e-headers-trashed-mark   `("T" . ,(char-to-string #xf014)))
-      ;; (setq mu4e-headers-encrypted-mark `("x" . ,(char-to-string #xf023)))
-      ;; (setq mu4e-headers-signed-mark    `("s" . ,(char-to-string #xf040)))
+    ;; (setq mu4e-headers-attach-mark    `("a" . ,(char-to-string #xf8e1)))
+    ;; (setq mu4e-headers-unread-mark    `("u" . ,(char-to-string #xf6ef)))
+    ;; (setq mu4e-headers-flagged-mark   `("F" . ,(char-to-string #xf73a)))
+    ;; (setq mu4e-headers-seen-mark      `("S" . ,(char-to-string #xfaee)))
+    ;; (setq mu4e-headers-draft-mark     `("D" . ,(char-to-string #xf0f6)))
+    ;; (setq mu4e-headers-new-mark       `("N" . ,(char-to-string #x26a1)))
+    ;; (setq mu4e-headers-passed-mark    `("P" . ,(char-to-string #xf064)))
+    ;; (setq mu4e-headers-replied-mark   `("R" . ,(char-to-string #xf112)))
+    ;; (setq mu4e-headers-trashed-mark   `("T" . ,(char-to-string #xf014)))
+    ;; (setq mu4e-headers-encrypted-mark `("x" . ,(char-to-string #xf023)))
+    ;; (setq mu4e-headers-signed-mark    `("s" . ,(char-to-string #xf040)))
 
-      (setq
-       ;; mu4e-view-html-plaintext-ratio-heuristic most-positive-fixnum
-       ;; if only html, render in emacs
-       ;; mu4e-html2text-command 'mu4e-shr2text
-       ;; shr-color-visible-luminance-min 80
-       ;; always prefer plaintext
-       mu4e-view-prefer-html nil)
+    (setq
+     ;; mu4e-view-html-plaintext-ratio-heuristic most-positive-fixnum
+     ;; if only html, render in emacs
+     ;; mu4e-html2text-command 'mu4e-shr2text
+     ;; shr-color-visible-luminance-min 80
+     ;; always prefer plaintext
+     mu4e-view-prefer-html nil
+     mu4e-completing-read-function 'completing-read)
 
-      (add-to-list 'mu4e-view-actions
-                   '("Save to PDF" . do.mail.html/render-pdf) t)
+    (add-to-list 'mu4e-view-actions
+                 '("Save to PDF" . do.mail.html/render-pdf) t)
 
-      ;; add option to view a message in the browser.
-      (add-to-list 'mu4e-view-actions
-                   '("View in browser" . mu4e-action-view-in-browser) t)
+    ;; add option to view a message in the browser.
+    (add-to-list 'mu4e-view-actions
+                 '("View in browser" . mu4e-action-view-in-browser) t)
 
-      ;; Add custom actions for our capture templates
-      (add-to-list 'mu4e-headers-actions
-                   '("follow up" . efs/capture-mail-follow-up) t)
+    ;; Add custom actions for our capture templates
+    (add-to-list 'mu4e-headers-actions
+                 '("follow up" . efs/capture-mail-follow-up) t)
 
-      (add-to-list 'mu4e-headers-actions
-                   '("read later" . efs/capture-mail-read-later) t)
+    (add-to-list 'mu4e-headers-actions
+                 '("read later" . efs/capture-mail-read-later) t)
 
-      (add-to-list 'mu4e-view-actions
-                   '("follow up" . efs/capture-mail-follow-up) t)
+    (add-to-list 'mu4e-view-actions
+                 '("follow up" . efs/capture-mail-follow-up) t)
 
-      (add-to-list 'mu4e-view-actions
-                   '("read later" . efs/capture-mail-read-later) t)
+    (add-to-list 'mu4e-view-actions
+                 '("read later" . efs/capture-mail-read-later) t)
 
-      ;; Wrap text in messages
-      (add-hook 'mu4e-view-mode-hook
-                (lambda () (setq-local truncate-lines nil)))
+    ;; Wrap text in messages
+    (add-hook 'mu4e-view-mode-hook
+              (lambda () (setq-local truncate-lines nil)))
 
-      (add-hook 'mu4e-compose-mode-hook
-                (lambda ()
-                  (turn-off-auto-fill)
-                  (use-hard-newlines -1)))
+    (add-hook 'mu4e-compose-mode-hook
+              (lambda ()
+                (turn-off-auto-fill)
+                (use-hard-newlines -1)))
 
-      (setq mu4e-bookmarks
-            '(("date:today" "Today" ?t)
-              ("flag:unread"  "Unread" ?u)
-              ("flag:unread to:ramus@rjlwjr.com OR ramus_wilson@icloud.com" "Icloud Unread" ?i)
-              ("flag:unread to:ramuswilson@gmail.com" "Gmail Unread" ?g)
-              ("flag:unread to:ramuswilson@outlook.com" "Outlook Unread" ?o)
-              ("prio:high" "High priority" ?h)
-              ("flag:attach" "Attachment" ?a)
-              ("flag:trashed" "Trashed" ?x)))
+    (setq mu4e-bookmarks
+          '(("date:today" "Today" ?t)
+            ("flag:unread"  "Unread" ?u)
+            ("flag:unread to:ramus@rjlwjr.com OR ramus_wilson@icloud.com" "Icloud Unread" ?i)
+            ("flag:unread to:ramuswilson@gmail.com" "Gmail Unread" ?g)
+            ("flag:unread to:ramuswilson@outlook.com" "Outlook Unread" ?o)
+            ("prio:high" "High priority" ?h)
+            ("flag:attach" "Attachment" ?a)
+            ("flag:trashed" "Trashed" ?x)))
 
-      ;; set mailbox context
-      (setq mu4e-contexts
-            (list
-             ;; Personal Gmail account
-             (make-mu4e-context
-              :name "Gmail"
-              :match-func
-              (lambda (msg)
-                (when msg
-                  (string-prefix-p "/Gmail" (mu4e-message-field msg :maildir))))
-              :vars '((user-mail-address . "ramuswilson@gmail.com")
+    ;; set mailbox context
+    (setq mu4e-contexts
+          (list
+           ;; Personal Gmail account
+           (make-mu4e-context
+            :name "Gmail"
+            :match-func
+            (lambda (msg)
+              (when msg
+                (string-prefix-p "/Gmail" (mu4e-message-field msg :maildir))))
+            :vars '((user-mail-address . "ramuswilson@gmail.com")
 
-                      (smtpmail-smtp-server  . "smtp.gmail.com")
-                      (smtpmail-smtp-service . 587)
-                      (smtpmail-stream-type  . starttls)
+                    (smtpmail-smtp-server  . "smtp.gmail.com")
+                    (smtpmail-smtp-service . 587)
+                    (smtpmail-stream-type  . starttls)
 
-                      (mu4e-drafts-folder  . "/Gmail/[Gmail]/Drafts")
-                      (mu4e-sent-folder  . "/Gmail/[Gmail]/Sent Mail")
-                      (mu4e-refile-folder  . "/Gmail/[Gmail]/All Mail")
-                      (mu4e-trash-folder  . "/Gmail/[Gmail]/Trash")
+                    (mu4e-drafts-folder  . "/Gmail/[Gmail]/Drafts")
+                    (mu4e-sent-folder  . "/Gmail/[Gmail]/Sent Mail")
+                    (mu4e-refile-folder  . "/Gmail/[Gmail]/All Mail")
+                    (mu4e-trash-folder  . "/Gmail/[Gmail]/Trash")
 
-                      ;; (mu4e-maildir-shortcuts . (("/Gmail/Inbox"            . ?i)
-                      ;;                            ("/Gmail/[Gmail]/Sent Mail" . ?s)
-                      ;;                            ("/Gmail/[Gmail]/Trash"     . ?t)
-                      ;;                            ("/Gmail/[Gmail]/Drafts"    . ?d)
-                      ;;                            ("/Gmail/[Gmail]/All Mail"  . ?a)))
-                      ))
+                    ;; (mu4e-maildir-shortcuts . (("/Gmail/Inbox"            . ?i)
+                    ;;                            ("/Gmail/[Gmail]/Sent Mail" . ?s)
+                    ;;                            ("/Gmail/[Gmail]/Trash"     . ?t)
+                    ;;                            ("/Gmail/[Gmail]/Drafts"    . ?d)
+                    ;;                            ("/Gmail/[Gmail]/All Mail"  . ?a)))
+                    ))
 
-             ;; Personl Outlook account
-             (make-mu4e-context
-              :name "Outlook"
-              :match-func
-              (lambda (msg)
-                (when msg
-                  (string-prefix-p "/Outlook" (mu4e-message-field msg :maildir))))
-              :vars '((user-mail-address . "ramuswilson@outlook.com")
+           ;; Personl Outlook account
+           (make-mu4e-context
+            :name "Outlook"
+            :match-func
+            (lambda (msg)
+              (when msg
+                (string-prefix-p "/Outlook" (mu4e-message-field msg :maildir))))
+            :vars '((user-mail-address . "ramuswilson@outlook.com")
 
-                      (smtpmail-smtp-server  . "smtp.office365.com")
-                      (smtpmail-smtp-service . 587)
-                      (smtpmail-stream-type  . starttls)
+                    (smtpmail-smtp-server  . "smtp.office365.com")
+                    (smtpmail-smtp-service . 587)
+                    (smtpmail-stream-type  . starttls)
 
-                      (mu4e-drafts-folder  . "/Outlook/Drafts")
-                      (mu4e-sent-folder  . "/Outlook/Sent")
-                      (mu4e-refile-folder  . "/Outlook/Inbox")
-                      (mu4e-trash-folder  . "/Outlook/Archive")
+                    (mu4e-drafts-folder  . "/Outlook/Drafts")
+                    (mu4e-sent-folder  . "/Outlook/Sent")
+                    (mu4e-refile-folder  . "/Outlook/Inbox")
+                    (mu4e-trash-folder  . "/Outlook/Archive")
 
-                      ;; (mu4e-maildir-shortcuts . (("/Outlook/Inbox"           . ?i)
-                      ;;                            ("/Outlook/Sent"            . ?s)
-                      ;;                            ("/Outlook/Archive"         . ?t)
-                      ;;                            ("/Outlook/Drafts"          . ?d)
-                      ;;                            ("/Outlook"                 . ?a)))
-                      ))
+                    ;; (mu4e-maildir-shortcuts . (("/Outlook/Inbox"           . ?i)
+                    ;;                            ("/Outlook/Sent"            . ?s)
+                    ;;                            ("/Outlook/Archive"         . ?t)
+                    ;;                            ("/Outlook/Drafts"          . ?d)
+                    ;;                            ("/Outlook"                 . ?a)))
+                    ))
 
 
-             (make-mu4e-context
-              :name "Icloud"
-              :match-func
-              (lambda (msg)
-                (when msg
-                  (string-prefix-p "/Icloud" (mu4e-message-field msg :maildir))))
-              :vars '((user-mail-address . "ramus@rjlwjr.com")
-                      (mu4e-drafts-folder  . "/Icloud/Drafts")
-                      (mu4e-sent-folder  . "/Icloud/Sent Messages")
-                      (mu4e-refile-folder  . "/Icloud/Inbox")
-                      (mu4e-trash-folder  . "/Icloud/Archive")
+           (make-mu4e-context
+            :name "Icloud"
+            :match-func
+            (lambda (msg)
+              (when msg
+                (string-prefix-p "/Icloud" (mu4e-message-field msg :maildir))))
+            :vars '((user-mail-address . "ramus@rjlwjr.com")
+                    (mu4e-drafts-folder  . "/Icloud/Drafts")
+                    (mu4e-sent-folder  . "/Icloud/Sent Messages")
+                    (mu4e-refile-folder  . "/Icloud/Inbox")
+                    (mu4e-trash-folder  . "/Icloud/Archive")
 
-                      (smtpmail-smtp-server  . "smtp.mail.me.com")
-                      (smtpmail-smtp-service . 587)
-                      (smtpmail-stream-type  . starttls)
+                    (smtpmail-smtp-server  . "smtp.mail.me.com")
+                    (smtpmail-smtp-service . 587)
+                    (smtpmail-stream-type  . starttls)
 
-                      ;; (mu4e-maildir-shortcuts . (("/Icloud/Inbox"           . ?i)
-                      ;;                            ("/Icloud/Sent Messages"   . ?s)
-                      ;;                            ("/Icloud/Archive"         . ?t)
-                      ;;                            ("/Icloud/Drafts"          . ?d)
-                      ;;                            ("/Icloud"                 . ?a)))
-                      ))))
-          (message "mu4e loaded"))
+                    ;; (mu4e-maildir-shortcuts . (("/Icloud/Inbox"           . ?i)
+                    ;;                            ("/Icloud/Sent Messages"   . ?s)
+                    ;;                            ("/Icloud/Archive"         . ?t)
+                    ;;                            ("/Icloud/Drafts"          . ?d)
+                    ;;                            ("/Icloud"                 . ?a)))
+                    ))))
+        (message "mu4e loaded"))
 #+end_src
+
 ** MU4E Marker-Icons
 #+begin_src emacs-lisp
   (use-package mu4e-marker-icons
@@ -2040,6 +2088,37 @@
           (when (or noconfirm (y-or-n-p "Snarf diary entry? "))
             (diary-from-outlook-internal subject body)
             (message "Diary entry added"))))))
+#+end_src
+** Mu4e Views
+#+begin_src emacs-lisp
+      (use-package mu4e-views
+        :after mu4e
+        :defer nil
+        :bind (:map mu4e-headers-mode-map
+                    ;; select viewing method
+                    ("v" . mu4e-views-mu4e-select-view-msg-method) 
+                    ;; from headers window scroll the email view
+                    ("M-n" . mu4e-views-cursor-msg-view-window-down) 
+                    ;; from headers window scroll the email view
+                    ("M-p" . mu4e-views-cursor-msg-view-window-up) 
+                    ;; toggle opening messages automatically when moving in the headers view
+                    ("f" . mu4e-views-toggle-auto-view-selected-message) 
+                    ;; show currently selected email with all remote content
+                    ("i" . mu4e-views-mu4e-view-as-nonblocked-html))
+        :config
+
+        (define-key mu4e-headers-mode-map (kbd "v") #'mu4e-views-mu4e-select-view-msg-method)
+        ;; use vertico for completion
+        (setq mu4e-views-completion-method 'default) 
+        ;; make xwidgets default
+        (setq mu4e-views-default-view-method "text") 
+        ;; (setq mu4e-views-default-view-method "html") ; make xwidgets default
+        ;; select the default
+        (mu4e-views-mu4e-use-view-msg-method "text") 
+        ;; when pressing n and p stay in the current window
+        (setq mu4e-views-next-previous-message-behaviour 'stick-to-current-window) 
+        ;; automatically open messages when moving in the headers view
+        (setq mu4e-views-auto-view-selected-message t)) 
 #+end_src
 * Org Mode
 ** Custom function
@@ -2672,3 +2751,8 @@
 
 
 
+
+
+#+begin_src emacs-lisp
+
+#+end_src
