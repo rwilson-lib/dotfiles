@@ -59,50 +59,70 @@
 #+end_src
 ** Emacs
 #+begin_src emacs-lisp
-    ;; A few more useful configurations...
-    (use-package emacs
-      :init
-      ;; Add prompt indicator to `completing-read-multiple'.
-      ;; Alternatively try `consult-completing-read-multiple'.
-      (defun crm-indicator (args)
-        (cons (concat "[CRM] " (car args)) (cdr args)))
-      (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
+  ;; A few more useful configurations...
+  (use-package emacs
+    :init
+    ;; Add prompt indicator to `completing-read-multiple'.
+    ;; Alternatively try `consult-completing-read-multiple'.
+    (defun crm-indicator (args)
+      (cons (concat "[CRM] " (car args)) (cdr args)))
+    (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
 
-      ;; Do not allow the cursor in the minibuffer prompt
-      (setq minibuffer-prompt-properties
-            '(read-only t cursor-intangible t face minibuffer-prompt))
-      (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+    ;; Do not allow the cursor in the minibuffer prompt
+    (setq minibuffer-prompt-properties
+          '(read-only t cursor-intangible t face minibuffer-prompt))
+    (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
 
-      ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
-      ;; Vertico commands are hidden in normal buffers.
-      (setq read-extended-command-predicate
-            #'command-completion-default-include-p)
+    ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
+    ;; Vertico commands are hidden in normal buffers.
+    (setq read-extended-command-predicate
+          #'command-completion-default-include-p)
 
-      ;; Do not use system clip board
-      ;; (setq x-select-enable-clipboard nil)
+    ;; Do not use system clip board
+    ;; (setq x-select-enable-clipboard nil)
 
-      ;; Enable recursive minibuffers
-      (setq enable-recursive-minibuffers t)
-      ;; Horizontal Split.
-      (setq split-width-threshold 1)
+    ;; Backups
+    (setq backup-directory-alist '(("." . "~/.emacs.d/backup-dir")))
+;;(setq delete-old-versions t
+;;  kept-new-versions 6
+;;  kept-old-versions 2
+;;  version-control t)
+    ;; Enable recursive minibuffers
+    (setq enable-recursive-minibuffers t)
+    ;; Horizontal Split.
+    (setq split-width-threshold 1)
 
-      :bind (("C-x C-b" . ibuffer)
-             ("s-<up>" . scroll-other-window)
-             ("s-<down>" . scroll-other-window-down)
-             ("C-`" . universal-argument)
-             ("<f12>" . tmm-menubar))
+    :bind (("C-x C-b" . ibuffer)
+           ("s-<up>" . scroll-other-window)
+           ("s-<down>" . scroll-other-window-down)
+           ("C-`" . universal-argument)
+           ("<f12>" . tmm-menubar)
+           (:map minibuffer-local-map
+                 ("<tab>" . minibuffer-complete)))
 
-      :config
-      (defun custom/display-buffer-at-bottom ()
-        (interactive)
-        (let ((buffer (current-buffer)))
-          (with-current-buffer buffer
-            (delete-window)
-            (display-buffer-at-bottom
-             buffer '(
-                      ;; (window-parameters . ((mode-line-format . (" " "%b"))))
-                      ;; (window-height . 0.25)
-                      ))))))
+    :config
+    (defun custom/display-buffer-at-bottom ()
+      (interactive)
+      (let ((buffer (current-buffer)))
+        (with-current-buffer buffer
+          (delete-window)
+          (display-buffer-at-bottom
+           buffer '(
+                    ;; (window-parameters . ((mode-line-format . (" " "%b"))))
+                    ;; (window-height . 0.25)
+                    ))))))
+#+end_src
+** DirED
+#+begin_src emacs-lisp
+  (use-package dired
+    :ensure nil
+    :config
+    (require 'dired-x)
+    (add-hook 'dired-mode-hook
+              (lambda ()
+                ;; Set dired-x buffer-local variables here.  For example:
+                ;; (dired-omit-mode 1)
+                )))
 
 #+end_src
 ** Font and Windows
@@ -439,7 +459,7 @@
       "g y" 'aya-expand
       "; SPC" 'embark-act
       "; f" 'find-file
-      "; b" 'switch-to-buffer
+      "; b" 'consult-buffer
       "; ;" 'execute-extended-command
       "; /" 'comment-line
       "; a" (general-simulate-key "C-c")
@@ -456,6 +476,23 @@
       "C-l" 'right-char
       "C-h" 'left-char)
 
+    (general-define-key
+     :keymaps '(insert emacs)
+     :prefix "<tab>"
+     "p"  'completion-at-point ;; capf
+     "t"  'complete-tag        ;; etags
+     "d"  'cape-dabbrev
+     ;; or dabbrev-completion
+     "f"  'cape-file
+     "k"  'cape-keyword
+     "s"  'cape-symbol
+     "a"  'cape-abbrev
+     "i"  'cape-ispell
+     "l"  'cape-line
+     "w"  'cape-dict
+     "\\" 'cape-tex
+     "&" 'cape-sgml
+     "r" 'cape-rfc1345)
 
     (general-define-key
      :keymaps '(normal insert visual emacs)
@@ -471,6 +508,12 @@
       "m" '(:ignore t :which-key "music")
       "mc" '(hydra-mpc/body :which-key "mpc-music")
       "mv" '(hydra-vuiet/body :which-key "vuiet-music")))
+
+  (general-define-key
+   :prefix "C-c a"
+   ;; application spefic binding 
+   "b" 'xwidget-webkit-browse-url
+   "B" 'xwidget-webkit-current-url)
 #+end_src
 ** Which-Key
 #+begin_src emacs-lisp
@@ -773,7 +816,7 @@
     (keycast-mode))
 #+end_src
 ** Company
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :async t
   (use-package company
     :bind (:map company-active-map
                 ("<escape>" . company-abort)
@@ -805,7 +848,6 @@
   ;;   (add-to-list 'company-backends #'company-tabnine)
   ;;   (setq company-idle-delay 0))
 #+end_src
-
 ** Corfu
 #+begin_src emacs-lisp
   (use-package corfu
@@ -860,35 +902,21 @@
 #+end_src
 ** Cape
 #+begin_src emacs-lisp
-  (use-package cape
-    ;; Bind dedicated completion commands
-    :bind (("<tab> p" . completion-at-point) ;; capf
-           ("<tab> t" . complete-tag)        ;; etags
-           ("<tab> d" . cape-dabbrev)        ;; or dabbrev-completion
-           ("<tab> f" . cape-file)
-           ("<tab> k" . cape-keyword)
-           ("<tab> s" . cape-symbol)
-           ("<tab> a" . cape-abbrev)
-           ("<tab> i" . cape-ispell)
-           ("<tab> l" . cape-line)
-           ("<tab> w" . cape-dict)
-           ("<tab> \\" . cape-tex)
-           ("<tab> &" . cape-sgml)
-           ("<tab> r" . cape-rfc1345))
-    
-    :init
-    ;; Add `completion-at-point-functions', used by `completion-at-point'.
-    ;;(add-to-list 'completion-at-point-functions #'cape-dabbrev)
-    ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
-    ;;(add-to-list 'completion-at-point-functions #'cape-rfc1345)
-    ;;(add-to-list 'completion-at-point-functions #'cape-abbrev)
-    ;;(add-to-list 'completion-at-point-functions #'cape-ispell)
-    ;;(add-to-list 'completion-at-point-functions #'cape-dict)
-    ;;(add-to-list 'completion-at-point-functions #'cape-line)
-    (add-to-list 'completion-at-point-functions #'cape-file)
-    (add-to-list 'completion-at-point-functions #'cape-tex)
-    (add-to-list 'completion-at-point-functions #'cape-symbol)
-    (add-to-list 'completion-at-point-functions #'cape-keyword))
+    (use-package cape
+      ;; Bind dedicated completion commands
+      :init
+      ;; Add `completion-at-point-functions', used by `completion-at-point'.
+      ;;(add-to-list 'completion-at-point-functions #'cape-dabbrev)
+      ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
+      ;;(add-to-list 'completion-at-point-functions #'cape-rfc1345)
+      ;;(add-to-list 'completion-at-point-functions #'cape-abbrev)
+      ;;(add-to-list 'completion-at-point-functions #'cape-ispell)
+      ;;(add-to-list 'completion-at-point-functions #'cape-dict)
+      ;;(add-to-list 'completion-at-point-functions #'cape-line)
+      (add-to-list 'completion-at-point-functions #'cape-file)
+      (add-to-list 'completion-at-point-functions #'cape-tex)
+      (add-to-list 'completion-at-point-functions #'cape-symbol)
+      (add-to-list 'completion-at-point-functions #'cape-keyword))
 #+end_src
 ** Popup
 #+begin_src emacs-lisp
@@ -1217,6 +1245,8 @@
     ;;             (set (make-local-variable 'company-backends)
     ;;                  '(company-web-html company-css))))
 
+    :bind (:map web-mode-map
+                ("C-c v" . browse-url-of-buffer))
     :hook (web-mode-before-auto-complete-hooks
            . (lambda ()
                (let ((web-mode-cur-language
@@ -1256,9 +1286,9 @@
            ("\\.markdown\\'" . markdown-mode))
     :init (setq markdown-command "multimarkdown"))
 
-  (use-package css-mode)
-  ;; :config
-  ;; (add-to-list 'company-backends 'company-css))
+  (use-package css-mode
+   :config
+   (add-to-list 'company-backends 'company-css))
 #+end_src
 ** JavaScript
 #+begin_src emacs-lisp
@@ -1316,7 +1346,7 @@
         python-shell-completion-native-enable nil
         python-guess-indent nil
         org-babel-python-command "python3"
-        dap-python-executable "python3"
+    dap-python-executable "python3"
         comint-process-echoes t)
 
   (when (executable-find "ipython")
@@ -1365,12 +1395,15 @@
 #+begin_src emacs-lisp
 
     (use-package conda
-      :config (progn
-                (conda-env-initialize-interactive-shells)
-                (conda-env-initialize-eshell)
-                (conda-env-autoactivate-mode t)
-                (setq conda-env-home-directory (expand-file-name "~/anaconda3/"))
-                (custom-set-variables '(conda-anaconda-home "~/anaconda3/"))))
+      :init
+      (progn
+        (conda-env-initialize-interactive-shells)
+        (conda-env-initialize-eshell)
+        (setq conda-env-home-directory (expand-file-name "~/anaconda3/"))
+        (custom-set-variables '(conda-anaconda-home "~/anaconda3/")))
+      :config
+      ;;(conda-env-autoactivate-mode t)
+      )
 
     (use-package pipenv
       :after python-mode 
@@ -1400,8 +1433,6 @@
     ;;                 (setq python-shell-interpreter (concat pyvenv-virtual-env "python3")))))
 
     ;;   (pyvenv-tracking-mo de 1))
-
-
 #+end_src
 ** Projectile
 #+begin_src emacs-lisp
@@ -1651,9 +1682,6 @@
     (latex-preview-pane-enable))
 #+end_src
 ** Bibtex
-:PROPERTIES:
-:NOTER_DOCUMENT: Emacs.org
-:END:
 #+begin_src emacs-lisp
   (use-package citeproc)
 
@@ -1689,7 +1717,8 @@
           bibtex-autokey-titleword-separator "-"
           bibtex-autokey-titlewords 2
           bibtex-autokey-titlewords-stretch 1
-          bibtex-autokey-titleword-length 5)
+          bibtex-autokey-titleword-length 5
+          bibtex-dialect 'biblatex)
 
     (setq bibtex-completion-bibliography '("~/Documents/bib/emacs-bibs/references.bib"
                                            "~/Documents/bib/emacs-bibs/dei.bib"
@@ -1710,12 +1739,18 @@
           (lambda (fpath)
             (call-process "open" nil 0 nil fpath))))
 
-  (use-package org-ref
-    :bind (:map bibtex-mode-map
-                ("H-b" . org-ref-bibtex-hydra/body))
-    :config
-    (setq org-ref-bibtex-hydra-key-binding (kbd "H-b"))
-    (require 'org-ref-pdf))
+  (use-package biblio
+    :after bibtex
+    :bind (:map biblio-selection-mode-map
+                ("k" . biblio--selection-previous)
+                ("j" . biblio--selection-next)))
+
+    (use-package org-ref
+      :bind (:map bibtex-mode-map
+                  ("H-b" . org-ref-bibtex-hydra/body))
+      :config
+      (setq org-ref-bibtex-hydra-key-binding (kbd "H-b"))
+      (require 'org-ref-pdf))
 #+end_src
 
 ** PDF Tools
@@ -1727,11 +1762,14 @@
      '(pdf-tools-handle-upgrades nil)) ; Use brew upgrade pdf-tools instead.
     (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo"))
   (pdf-tools-install)
+
+  (use-package org-noter-pdftools)
 #+end_src
 ** Google
 #+begin_src emacs-lisp
   (use-package google-this
     :config
+    (setq google-this-browse-url-function #'xwidget-webkit-browse-url)
     (google-this-mode 1))
 #+end_src
 ** Ledger
@@ -1993,7 +2031,6 @@
                     ))))
         (message "mu4e loaded"))
 #+end_src
-
 ** MU4E Marker-Icons
 #+begin_src emacs-lisp
   (use-package mu4e-marker-icons
@@ -2165,6 +2202,7 @@
                 ("<tab> TAB" . org-cycle))
 
     :config
+    (setq org-directory (concat (getenv "HOME") "/org"))
     (setq org-ellipsis " ⤸")
     (setq org-agenda-start-with-log-mode t)
     (setq org-log-done '(time note))
@@ -2180,7 +2218,7 @@
     (setq my/org-latex-scale 1.75)
     (setq org-preview-latex-default-process 'dvisvgm)
     (setq org-format-latex-options (plist-put org-format-latex-options
-                                    :scale my/org-latex-scale))
+                                              :scale my/org-latex-scale))
 
     (setq org-cite-csl-styles-dir "~/Zotero/styles")
 
@@ -2197,7 +2235,7 @@
 
     (setq org-tag-alist
           '((:startgroup)
-                                          ; Put mutually exclusive tags here
+            ;; Put mutually exclusive tags here
             (:endgroup)
             ("note" . ?n)
             ("@home" . ?H)
@@ -2258,7 +2296,7 @@
                      (org-agenda-files org-agenda-files)))))))
 
     (setq org-capture-templates
-          `(("t" "Tasks / Projects")
+          '(("t" "Tasks / Projects")
             ("tt" "Task" entry (file+olp "~/org/beorg/org/Tasks.org" "Inbox")
              "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
 
@@ -2300,7 +2338,6 @@
     (visual-fill-column-mode 1))
 
   (use-package visual-fill-column
-
     :hook (org-mode . efs/org-mode-visual-fill))
 #+end_src
 
@@ -2523,10 +2560,6 @@
     (org-remark-create "magnet"
                        '(modus-themes-nuanced-magenta)))
 #+end_src
-** Org Noter
-#+begin_src emacs-lisp
-  (use-package org-noter-pdftools)
-#+end_src
 ** Flash card
 #+begin_src emacs-lisp
     (use-package org-anki
@@ -2544,19 +2577,28 @@
 #+end_src
 ** Org Roam
 #+begin_src emacs-lisp
-
   (use-package org-roam
     :ensure t
     :init
     (setq org-roam-v2-ack t)
+    (setq org-roam-capture-templates '(("d" "default" plain "%?" :target
+                                      (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                                                 "#+title: ${title}\n#+date: %u\n#+lastmod: %t\n#+filetags: :emacs:note:roam: \n")
+                                      :unnarrowed t)))
+
     :custom
-    (org-roam-directory "~/RoamNotes")
-    (org-roam-completion-everywhere t)
-    :bind (("C-c n l" . org-roam-buffer-toggle)
-           ("C-c n f" . org-roam-node-find)
-           ("C-c n i" . org-roam-node-insert)
+    (org-roam-directory "~/org/notes/roam")
+    ;; (org-roam-completion-everywhere t)
+    :bind (("C-c n f" . org-roam-node-find)
+           ("C-c n r" . org-roam-node-random)		    
            :map org-mode-map
            ("C-M-i" . completion-at-point)
+           ("C-c n i" . org-roam-node-insert)
+           ("C-c n o" . org-id-get-create)
+           ("C-c n t" . org-roam-tag-add)
+           ("C-c n l" . org-roam-buffer-toggle)
+           ("C-c n a" . org-roam-alias-add)
+
            :map org-roam-dailies-map
            ("Y" . org-roam-dailies-capture-yesterday)
            ("T" . org-roam-dailies-capture-tomorrow))
@@ -2566,7 +2608,20 @@
     (require 'org-roam-dailies) ;; Ensure the keymap is available
     (org-roam-db-autosync-mode))
 
-  (use-package org-roam-ui)
+  (use-package org-roam-ui
+    :config
+    (setq org-roam-ui-browser-function #'xwidget-webkit-browse-url))
+#+end_src
+** Deft
+#+begin_src emacs-lisp
+(use-package deft
+    :config
+    (setq deft-directory org-directory
+          deft-recursive t
+          deft-strip-summary-regexp ":PROPERTIES:\n\\(.+\n\\)+:END:\n"
+          deft-use-filename-as-title t)
+    :bind
+    ("C-c n d" . deft))
 #+end_src
 * Pretty Symbols
 ** Org Symbols
@@ -2584,11 +2639,11 @@
                                    ("[ ]" . "")
                                    ("[X]" . "")
                                    ("[-]" . "")
-                                   ("#+BEGIN_SRC" . "")
+                                   ("#+BEGIN_SRC" . " ")
                                    ("#+END_SRC" . "―")
                                    (":PROPERTIES:" . "")
                                    ("#+PROPERTY:" . "")
-                                   (":END:" . "― ")
+                                   (":END:" . "―")
                                    ("#+STARTUP:" . "")
                                    ("#+TITLE: " . "")
                                    ("#+RESULTS:" . "")
@@ -2599,12 +2654,11 @@
                                    ("#+SUBTITLE:" . "")
                                    ("#+AUTHOR:" . "")
                                    (":Effort:" . "")
-                                   ("SCHEDULED:" . "")
+                                   ("SCHEDULED:" . " ")
                                    ("DEADLINE:" . "")))
     (prettify-symbols-mode 1))
 
   (add-hook 'org-mode-hook 'my/org-mode/load-prettify-symbols)
-
 #+end_src
 ** Prog Symbols
 #+begin_src emacs-lisp
@@ -2745,14 +2799,9 @@
   ;;(require 'zone)
   ;;(zone-when-idle 120)
 #+end_src
-
-
-
-
-
-
-
-
+** XWidget
 #+begin_src emacs-lisp
-
+  (use-package xwwp
+    :bind (:map xwidget-webkit-mode-map 
+                ("f" . xwwp-follow-link)))
 #+end_src
