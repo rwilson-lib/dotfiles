@@ -499,14 +499,15 @@
       "g y" 'aya-expand
       "; SPC" 'embark-act
       "; f" 'find-file
+      "; F" 'find-file-other-window
       "; b" 'consult-buffer
+      "; B" 'consult-buffer-other-window
       "; ;" 'execute-extended-command
       "; /" 'comment-line
       "; a" (general-simulate-key "C-c")
       "; s" (general-simulate-key "C-x")
       "; w" (general-simulate-key "C-w")
       "; h" (general-simulate-key "C-h")
-      "; '" (general-simulate-key "C-c C-c")
       "SPC g" (general-simulate-key "M-g")
       "SPC s" (general-simulate-key "M-s"))
 
@@ -545,12 +546,13 @@
      "jr" 'consult-recent-file
      "jS" 'consult-lsp-symbols
      "js" 'consult-lsp-file-symbols
+     "oo" 'consult-lsp-file-symbols
      "sr" 'consult-ripgrep
-     ":" 'consult-goto-line
-     "/" 'consult-line
-     "'" 'consult-mark
+     ":"  'consult-goto-line
+     "."  'consult-focus-lines
+     "/"  'consult-line
+     "'"  'consult-mark
      "\"" 'consult-register)
-
 
     (general-define-key
      :keymaps '(normal insert visual emacs)
@@ -568,7 +570,6 @@
       "m" '(:ignore t :which-key "music")
       "mc" '(hydra-mpc/body :which-key "mpc-music")
       "mv" '(hydra-vuiet/body :which-key "vuiet-music")))
-
 
 #+end_src
 ** Which-Key
@@ -792,7 +793,6 @@
   (use-package consult-flycheck)
   (use-package consult-yasnippet)
   (use-package consult-company)
-  (use-package consult-projectile)
 #+End_src
 ** Embark
 #+begin_src emacs-lisp
@@ -1489,18 +1489,27 @@
 ** Projectile
 #+begin_src emacs-lisp
 
+  (use-package consult-projectile
+    :after (consult projectile))
+
   (use-package projectile
     :diminish projectile-mode
     :config (projectile-mode t)
     :custom ((projectile-completion-system 'default))
     :bind-keymap
     ("C-c p" . projectile-command-map)
+    :bind ((:map projectile-command-map
+           ("p" . consult-projectile-switch-project)
+           ("f" . consult-projectile-find-file)
+           ("e" . consult-projectile-recentf)
+           ("d" . consult-projectile-find-dir)))
     :init
     (when (file-directory-p "~/Projects")
       (setq projectile-project-search-path '("~/Projects")))
     (setq projectile-switch-project-action
           '(lambda ()
-             (projectile-dired))))
+             (consult-grep))))
+
 
   ;; (use-package counsel-projectile
   ;;  :config (counsel-projectile-mode))
@@ -1850,6 +1859,8 @@
           aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 
     :bind (:map evil-window-map
+                ("fn" . make-frame)
+                ("fc" . delete-frame)
                 ("d" . evil-delete-buffer)
                 ("T" . tab-bar-move-window-to-tab)
                 ("SPC" . custom/display-buffer-at-bottom)
@@ -2639,7 +2650,6 @@
                                       (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
                                                  "#+title: ${title}\n#+date: %u\n#+lastmod: %t\n#+filetags: :emacs:note:roam: \n")
                                       :unnarrowed t)))
-
     :custom
     (org-roam-directory "~/org/notes/roam")
     ;; (org-roam-completion-everywhere t)
@@ -2687,7 +2697,7 @@
   (defun my/org-mode/load-prettify-symbols ()
     (interactive)
     "Beautify org mode keywords."
-    (setq prettify-symbols-alist '(("TODO" . "")
+    (setq prettify-symbols-alist '(("TODO" . " ")
                                    ("WAIT" . "")        
                                    ("NOPE" . "")
                                    ("DONE" . "")
@@ -2714,7 +2724,7 @@
                                    (":Effort:" . "")
                                    ("SCHEDULED:" . " ")
                                    ("DEADLINE:" . "")))
-    (prettify-symbols-mode 1))
+    (prettify-symbols-mode 0))
 
   (add-hook 'org-mode-hook 'my/org-mode/load-prettify-symbols)
 #+end_src
@@ -2845,7 +2855,6 @@
 #+begin_src emacs-lisp
   (use-package scanner)
 #+end_src
-
 ** Measure Load Time
 #+begin_src emacs-lisp
   (defun efs/display-startup-time ()
@@ -2882,5 +2891,3 @@
    ;;   (hyperbole-mode 1))
 #+end_src
 
-* Noter
-** Consider mapping to GS
