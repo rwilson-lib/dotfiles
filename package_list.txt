@@ -1,0 +1,113 @@
+# brew leaves | xargs -n1 brew desc
+
+abook: Address book with mutt support
+ack: Search tool like grep, but optimized for programmers
+aria2: Download with resuming and segmented downloading
+aspell: Spell checker with better logic than ispell
+autoconf-archive: Collection of over 500 reusable autoconf macros
+automake: Tool for generating GNU Standards-compliant Makefiles
+axel: Light UNIX download accelerator
+bat: Clone of cat(1) with syntax highlighting and Git integration
+bbftp-client: Secure file transfer software, optimized for large files
+biber: Backend processor for BibLaTeX
+black: Python code formatter
+Warning: Treating cmake as a formula. For the cask, use homebrew/cask/cmake
+cmake: Cross-platform make
+cmake-docs: Documentation for CMake
+coreutils: GNU File, Shell, and Text utilities
+cowsay: Configurable talking characters in ASCII art
+dict: Dictionary Server Protocol (RFC2229) client
+docutils: Text processing system for reStructuredText
+espeak: Text to speech, software speech synthesizer
+exa: Modern replacement for 'ls'
+fb303: Thrift functions for querying information from a service
+fd: Simple, fast and user-friendly alternative to find
+figlet: Banner-like program prints strings as ASCII art
+findutils: Collection of GNU find, xargs, and locate
+fortune: Infamous electronic fortune-cookie generator
+fswatch: Monitor a directory for changes and run a shell command
+fzf: Command-line fuzzy finder written in Go
+gawk: GNU awk utility
+git: Distributed revision control system
+git-extras: Small git utilities
+global: Source code tag system
+gnu-indent: C code prettifier
+gnu-sed: GNU implementation of the famous stream editor
+gnu-tar: GNU version of the tar archiving utility
+gnuplot: Command-driven, interactive function plotting
+go: Open source programming language to build simple/reliable/efficient software
+googler: Google Search and News from the command-line
+grep: GNU grep, egrep and fgrep
+http-server: Simple zero-configuration command-line HTTP server
+ispell: International Ispell
+isync: Synchronize a maildir with an IMAP server
+jq: Lightweight and flexible command-line JSON processor
+skhd: Simple hotkey-daemon for macOS.
+yabai: A tiling window manager for macOS based on binary space partitioning.
+ledger: Command-line, double-entry accounting tool
+libedit: BSD-style licensed readline alternative
+libnotify: Library that sends desktop notifications to a notification daemon
+libproxy: Library that provides automatic proxy configuration management
+libvterm: C99 library which implements a VT220 or xterm terminal emulator
+libxft: X.Org: X FreeType library
+lolcat: Rainbows and unicorns in your console!
+Warning: Treating lynx as a formula. For the cask, use homebrew/cask/lynx
+lynx: Text-based web browser
+Warning: Treating macvim as a formula. For the cask, use homebrew/cask/macvim
+macvim: GUI for vim, made for macOS
+mdcat: Show markdown documents on text terminals
+meson: Fast and user friendly build system
+mongodb-database-tools: This package contains standard utilities for interacting with MongoDB.
+mongosh: MongoDB Shell to connect, configure, query, and work with your MongoDB database
+mpc: Command-line music player client for mpd
+mpd: Music Player Daemon
+Warning: Treating mpv as a formula. For the cask, use homebrew/cask/mpv
+mpv: Media player based on MPlayer and mplayer2
+mu: Tool for searching e-mail messages stored in the maildir-format
+mupdf-tools: Lightweight PDF and XPS viewer
+mutt: Mongrel of mail user agents (part elm, pine, mush, mh, etc.)
+mysql-client: Open source relational database management system
+ncmpcpp: Ncurses-based client for the Music Player Daemon
+neofetch: Fast, highly customisable system info script
+neovim: Ambitious Vim-fork focused on extensibility and agility
+nethogs: Net top tool grouping bandwidth per process
+nikto: Web server scanner
+node@14: Platform built on V8 to build network applications
+nushell: Modern shell for the GitHub era
+opencv: Open source computer vision library
+openssl@3: Cryptography and SSL/TLS Toolkit
+p7zip: 7-Zip (high compression file archiver) implementation
+pass-otp: Pass extension for managing one-time-password tokens
+pgformatter: PostgreSQL syntax beautifier
+pidof: Display the PID number for a given process name
+plantuml: Draw UML diagrams
+poppler: PDF rendering library (based on the xpdf-3.0 code base)
+pv: Monitor data's progress through a pipe
+pyenv: Python version management
+Warning: Treating r as a formula. For the cask, use homebrew/cask/r
+r: Software environment for statistical computing
+ripgrep: Search tool like grep and The Silver Searcher
+rust: Safe, concurrent, practical language
+sane-backends: Backends for scanner access
+sc-im: Spreadsheet program for the terminal, using ncurses
+screen: Terminal multiplexer with VT100/ANSI terminal emulation
+Warning: Treating sip as a formula. For the cask, use homebrew/cask/sip
+sip: Tool to create Python bindings for C and C++ libraries
+sleepwatcher: Monitors sleep, wakeup, and idleness of a Mac
+szip: Implementation of extended-Rice lossless compression algorithm
+talloc: Hierarchical, reference-counted memory pool with destructors
+terminal-notifier: Send macOS User Notifications from the command-line
+terraform: Tool to build, change, and version infrastructure
+texinfo: Official documentation format of the GNU project
+the_silver_searcher: Code-search similar to ack
+tmux: Terminal multiplexer
+uftp: Secure, reliable, efficient multicast file transfer program
+unoconv: Convert between any document format supported by OpenOffice
+vdirsyncer: Synchronize calendars and contacts
+vifm: Ncurses-based file manager with vi-like keybindings
+w3m: Pager/text based browser
+wget: Internet file retriever
+wordnet: Lexical database for the English language
+youtube-dl: Download YouTube videos from the command-line
+z: Tracks most-used directories to make cd smarter
+zoxide: Shell extension to navigate your filesystem faster
