@@ -104,7 +104,7 @@
            ("C-`" . universal-argument)
            ("<f12>" . tmm-menubar)
            (:map minibuffer-local-map
-                 ("<tab>" . minibuffer-complete)))
+                 ("<tab>" . completion-at-point)))
 
     :config
     (defun custom/display-buffer-at-bottom ()
@@ -329,6 +329,25 @@
      ((eq evil-state 'normal) (keyboard-quit))
      (t (evil-force-normal-state))))
 
+  (evil-define-command evil-window-delete-m (count)
+    "Deletes the current window.
+  If `evil-auto-balance-windows' is non-nil then all children of
+  the deleted window's parent window are rebalanced."
+    :repeat nil
+    (interactive "<c>")
+    (let ((p (window-parent)))
+      (if (not count)
+          (delete-window)
+        (if (winum-get-window-by-number count)
+            (delete-window(winum-get-window-by-number count))
+          (message "cant delete window")))
+      (when evil-auto-balance-windows
+        ;; balance-windows raises an error if the parent does not have
+        ;; any further children (then rebalancing is not necessary anyway)
+        (condition-case nil
+            (balance-windows p)
+          (error)))))
+
   (use-package evil
 
     :bind ((:map evil-normal-state-map
@@ -360,11 +379,11 @@
 
     (evil-define-operator evil-write-delete-buffer (beg end type file-or-append &optional bang)
       "Save the current buffer, from BEG to END, to FILE-OR-APPEND.
-  If FILE-OR-APPEND is of the form \" FILE\", append to FILE
-  instead of overwriting.  The current buffer's filename is not
-  changed unless it has no associated file and no region is
-  specified.  If the file already exists and the BANG argument is
-  non-nil, it is overwritten without confirmation."
+    If FILE-OR-APPEND is of the form \" FILE\", append to FILE
+    instead of overwriting.  The current buffer's filename is not
+    changed unless it has no associated file and no region is
+    specified.  If the file already exists and the BANG argument is
+    non-nil, it is overwritten without confirmation."
       :motion nil
       :move-point nil
       :type line
@@ -397,9 +416,9 @@
           (write-region nil nil filename
                         nil (not bufname) nil
                         (not bang))))))
-    
+
     (evil-ex-define-cmd "wd[elete]" 'evil-write-delete-buffer)
-  
+
     (evil-ex-define-cmd "sf[ind]" 'evil-sfind)
     (evil-ex-define-cmd "tabedit" 'evil-tabedit)
 
@@ -475,12 +494,6 @@
       ("<" mpc-prev "previous")
       ("<escape>" nil "finish"))
 
-    (defhydra hydra-mail (:timeout 4)
-      "mail"
-      ("o" mu4e "Open Mail")
-      ("c" mu4e-compose-new "Compose New Mail")
-      ("<escape>" nil "finish"))
-
     (defhydra hydra-aya (:timeout 4)
       "aya"
       ("c" aya-create "aya create")
@@ -517,9 +530,10 @@
       "C-l" 'right-char
       "C-h" 'left-char)
 
+
     (general-define-key
      :keymaps '(insert)
-     :prefix "C-i"
+     :prefix "C-<tab>"
      "p"  'completion-at-point ;; capf
      "t"  'complete-tag        ;; etags
      "d"  'cape-dabbrev
@@ -537,28 +551,17 @@
 
     (general-define-key
      :keymaps '(normal insert visual emacs)
-     :prefix "SPC SPC"
-     :non-normal-prefix "M-SPC"
-     "ji" 'consult-imenu
-     "jb" 'consult-bookmark
-     "jo" 'consult-outline
-     "jI" 'consult-imenu-multi
-     "jr" 'consult-recent-file
-     "jS" 'consult-lsp-symbols
-     "js" 'consult-lsp-file-symbols
-     "oo" 'consult-lsp-file-symbols
-     "sr" 'consult-ripgrep
-     ":"  'consult-goto-line
-     "."  'consult-focus-lines
-     "/"  'consult-line
-     "'"  'consult-mark
-     "\"" 'consult-register)
-
-    (general-define-key
-     :keymaps '(normal insert visual emacs)
      :prefix "SPC"
      :non-normal-prefix "M-SPC"
      "y" '(hydra-aya/body :which-key "aya"))
+
+    (general-define-key
+     :keymaps '(normal insert visual emacs)
+     :prefix "C-x"
+     "mc" 'compose-mail
+     "4mc" 'compose-mail-other-window
+     "5mc" 'compose-mail-other-frame
+     "mm" 'mu4e)
 
     (general-define-key
      :prefix "C-c a"
@@ -764,6 +767,7 @@
            ("M-g k" . consult-global-mark)
            ("M-g i" . consult-imenu)
            ("M-g I" . consult-imenu-multi)
+           ("M-g r" . consult-recent-file)
 
            ;; M-s bindings (search-map)
            ("M-s f" . consult-find)
@@ -837,10 +841,10 @@
   (use-package treemacs-icons-dired
     :hook (dired-mode . treemacs-icons-dired-enable-once))
 
-  (use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
-    :after (treemacs persp-mode) ;;or perspective vs. persp-mode
-    :ensure t
-    :config (treemacs-set-scope-type 'Perspectives))
+  ;;(use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
+  ;;  :after (treemacs persp-mode) ;;or perspective vs. persp-mode
+  ;;  :ensure t
+  ;;  :config (treemacs-set-scope-type 'Perspectives))
 
   (use-package treemacs-projectile
     :after treemacs projectile)
@@ -1408,7 +1412,8 @@
   (add-hook 'python-mode-hook #'evil-tree-edit-mode)
 
   (use-package live-py-mode
-    :init
+    :config
+    (setq live-py-path "/usr/bin/python3")
     (setq live-py-version "python3"))
 
   (use-package ipython-shell-send)
@@ -1699,7 +1704,7 @@
     :ensure t
     :hook (text-mode . flycheck-languagetool-setup)
     :init
-    (setq flycheck-languagetool-server-jar "~/bin/LanguageTool-5.6/languagetool-server.jar"))
+    (setq flycheck-languagetool-server-jar "~/bin/LanguageTool-5.7/languagetool-server.jar"))
 #+end_src
 ** Dictionary
 #+begin_src emacs-lisp
@@ -1862,6 +1867,7 @@
                 ("fn" . make-frame)
                 ("fc" . delete-frame)
                 ("d" . evil-delete-buffer)
+                ("c" . evil-window-delete-m)
                 ("T" . tab-bar-move-window-to-tab)
                 ("SPC" . custom/display-buffer-at-bottom)
                 ("a" . ace-window)))
@@ -2100,6 +2106,7 @@
 ** MU4E Marker-Icons
 #+begin_src emacs-lisp
   (use-package mu4e-marker-icons
+    :defer 4
     :after mu4e
     :init
     (mu4e-marker-icons-mode 1)
@@ -2225,6 +2232,7 @@
 ** Org MSG
 #+begin_src emacs-lisp
   (use-package org-msg
+    :after mu4e
     :ensure t
     :hook (org-msg-mode lambda ()
                         (flyspell-mode))
@@ -2242,14 +2250,43 @@
   "
   Regards,
 
-  #+begin_signature
+  ,#+begin_signature
   ---------------------------
-  *Ramus Jabee Lloyd Wilson*
+  ,*Ramus Jabee Lloyd Wilson*
   ICT Consultant
   Smile Technology LLC
   /The simple act of paying attention can take you a long way/
-  #+end_signature")
+  ,#+end_signature")
     (org-msg-mode))
+#+end_src
+
+* Elfeed
+#+begin_src emacs-lisp
+  (use-package elfeed
+    :defer 5
+    :config
+    (setq elfeed-show-entry-switch 'display-buffer))
+
+  (use-package elfeed-org
+    :defer 5
+    :after elfeed
+    :config
+    (elfeed-org)
+    (setq rmh-elfeed-org-files (list "~/org/elfeed.org")))
+
+
+  (use-package elfeed-goodies
+    :defer 5
+    :after elfeed
+    :config
+    (elfeed-org))
+
+  (use-package elfeed-score
+    :defer 5
+    :config
+    (progn
+      (elfeed-score-enable)
+      (define-key elfeed-search-mode-map "=" elfeed-score-map)))
 #+end_src
 
 * Org Mode
@@ -2628,7 +2665,7 @@
 ** Flash card
 #+begin_src emacs-lisp
     (use-package org-anki
-      :defer 5)
+      :defer t)
 #+end_src
 ** Org Table Color
 #+begin_src emacs-lisp
