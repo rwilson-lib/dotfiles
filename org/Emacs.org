@@ -1,8 +1,8 @@
-
 #+TITLE: Emacs Configuration
 #+PROPERTY: header-args:emacs-lisp :tangle ~/.emacs.d/init.el
 
-* Utilities Function
+* Custom Function
+** Utilities Function
 #+begin_src emacs-lisp
   (defun vim-open-buffer ()
     (interactive)
@@ -22,6 +22,9 @@
   (if (daemonp)
       (message "Loading in the daemond")
     (message "Loading in regular Emacs!"))
+#+end_src
+** My Function
+#+begin_src emacs-lisp
 #+end_src
 * Environment
 ** Custom File
@@ -329,24 +332,18 @@
      ((eq evil-state 'normal) (keyboard-quit))
      (t (evil-force-normal-state))))
 
-  (evil-define-command evil-window-delete-m (count)
-    "Deletes the current window.
-  If `evil-auto-balance-windows' is non-nil then all children of
-  the deleted window's parent window are rebalanced."
-    :repeat nil
-    (interactive "<c>")
-    (let ((p (window-parent)))
-      (if (not count)
-          (delete-window)
-        (if (winum-get-window-by-number count)
-            (delete-window(winum-get-window-by-number count))
-          (message "cant delete window")))
-      (when evil-auto-balance-windows
-        ;; balance-windows raises an error if the parent does not have
-        ;; any further children (then rebalancing is not necessary anyway)
-        (condition-case nil
-            (balance-windows p)
-          (error)))))
+    (defun tab-bar-switch-to-next-tab-m()
+    (interactive)
+    (if (equal current-prefix-arg nil) ; no C-u
+        (tab-bar-switch-to-next-tab)
+      (tab-bar-select-tab current-prefix-arg)))
+  
+  (defun tab-bar-switch-to-prev-tab-m()
+    (interactive)
+    (if (equal current-prefix-arg nil) ; no C-u
+        (tab-bar-switch-to-prev-tab)
+      (tab-bar-select-tab current-prefix-arg)))
+
 
   (use-package evil
 
@@ -367,6 +364,25 @@
     :config
     (setq evil-ex-search-case "insensitive")
 
+    (evil-define-command evil-window-delete-m (&optional count)
+     "Deletes the current window.
+     If `evil-auto-balance-windows' is non-nil then all children of
+     the deleted window's parent window are rebalanced."
+     :repeat nil
+     (interactive "<c>")
+     (let ((p (window-parent)))
+      (if (not count)
+       (delete-window)
+       (if (winum-get-window-by-number count)
+        (delete-window(winum-get-window-by-number count))
+        (message "cant delete window")))
+      (when evil-auto-balance-windows
+       ;; balance-windows raises an error if the parent does not have
+       ;; any further children (then rebalancing is not necessary anyway)
+       (condition-case nil
+        (balance-windows p)
+        (error)))))
+
     (evil-define-command evil-sfind (file)
       "Open FILE in a split"
       (interactive "<f>")
@@ -376,6 +392,7 @@
       "Open FILE in a new tab"
       (interactive "<f>")
       (find-file-other-tab file))
+
 
     (evil-define-operator evil-write-delete-buffer (beg end type file-or-append &optional bang)
       "Save the current buffer, from BEG to END, to FILE-OR-APPEND.
@@ -424,6 +441,8 @@
 
     ;; example how to map a command in normal mode (called 'normal state' in evil)
     (define-key evil-normal-state-map (kbd "z <return>") 'enlarge-window)
+    (define-key evil-normal-state-map (kbd "g t") 'tab-bar-switch-to-next-tab-m)
+    (define-key evil-normal-state-map (kbd "g T") 'tab-bar-switch-to-prev-tab-m)
     (evil-mode 1))
 
   (defun moon-override-yank-pop (&optional arg)
@@ -432,6 +451,7 @@
       (kill-region (region-beginning) (region-end))))
 
   (advice-add 'consult-yank-pop :before #'moon-override-yank-pop)
+
 
   (use-package goto-last-change)
 #+end_src
@@ -510,6 +530,7 @@
     (general-nvmap
       "g Y" 'aya-create
       "g y" 'aya-expand
+      "g l" 'toggle-line-number
       "; SPC" 'embark-act
       "; f" 'find-file
       "; F" 'find-file-other-window
@@ -583,6 +604,16 @@
     :config (setq which-key-idle-delay 0.3))
 #+end_src
 * User Interface Improvements
+** Toggle Line Number
+#+begin_src emacs-lisp
+  (defun toggle-line-number()
+    (interactive)
+    (acase display-line-numbers-type
+      ('t (menu-bar--display-line-numbers-mode-relative))
+      ('relative (menu-bar--display-line-numbers-mode-absolute))
+      ('nil (menu-bar--display-line-numbers-mode-relative))
+      ('visual (menu-bar--display-line-numbers-mode-relative))))
+#+end_src
 ** All Icons
 #+begin_src emacs-lisp
   (use-package all-the-icons)
@@ -592,30 +623,34 @@
 #+end_src
 ** Doom Themes and Modeline
 #+begin_src emacs-lisp
-    (use-package hide-mode-line
-      :hook ((calc-mode) . hide-mode-line))
+      (use-package hide-mode-line
+        :hook ((calc-mode) . hide-mode-line))
 
-    (setq display-time-day-and-date t
-          display-time-24hr-format t)
-    ;; (display-time)
+      (setq display-time-day-and-date t
+            display-time-24hr-format t)
+      ;; (display-time)
 
-    (use-package doom-modeline
-      :init (doom-modeline-mode 1)
-      :config
-      (setq find-file-visit-truename t)
-      :custom ((doom-modeline-height 0)))
+      (use-package smart-mode-line
+        :config
+        (smart-mode-line-enable))
 
-    (use-package doom-themes
-      :config
-      (doom-themes-visual-bell-config)
-      (load-theme 'doom-oceanic-next t))
+      (use-package doom-modeline
+        :init (doom-modeline-mode 1)
+        :config
+        (setq find-file-visit-truename t)
+        :custom ((doom-modeline-height 0)))
 
-    (use-package solaire-mode)
+      (use-package doom-themes
+        :config
+        (doom-themes-visual-bell-config)
+        (load-theme 'modus-vivendi t))
 
-    (use-package leuven-theme)
-    (use-package tao-theme)
-    (use-package jazz-theme)
-    (use-package exotica-theme)
+      (use-package solaire-mode)
+
+      (use-package leuven-theme)
+      (use-package tao-theme)
+      (use-package jazz-theme)
+      (use-package exotica-theme)
 
 #+end_src
 ** Counsel Ivy
@@ -890,14 +925,14 @@
 ** Company Back-ends
 #+begin_src emacs-lisp :async t
   (use-package company-web
-    :after (web-mode)
+    :after (company web-mode)
     :config
     (add-to-list 'company-backends 'company-web-html)
     (add-to-list 'company-backends 'company-web-jade)
     (add-to-list 'company-backends 'company-web-slim))
 
   (use-package company-restclient
-    :after restclient
+    :after ( company restclient )
     :config 
     (add-to-list 'company-backends 'company-restclient))
 
@@ -1039,11 +1074,6 @@
 
   (use-package eterm-256color
     :hook (term-mode . eterm-256color-mode))
-
-  ;; (use-package multi-term
-  ;;   :config
-  ;;   (setq multi-term-program "/bin/zsh"))
-
 #+end_src
 ** Vterm
 #+begin_src emacs-lisp
@@ -2927,4 +2957,5 @@
    ;;   :config
    ;;   (hyperbole-mode 1))
 #+end_src
+
 
