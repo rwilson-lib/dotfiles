@@ -117,7 +117,7 @@ inoremap <silent> <C-g> <ESC>
 nnoremap <silent> j gj
 nnoremap <silent> k gk
 nnoremap <silent> <leader>gf :e <cfile><cr>
-nnoremap <silent> <localleader><localleader> :set relativenumber!<CR>
+nnoremap <silent> gl :set relativenumber!<CR>
 nnoremap <silent> <localleader><space> :set hls!<CR>
 
 inoremap <C-h> <Left>
