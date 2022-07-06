@@ -23,9 +23,6 @@
       (message "Loading in the daemond")
     (message "Loading in regular Emacs!"))
 #+end_src
-** My Function
-#+begin_src emacs-lisp
-#+end_src
 * Environment
 ** Custom File
 #+begin_src emacs-lisp
@@ -153,7 +150,6 @@
       ;; finally, switch to that window
       (other-window 1)))
 
-
   (use-package dired
     :ensure nil
     :hook (dired-mode . (lambda ()
@@ -166,7 +162,6 @@
     (setq dired-dwim-target t
           dired-listing-switches "-alh")
     (require 'dired-x))
-
 #+end_src
 ** Font and Windows
 #+begin_src emacs-lisp
@@ -323,6 +318,12 @@
     :config
     (async-bytecomp-package-mode 1))
 #+end_src
+** Alert
+#+begin_src emacs-lisp
+  (use-package alert
+    :config
+    (setq alert-default-style "fringe"))
+#+end_src
 * Key Binding
 ** Evil
 #+begin_src emacs-lisp
@@ -371,6 +372,7 @@
      :repeat nil
      (interactive "<c>")
      (let ((p (window-parent)))
+ 
       (if (not count)
        (delete-window)
        (if (winum-get-window-by-number count)
@@ -460,7 +462,9 @@
   (use-package evil-collection
     :after evil
     :config
-    (evil-collection-init))
+    (condition-case err
+        (evil-collection-init)
+      (error (message "Error initializing evil-collection-init: %S" err))))
 
   (use-package evil-matchit
     :after evil
@@ -470,6 +474,13 @@
     :after evil
     :config
     (global-evil-surround-mode 1))
+
+  (use-package evil-goggles
+    :after evil
+    :config
+    (evil-goggles-mode)
+    (evil-goggles-use-diff-faces))
+
 #+end_src
 ** IEdit
 #+begin_src emacs-lisp
@@ -645,10 +656,6 @@
         (doom-themes-visual-bell-config)
         (load-theme 'modus-vivendi t))
 
-      (use-package solaire-mode)
-
-      (use-package leuven-theme)
-      (use-package tao-theme)
       (use-package jazz-theme)
       (use-package exotica-theme)
 
@@ -719,22 +726,12 @@
                      #'completion--in-region)
                    args)))
 
-    (advice-add #'completing-read-multiple
-                :override #'consult-completing-read-multiple)
+    ;;(advice-add #'completing-read-multiple
+    ;;            :override #'consult-completing-read-multiple)
     :custom
     (vertico-cycle t)
     :init
     (vertico-mode 1))
-#+end_src
-** Ivy
-#+begin_src emacs-lisp
-  ;; (use-package ivy
-  ;;   :bind (;;("C-s" . swiper)
-  ;;          :map ivy-minibuffer-map
-  ;;          ("TAB" . ivy-alt-done)
-  ;;          ("C-l" . ivy-alt-done)
-  ;;          ("C-j" . ivy-next-line)
-  ;;          ("C-k" . ivy-previous-line)))
 #+end_src
 ** Orderless
 #+begin_src emacs-lisp
@@ -1017,11 +1014,14 @@
 #+end_src
 ** Highlight
 #+begin_src emacs-lisp
-  (use-package hl-prog-extra)
-  (global-hl-prog-extra-mode)
-  ;; (use-package hl-block-mode)  ; activate in the current buffer.
-  ;; (global-hl-block-mode)       ; activate globally for all buffers.
+  (use-package hl-prog-extra
+    :config
+    (global-hl-prog-extra-mode))
 
+  ;; (use-package hl-block-mode
+  ;;   :config
+  ;;   ;;activate in the current buffer.
+  ;;   (global-hl-block-mode))
 #+end_src
 ** IBuffer
 #+begin_src emacs-lisp
@@ -1109,14 +1109,8 @@
 #+end_src
 * Searches
 #+begin_src emacs-lisp
-  (use-package ag)
   (use-package ripgrep)
   (use-package projectile-ripgrep)
-
-  ;;(use-package rg
-  ;;  :ensure-system-package
-  ;;  (rg . ripgrep))
-
 #+end_src
 * Developer Packages
 ** Format all
@@ -1411,14 +1405,14 @@
                        (setq tab-width 2)
                        (setq js-indent-level 2))))
 
+  (use-package jsonian)
+
   ;; (require 'dap-firefox)
   ;; (require 'dap-node)
 #+end_src
 ** Python
 #+begin_src emacs-lisp
   ;; fix issues with python inferial process
-
-
   (use-package python-mode
     ;;:mode "\\.py\\'"
     :hook (python-mode . lsp-deferred)
@@ -1426,14 +1420,6 @@
     ;; (dap-python-executable "python3")
     ;; (dap-python-debugger 'debugpy)
     :interpreter ("python3" . python-mode))
-
-  (setq python-indent-level 4
-        python-indent-def-block-scale 4
-        python-shell-completion-native-enable nil
-        python-guess-indent nil
-        org-babel-python-command "python3"
-    dap-python-executable "python3"
-        comint-process-echoes t)
 
   (when (executable-find "ipython")
     (setq python-shell-interpreter "ipython"
@@ -1459,13 +1445,13 @@
   ;; lang python
   (provide 'lang-python)
 #+end_src
-- LSP-Python-MS 
+
 #+begin_src emacs-lisp
-  ;; (use-package lsp-python-ms
-  ;;   :init (setq lsp-python-ms-auto-install-server t)
-  ;;   :hook (python-mode . (lambda ()
-  ;;                          (require 'lsp-python-ms)
-  ;;                          (lsp))))  ; or lsp-deferred
+  (use-package lsp-python-ms
+    :init (setq lsp-python-ms-auto-install-server t)
+    :hook (python-mode . (lambda ()
+                           (require 'lsp-python-ms)
+                           (lsp))))  ; or lsp-deferred
 
 #+end_src
 ** R
@@ -1556,7 +1542,7 @@
     :mode (("\\.pu\\'" . plantuml-mode)
            ("\\.puml\\'" . plantuml-mode))
     :init
-    (setq org-plantuml-jar-path (expand-file-name "/usr/local/Cellar/plantuml/1.2022.1/libexec/plantuml.jar"))
+    (setq org-plantuml-jar-path (expand-file-name "/usr/local/Cellar/plantuml/1.2022.5/libexec/plantuml.jar"))
 
     (setq
      plantuml-indent-level 2
@@ -1615,6 +1601,8 @@
     ("C-c l" . lsp-command-map)
 
     :bind (:map lsp-mode-map
+                ("M-g S" . consult-lsp-symbols) 
+                ("M-g s" . consult-lsp-file-symbols) 
                 ("C-!" . lsp-execute-code-action)
                 ("<tab> TAB" . company-indent-or-complete-common))
 
@@ -1646,34 +1634,111 @@
   (use-package magit
     :defer 2
     :bind (:map evil-normal-state-map
-                (";g" . magit-dispatch))
+                (";gg" . magit-dispatch))
     :custom (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
     :config
     (setq git-gutter:hide-gutter t)
     (message "Magit ready"))
 
   (use-package forge
-    :after magit
+    :after (magit)
     :init
-    (setq forge-add-default-bindings nil))
+    (setq ghub-use-workaround-for-emacs-bug nil)
+    (setq forge-add-default-bindings nil)
+    :config
+    (general-define-key
+     :keymaps '(forge-post-mode-map
+                forge-topic-mode-map
+                forge-post-section-map
+                forge-issue-section-map
+                forge-issues-section-map
+                forge-pullreq-section-map
+                forge-topic-list-mode-map
+                forge-issue-list-mode-map
+                forge-pullreqs-section-map
+                forge-pullreq-list-mode-map
+                forge-forge-repo-section-map
+                forge-notifications-mode-map
+                forge-topic-state-section-map
+                forge-topic-marks-section-map
+                forge-topic-title-section-map
+                forge-repository-list-mode-map
+                forge-topic-labels-section-map
+                forge-topic-assignees-section-map
+                forge-topic-review-requests-section-map)
+     :states '(normal visual)
+     "yb" 'forge-copy-url-at-point-as-kill)
+
+    (general-define-key
+     :keymaps '(forge-post-mode-map
+                forge-topic-mode-map
+                forge-post-section-map
+                forge-issue-section-map
+                forge-issues-section-map
+                forge-pullreq-section-map
+                forge-topic-list-mode-map
+                forge-issue-list-mode-map
+                forge-pullreqs-section-map
+                forge-pullreq-list-mode-map
+                forge-forge-repo-section-map
+                forge-notifications-mode-map
+                forge-topic-state-section-map
+                forge-topic-marks-section-map
+                forge-topic-title-section-map
+                forge-repository-list-mode-map
+                forge-topic-labels-section-map
+                forge-topic-assignees-section-map
+                forge-topic-review-requests-section-map)
+     :states '(normal visual)
+     ;; :prefix mpereira/leader
+     "go" 'forge-browse-dwim)
+
+    (general-define-key
+     :keymaps '(forge-topic-mode-map
+                forge-topic-list-mode-map
+                forge-topic-state-section-map
+                forge-topic-marks-section-map
+                forge-topic-title-section-map)
+     :states '(normal visual)
+     ;; :prefix mpereira/leader
+     "go" 'forge-browse-topic)
+
+    (general-define-key
+     :keymaps '(forge-post-mode-map
+                forge-post-section-map
+                forge-topic-list-mode-map
+                forge-topic-state-section-map
+                forge-topic-marks-section-map
+                forge-topic-title-section-map)
+     :states '(normal visual)
+     ;; :prefix mpereira/leader
+     "go" 'forge-browse-post))
+
 
   (use-package git-gutter
     :after magit
-    :init (global-git-gutter-mode +1)
-    :bind (:map evil-normal-state-map
-                ("[s" . git-gutter:stage-hunk)
-                ("[r" . git-gutter:revert-hunk)
-                ("[v" . git-gutter:mark-hunk)
-                ("[o" . git-gutter:end-of-hunk)
-                ("[d" . git-gutter:popup-hunk)
-                ("[j" . git-gutter:next-hunk)
-                ("[k" . git-gutter:previous-hunk)))
+    :init (global-git-gutter-mode +1))
 
   (use-package git-timemachine
     :after magit
-    :bind (:map git-timemachine-mode-map 
+    :bind (:map evil-normal-state-map
+                (";gt" . git-timemachine-toggle)
+                :map git-timemachine-mode-map 
                 ("<escape>" . git-timemachine-quit)))
 
+  (use-package blamer
+    :defer 20
+    :bind (:map evil-normal-state-map
+                (";gb" . blamer-mode))
+
+    :custom
+    (blamer-idle-time 0.3)
+    (blamer-min-offset 70)
+    :custom-face
+    (blamer-face ((t :foreground "#7a88cf"
+                     :background nil
+                     :height 140
+                     :italic t))))
 #+end_src
 * Writing
 ** Grammar 
@@ -1854,6 +1919,30 @@
   (use-package pdf-tools
     :ensure t
     :config
+(defun pdf-password-protect ()
+    "Password protect current pdf in buffer or `dired' file."
+    (interactive)
+    (unless (executable-find "qpdf")
+      (user-error "qpdf not installed"))
+    (unless (equal "pdf"
+                   (or (when (buffer-file-name)
+                         (downcase (file-name-extension (buffer-file-name))))
+                       (when (dired-get-filename nil t)
+                         (downcase (file-name-extension (dired-get-filename nil t))))))
+      (user-error "no pdf to act on"))
+    (let* ((user-password (read-passwd "user-password: "))
+           (owner-password (read-passwd "owner-password: "))
+           (input (or (buffer-file-name)
+                      (dired-get-filename nil t)))
+           (output (concat (file-name-sans-extension input)
+                           "_enc.pdf")))
+      (message
+       (string-trim
+        (shell-command-to-string
+         (format "qpdf --verbose --encrypt %s %s 256 -- %s %s"
+                 user-password owner-password input output))))))
+
+
     (custom-set-variables
      '(pdf-tools-handle-upgrades nil)) ; Use brew upgrade pdf-tools instead.
     (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo"))
@@ -1982,7 +2071,6 @@
     :config
     (setq mu4e-maildir "~/Mail"
           mu4e-get-mail-command "mbsync -a"
-          mu4e-use-fancy-chars t
           mu4e-change-filenames-when-moving t
           mu4e-compose-format-flowed t
           message-kill-buffer-on-exit t
@@ -1994,166 +2082,150 @@
 
     (setq mu4e-text2speech-command "espeak")
 
-    ;; (setq mu4e-headers-attach-mark    `("a" . ,(char-to-string #xf8e1)))
-    ;; (setq mu4e-headers-unread-mark    `("u" . ,(char-to-string #xf6ef)))
-    ;; (setq mu4e-headers-flagged-mark   `("F" . ,(char-to-string #xf73a)))
-    ;; (setq mu4e-headers-seen-mark      `("S" . ,(char-to-string #xfaee)))
-    ;; (setq mu4e-headers-draft-mark     `("D" . ,(char-to-string #xf0f6)))
-    ;; (setq mu4e-headers-new-mark       `("N" . ,(char-to-string #x26a1)))
-    ;; (setq mu4e-headers-passed-mark    `("P" . ,(char-to-string #xf064)))
-    ;; (setq mu4e-headers-replied-mark   `("R" . ,(char-to-string #xf112)))
-    ;; (setq mu4e-headers-trashed-mark   `("T" . ,(char-to-string #xf014)))
-    ;; (setq mu4e-headers-encrypted-mark `("x" . ,(char-to-string #xf023)))
-    ;; (setq mu4e-headers-signed-mark    `("s" . ,(char-to-string #xf040)))
 
-    (setq
-     ;; mu4e-view-html-plaintext-ratio-heuristic most-positive-fixnum
-     ;; if only html, render in emacs
-     ;; mu4e-html2text-command 'mu4e-shr2text
-     ;; shr-color-visible-luminance-min 80
-     ;; always prefer plaintext
-     mu4e-view-prefer-html nil
-     mu4e-completing-read-function 'completing-read)
+     (setq
+      mu4e-view-prefer-html nil
+      mu4e-completing-read-function 'completing-read)
 
-    (add-to-list 'mu4e-view-actions
-                 '("Save to PDF" . do.mail.html/render-pdf) t)
+     (add-to-list 'mu4e-view-actions
+                  '("Save to PDF" . do.mail.html/render-pdf) t)
 
-    ;; add option to view a message in the browser.
-    (add-to-list 'mu4e-view-actions
-                 '("View in browser" . mu4e-action-view-in-browser) t)
+     ;; add option to view a message in the browser.
+     (add-to-list 'mu4e-view-actions
+                  '("View in browser" . mu4e-action-view-in-browser) t)
 
-    ;; Add custom actions for our capture templates
-    (add-to-list 'mu4e-headers-actions
-                 '("follow up" . efs/capture-mail-follow-up) t)
+     ;; Add custom actions for our capture templates
+     (add-to-list 'mu4e-headers-actions
+                  '("follow up" . efs/capture-mail-follow-up) t)
 
-    (add-to-list 'mu4e-headers-actions
-                 '("read later" . efs/capture-mail-read-later) t)
+     (add-to-list 'mu4e-headers-actions
+                  '("read later" . efs/capture-mail-read-later) t)
 
-    (add-to-list 'mu4e-view-actions
-                 '("follow up" . efs/capture-mail-follow-up) t)
+     (add-to-list 'mu4e-view-actions
+                  '("follow up" . efs/capture-mail-follow-up) t)
 
-    (add-to-list 'mu4e-view-actions
-                 '("read later" . efs/capture-mail-read-later) t)
+     (add-to-list 'mu4e-view-actions
+                  '("read later" . efs/capture-mail-read-later) t)
 
-    ;; Wrap text in messages
-    (add-hook 'mu4e-view-mode-hook
-              (lambda () (setq-local truncate-lines nil)))
+     ;; Wrap text in messages
+     (add-hook 'mu4e-view-mode-hook
+               (lambda () (setq-local truncate-lines nil)))
 
-    (add-hook 'mu4e-compose-mode-hook
-              (lambda ()
-                (turn-off-auto-fill)
-                (use-hard-newlines -1)))
+     (add-hook 'mu4e-compose-mode-hook
+               (lambda ()
+                 (turn-off-auto-fill)
+                 (use-hard-newlines -1)))
 
-    (setq mu4e-bookmarks
-          '(("date:today" "Today" ?t)
-            ("flag:unread"  "Unread" ?u)
-            ("flag:unread to:ramus@rjlwjr.com OR ramus_wilson@icloud.com" "Icloud Unread" ?i)
-            ("flag:unread to:ramuswilson@gmail.com" "Gmail Unread" ?g)
-            ("flag:unread to:ramuswilson@outlook.com" "Outlook Unread" ?o)
-            ("prio:high" "High priority" ?h)
-            ("flag:attach" "Attachment" ?a)
-            ("flag:trashed" "Trashed" ?x)))
+      (setq mu4e-bookmarks
+            '(("date:today" "Today" ?t)
+              ("flag:unread"  "Unread" ?u)
+              ("flag:unread to:ramus@rjlwjr.com OR ramus_wilson@icloud.com" "Icloud Unread" ?i)
+              ("flag:unread to:ramuswilson@gmail.com" "Gmail Unread" ?g)
+              ("flag:unread to:ramuswilson@outlook.com" "Outlook Unread" ?o)
+              ("prio:high" "High priority" ?h)
+              ("flag:attach" "Attachment" ?a)
+              ("flag:trashed" "Trashed" ?x)))
 
-    ;; set mailbox context
-    (setq mu4e-contexts
-          (list
-           ;; Personal Gmail account
-           (make-mu4e-context
-            :name "Gmail"
-            :match-func
-            (lambda (msg)
-              (when msg
-                (string-prefix-p "/Gmail" (mu4e-message-field msg :maildir))))
-            :vars '((user-mail-address . "ramuswilson@gmail.com")
+     ;; set mailbox context
+     (setq mu4e-contexts
+           (list
+            ;; Personal Gmail account
+            (make-mu4e-context
+             :name "Gmail"
+             :match-func
+             (lambda (msg)
+               (when msg
+                 (string-prefix-p "/Gmail" (mu4e-message-field msg :maildir))))
+             :vars '((user-mail-address . "ramuswilson@gmail.com")
 
-                    (smtpmail-smtp-server  . "smtp.gmail.com")
-                    (smtpmail-smtp-service . 587)
-                    (smtpmail-stream-type  . starttls)
+                     (smtpmail-smtp-server  . "smtp.gmail.com")
+                     (smtpmail-smtp-service . 587)
+                     (smtpmail-stream-type  . starttls)
 
-                    (mu4e-drafts-folder  . "/Gmail/[Gmail]/Drafts")
-                    (mu4e-sent-folder  . "/Gmail/[Gmail]/Sent Mail")
-                    (mu4e-refile-folder  . "/Gmail/[Gmail]/All Mail")
-                    (mu4e-trash-folder  . "/Gmail/[Gmail]/Trash")
+                     (mu4e-drafts-folder  . "/Gmail/[Gmail]/Drafts")
+                     (mu4e-sent-folder  . "/Gmail/[Gmail]/Sent Mail")
+                     (mu4e-refile-folder  . "/Gmail/[Gmail]/All Mail")
+                     (mu4e-trash-folder  . "/Gmail/[Gmail]/Trash")
 
-                    ;; (mu4e-maildir-shortcuts . (("/Gmail/Inbox"            . ?i)
-                    ;;                            ("/Gmail/[Gmail]/Sent Mail" . ?s)
-                    ;;                            ("/Gmail/[Gmail]/Trash"     . ?t)
-                    ;;                            ("/Gmail/[Gmail]/Drafts"    . ?d)
-                    ;;                            ("/Gmail/[Gmail]/All Mail"  . ?a)))
-                    ))
+                     ;; (mu4e-maildir-shortcuts . (("/Gmail/Inbox"            . ?i)
+                     ;;                            ("/Gmail/[Gmail]/Sent Mail" . ?s)
+                     ;;                            ("/Gmail/[Gmail]/Trash"     . ?t)
+                     ;;                            ("/Gmail/[Gmail]/Drafts"    . ?d)
+                     ;;                            ("/Gmail/[Gmail]/All Mail"  . ?a)))
+                     ))
 
-           ;; Personl Outlook account
-           (make-mu4e-context
-            :name "Outlook"
-            :match-func
-            (lambda (msg)
-              (when msg
-                (string-prefix-p "/Outlook" (mu4e-message-field msg :maildir))))
-            :vars '((user-mail-address . "ramuswilson@outlook.com")
+            ;; Personl Outlook account
+            (make-mu4e-context
+             :name "Outlook"
+             :match-func
+             (lambda (msg)
+               (when msg
+                 (string-prefix-p "/Outlook" (mu4e-message-field msg :maildir))))
+             :vars '((user-mail-address . "ramuswilson@outlook.com")
 
-                    (smtpmail-smtp-server  . "smtp.office365.com")
-                    (smtpmail-smtp-service . 587)
-                    (smtpmail-stream-type  . starttls)
+                     (smtpmail-smtp-server  . "smtp.office365.com")
+                     (smtpmail-smtp-service . 587)
+                     (smtpmail-stream-type  . starttls)
 
-                    (mu4e-drafts-folder  . "/Outlook/Drafts")
-                    (mu4e-sent-folder  . "/Outlook/Sent")
-                    (mu4e-refile-folder  . "/Outlook/Inbox")
-                    (mu4e-trash-folder  . "/Outlook/Archive")
+                     (mu4e-drafts-folder  . "/Outlook/Drafts")
+                     (mu4e-sent-folder  . "/Outlook/Sent")
+                     (mu4e-refile-folder  . "/Outlook/Inbox")
+                     (mu4e-trash-folder  . "/Outlook/Archive")
 
-                    ;; (mu4e-maildir-shortcuts . (("/Outlook/Inbox"           . ?i)
-                    ;;                            ("/Outlook/Sent"            . ?s)
-                    ;;                            ("/Outlook/Archive"         . ?t)
-                    ;;                            ("/Outlook/Drafts"          . ?d)
-                    ;;                            ("/Outlook"                 . ?a)))
-                    ))
+                     ;; (mu4e-maildir-shortcuts . (("/Outlook/Inbox"           . ?i)
+                     ;;                            ("/Outlook/Sent"            . ?s)
+                     ;;                            ("/Outlook/Archive"         . ?t)
+                     ;;                            ("/Outlook/Drafts"          . ?d)
+                     ;;                            ("/Outlook"                 . ?a)))
+                     ))
 
 
-           (make-mu4e-context
-            :name "Icloud"
-            :match-func
-            (lambda (msg)
-              (when msg
-                (string-prefix-p "/Icloud" (mu4e-message-field msg :maildir))))
-            :vars '((user-mail-address . "ramus@rjlwjr.com")
-                    (mu4e-drafts-folder  . "/Icloud/Drafts")
-                    (mu4e-sent-folder  . "/Icloud/Sent Messages")
-                    (mu4e-refile-folder  . "/Icloud/Inbox")
-                    (mu4e-trash-folder  . "/Icloud/Archive")
+            (make-mu4e-context
+             :name "Icloud"
+             :match-func
+             (lambda (msg)
+               (when msg
+                 (string-prefix-p "/Icloud" (mu4e-message-field msg :maildir))))
+             :vars '((user-mail-address . "ramus@rjlwjr.com")
+                     (mu4e-drafts-folder  . "/Icloud/Drafts")
+                     (mu4e-sent-folder  . "/Icloud/Sent Messages")
+                     (mu4e-refile-folder  . "/Icloud/Inbox")
+                     (mu4e-trash-folder  . "/Icloud/Archive")
 
-                    (smtpmail-smtp-server  . "smtp.mail.me.com")
-                    (smtpmail-smtp-service . 587)
-                    (smtpmail-stream-type  . starttls)
+                     (smtpmail-smtp-server  . "smtp.mail.me.com")
+                     (smtpmail-smtp-service . 587)
+                     (smtpmail-stream-type  . starttls)
 
-                    ;; (mu4e-maildir-shortcuts . (("/Icloud/Inbox"           . ?i)
-                    ;;                            ("/Icloud/Sent Messages"   . ?s)
-                    ;;                            ("/Icloud/Archive"         . ?t)
-                    ;;                            ("/Icloud/Drafts"          . ?d)
-                    ;;                            ("/Icloud"                 . ?a)))
-                    ))))
-        (message "mu4e loaded"))
+                     ;; (mu4e-maildir-shortcuts . (("/Icloud/Inbox"           . ?i)
+                     ;;                            ("/Icloud/Sent Messages"   . ?s)
+                     ;;                            ("/Icloud/Archive"         . ?t)
+                     ;;                            ("/Icloud/Drafts"          . ?d)
+                     ;;                            ("/Icloud"                 . ?a)))
+                     ))))
+         (message "mu4e loaded"))
 #+end_src
 
 ** MU4E Marker-Icons
 #+begin_src emacs-lisp
-  (use-package mu4e-marker-icons
-    :defer 4
-    :after mu4e
-    :init
-    (mu4e-marker-icons-mode 1)
-    :config
-    (setq mu4e-marker-icons-use-unicode nil))
+  ;;(use-package mu4e-marker-icons
+  ;;  :defer 4
+  ;;  :after mu4e
+  ;;  :init
+  ;;  (mu4e-marker-icons-mode 1)
+  ;;  :config
+  ;;  (setq mu4e-marker-icons-use-unicode nil))
 #+end_src
 ** MU4E Alert
 #+begin_src emacs-lisp
-      (use-package mu4e-alert
-        :after mu4e
-        :custom((doom-modeline-mu4e t)
-                (mu4e-alert-style 'notifier))
-        :config
-        ;; (setq mu4e-alert-icon "~/.emacs.d/e-mail.svg")
-        (add-hook 'after-init-hook #'mu4e-alert-enable-notifications)
-        (add-hook 'after-init-hook #'mu4e-alert-enable-mode-line-display)
-        (message "mu4e alert ready"))
+  (use-package mu4e-alert
+    :after mu4e
+    :custom((doom-modeline-mu4e t)
+            (mu4e-alert-style 'notifier))
+    :config
+    ;; (setq mu4e-alert-icon "~/.emacs.d/e-mail.svg")
+    (add-hook 'after-init-hook #'mu4e-alert-enable-notifications)
+    (add-hook 'after-init-hook #'mu4e-alert-enable-mode-line-display)
+    (message "mu4e alert ready"))
 #+end_src
 ** GNUS function
 #+begin_src emacs-lisp
@@ -2230,34 +2302,33 @@
 #+end_src
 ** Mu4e Views
 #+begin_src emacs-lisp
-      (use-package mu4e-views
-        :after mu4e
-        :defer nil
-        :bind (:map mu4e-headers-mode-map
-                    ;; select viewing method
-                    ("v" . mu4e-views-mu4e-select-view-msg-method) 
-                    ;; from headers window scroll the email view
-                    ("M-n" . mu4e-views-cursor-msg-view-window-down) 
-                    ;; from headers window scroll the email view
-                    ("M-p" . mu4e-views-cursor-msg-view-window-up) 
-                    ;; toggle opening messages automatically when moving in the headers view
-                    ("f" . mu4e-views-toggle-auto-view-selected-message) 
-                    ;; show currently selected email with all remote content
-                    ("i" . mu4e-views-mu4e-view-as-nonblocked-html))
-        :config
-
-        (define-key mu4e-headers-mode-map (kbd "v") #'mu4e-views-mu4e-select-view-msg-method)
-        ;; use vertico for completion
-        (setq mu4e-views-completion-method 'default) 
-        ;; make xwidgets default
-        (setq mu4e-views-default-view-method "text") 
-        ;; (setq mu4e-views-default-view-method "html") ; make xwidgets default
-        ;; select the default
-        (mu4e-views-mu4e-use-view-msg-method "text") 
-        ;; when pressing n and p stay in the current window
-        (setq mu4e-views-next-previous-message-behaviour 'stick-to-current-window) 
-        ;; automatically open messages when moving in the headers view
-        (setq mu4e-views-auto-view-selected-message t)) 
+  ;;(use-package mu4e-views
+  ;;  ;; :disabled t
+  ;;  :after mu4e
+  ;;  :defer nil
+  ;;  :bind (:map mu4e-headers-mode-map
+  ;;              ;; select viewing method
+  ;;              ("v" . mu4e-views-mu4e-select-view-msg-method) 
+  ;;              ;; from headers window scroll the email view
+  ;;              ("M-n" . mu4e-views-cursor-msg-view-window-down) 
+  ;;              ;; from headers window scroll the email view
+  ;;              ("M-p" . mu4e-views-cursor-msg-view-window-up) 
+  ;;              ;; toggle opening messages automatically when moving in the headers view
+  ;;              ("f" . mu4e-views-toggle-auto-view-selected-message) 
+  ;;              ;; show currently selected email with all remote content
+  ;;              ("i" . mu4e-views-mu4e-view-as-nonblocked-html))
+  ;;  :config
+  ;;  ;; use vertico for completion
+  ;;  (setq mu4e-views-completion-method 'default) 
+  ;;  ;; make xwidgets default
+  ;;  (setq mu4e-views-default-view-method "text") 
+  ;;  ;; (setq mu4e-views-default-view-method "html") ; make xwidgets default
+  ;;  ;; select the default
+  ;;  (mu4e-views-mu4e-use-view-msg-method "text") 
+  ;;  ;; when pressing n and p stay in the current window
+  ;;  (setq mu4e-views-next-previous-message-behaviour 'stick-to-current-window) 
+  ;;  ;; automatically open messages when moving in the headers view
+  ;;  (setq mu4e-views-auto-view-selected-message t)) 
 #+end_src
 ** Org MSG
 #+begin_src emacs-lisp
@@ -2266,7 +2337,7 @@
     :ensure t
     :hook (org-msg-mode lambda ()
                         (flyspell-mode))
-
+ 
     :config
     (setq org-msg-options "tex:dvisvgm html-postamble:nil H:5 num:nil ^:{} toc:nil author:nil email:nil \\n:t"
           org-msg-startup "hidestars indent inlineimages"
@@ -2279,7 +2350,7 @@
           org-msg-signature
   "
   Regards,
-
+ 
   ,#+begin_signature
   ---------------------------
   ,*Ramus Jabee Lloyd Wilson*
@@ -2288,35 +2359,6 @@
   /The simple act of paying attention can take you a long way/
   ,#+end_signature")
     (org-msg-mode))
-#+end_src
-
-* Elfeed
-#+begin_src emacs-lisp
-  (use-package elfeed
-    :defer 5
-    :config
-    (setq elfeed-show-entry-switch 'display-buffer))
-
-  (use-package elfeed-org
-    :defer 5
-    :after elfeed
-    :config
-    (elfeed-org)
-    (setq rmh-elfeed-org-files (list "~/org/elfeed.org")))
-
-
-  (use-package elfeed-goodies
-    :defer 5
-    :after elfeed
-    :config
-    (elfeed-org))
-
-  (use-package elfeed-score
-    :defer 5
-    :config
-    (progn
-      (elfeed-score-enable)
-      (define-key elfeed-search-mode-map "=" elfeed-score-map)))
 #+end_src
 
 * Org Mode
@@ -2328,6 +2370,12 @@
     (hl-todo-mode)
     (variable-pitch-mode 1)
     (visual-line-mode 1))
+
+  (defun efs/org-os-spefic()
+    (pcase system-type
+      ('gnu/linux "Its Linux")
+      ('darwin (use-package org-mac-link)) 
+      ('windows-nt "Its Windows")))
 
   (defun efs/org-font-setup ()
     ;; Replace list hyphen with dot
@@ -2359,9 +2407,13 @@
 #+begin_src emacs-lisp
   (global-set-key (kbd "C-c c") 'org-capture)
   (use-package org
-    :hook (org-mode . efs/org-mode-setup)
+
+    :hook (org-mode . ( lambda ()
+			(efs/org-mode-setup)
+			(efs/org-os-spefic)))
+
     :bind (:map org-mode-map
-                ("<tab> TAB" . org-cycle))
+		("<tab> TAB" . org-cycle))
 
     :config
     (setq org-directory (concat (getenv "HOME") "/org"))
@@ -2372,123 +2424,123 @@
     (setq org-startup-folded t)
     (setq org-hide-emphasis-markers t)
     (setq org-agenda-files
-          '("~/org/beorg/org/Tasks.org"
-            "~/org/beorg/org/Habits.org"
-            "~/org/beorg/org/Mails.org"
-            "~/org/beorg/org/Birthdays.org"))
+	  '("~/org/beorg/org/Tasks.org"
+	    "~/org/beorg/org/Habits.org"
+	    "~/org/beorg/org/Mails.org"
+	    "~/org/beorg/org/Birthdays.org"))
 
     (setq my/org-latex-scale 1.75)
     (setq org-preview-latex-default-process 'dvisvgm)
     (setq org-format-latex-options (plist-put org-format-latex-options
-                                              :scale my/org-latex-scale))
+					      :scale my/org-latex-scale))
 
     (setq org-cite-csl-styles-dir "~/Zotero/styles")
 
     (setq org-todo-keywords
-          '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
-            (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+	  '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
+	    (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
 
     (setq org-refile-targets
-          '(("Archive.org" :maxlevel . 1)
-            ("Tasks.org" :maxlevel . 1)))
+	  '(("Archive.org" :maxlevel . 1)
+	    ("Tasks.org" :maxlevel . 1)))
 
     ;; Save Org buffers after refiling!
     (advice-add 'org-refile :after 'org-save-all-org-buffers)
 
     (setq org-tag-alist
-          '((:startgroup)
-            ;; Put mutually exclusive tags here
-            (:endgroup)
-            ("note" . ?n)
-            ("@home" . ?H)
-            ("@work" . ?W)
-            ("batch" . ?b)
-            ("agenda" . ?a)
-            ("publish" . ?P)
-            ("@errand" . ?E)
-            ("planning" . ?p)
-            ("idea" . ?i)))
+	  '((:startgroup)
+	    ;; Put mutually exclusive tags here
+	    (:endgroup)
+	    ("note" . ?n)
+	    ("@home" . ?H)
+	    ("@work" . ?W)
+	    ("batch" . ?b)
+	    ("agenda" . ?a)
+	    ("publish" . ?P)
+	    ("@errand" . ?E)
+	    ("planning" . ?p)
+	    ("idea" . ?i)))
 
     ;; Configure custom agenda views
     (setq org-agenda-custom-commands
-          '(("d" "Dashboard"
-             ((agenda "" ((org-deadline-warning-days 7)))
-              (todo "NEXT"
-                    ((org-agenda-overriding-header "Next Tasks")))
-              (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
+	  '(("d" "Dashboard"
+	     ((agenda "" ((org-deadline-warning-days 7)))
+	      (todo "NEXT"
+		    ((org-agenda-overriding-header "Next Tasks")))
+	      (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
 
-            ("n" "Next Tasks"
-             ((todo "NEXT"
-                    ((org-agenda-overriding-header "Next Tasks")))))
+	    ("n" "Next Tasks"
+	     ((todo "NEXT"
+		    ((org-agenda-overriding-header "Next Tasks")))))
 
-            ("W" "Work Tasks" tags-todo "+work-email")
+	    ("W" "Work Tasks" tags-todo "+work-email")
 
-            ;; Low-effort next actions
-            ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
-             ((org-agenda-overriding-header "Low Effort Tasks")
-              (org-agenda-max-todos 20)
-              (org-agenda-files org-agenda-files)))
+	    ;; Low-effort next actions
+	    ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
+	     ((org-agenda-overriding-header "Low Effort Tasks")
+	      (org-agenda-max-todos 20)
+	      (org-agenda-files org-agenda-files)))
 
-            ("w" "Workflow Status"
-             ((todo "WAIT"
-                    ((org-agenda-overriding-header "Waiting on External")
-                     (org-agenda-files org-agenda-files)))
-              (todo "REVIEW"
-                    ((org-agenda-overriding-header "In Review")
-                     (org-agenda-files org-agenda-files)))
-              (todo "PLAN"
-                    ((org-agenda-overriding-header "In Planning")
-                     (org-agenda-todo-list-sublevels nil)
-                     (org-agenda-files org-agenda-files)))
-              (todo "BACKLOG"
-                    ((org-agenda-overriding-header "Project Backlog")
-                     (org-agenda-todo-list-sublevels nil)
-                     (org-agenda-files org-agenda-files)))
-              (todo "READY"
-                    ((org-agenda-overriding-header "Ready for Work")
-                     (org-agenda-files org-agenda-files)))
-              (todo "ACTIVE"
-                    ((org-agenda-overriding-header "Active Projects")
-                     (org-agenda-files org-agenda-files)))
-              (todo "COMPLETED"
-                    ((org-agenda-overriding-header "Completed Projects")
-                     (org-agenda-files org-agenda-files)))
-              (todo "CANC"
-                    ((org-agenda-overriding-header "Cancelled Projects")
-                     (org-agenda-files org-agenda-files)))))))
+	    ("w" "Workflow Status"
+	     ((todo "WAIT"
+		    ((org-agenda-overriding-header "Waiting on External")
+		     (org-agenda-files org-agenda-files)))
+	      (todo "REVIEW"
+		    ((org-agenda-overriding-header "In Review")
+		     (org-agenda-files org-agenda-files)))
+	      (todo "PLAN"
+		    ((org-agenda-overriding-header "In Planning")
+		     (org-agenda-todo-list-sublevels nil)
+		     (org-agenda-files org-agenda-files)))
+	      (todo "BACKLOG"
+		    ((org-agenda-overriding-header "Project Backlog")
+		     (org-agenda-todo-list-sublevels nil)
+		     (org-agenda-files org-agenda-files)))
+	      (todo "READY"
+		    ((org-agenda-overriding-header "Ready for Work")
+		     (org-agenda-files org-agenda-files)))
+	      (todo "ACTIVE"
+		    ((org-agenda-overriding-header "Active Projects")
+		     (org-agenda-files org-agenda-files)))
+	      (todo "COMPLETED"
+		    ((org-agenda-overriding-header "Completed Projects")
+		     (org-agenda-files org-agenda-files)))
+	      (todo "CANC"
+		    ((org-agenda-overriding-header "Cancelled Projects")
+		     (org-agenda-files org-agenda-files)))))))
 
     (setq org-capture-templates
-          '(("t" "Tasks / Projects")
-            ("tt" "Task" entry (file+olp "~/org/beorg/org/Tasks.org" "Inbox")
-             "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
+	  '(("t" "Tasks / Projects")
+	    ("tt" "Task" entry (file+olp "~/org/beorg/org/Tasks.org" "Inbox")
+	     "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
 
-            ("j" "Journal Entries")
-            ("jj" "Journal" entry
-             (file+olp+datetree "~/org/beorg/org/Journal.org")
-             "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
-             ;; ,(dw/read-file-as-string "~/Notes/Templates/Daily.org")
-             :clock-in :clock-resume
-             :empty-lines 1)
-            ("jm" "Meeting" entry
-             (file+olp+datetree "~/org/beorg/org/Journal.org")
-             "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
-             :clock-in :clock-resume
-             :empty-lines 1)
+	    ("j" "Journal Entries")
+	    ("jj" "Journal" entry
+	     (file+olp+datetree "~/org/beorg/org/Journal.org")
+	     "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
+	     ;; ,(dw/read-file-as-string "~/Notes/Templates/Daily.org")
+	     :clock-in :clock-resume
+	     :empty-lines 1)
+	    ("jm" "Meeting" entry
+	     (file+olp+datetree "~/org/beorg/org/Journal.org")
+	     "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
+	     :clock-in :clock-resume
+	     :empty-lines 1)
 
 
-            ("e" "Email Workflow")
-            ("ef" "Follow Up" entry (file+olp "~/org/beorg/org/Mails.org" "Follow Up")
-             "* TODO Follow up with %:fromname on %a\nSCHEDULED:%t\nDEADLINE: %(org-insert-time-stamp (org-read-date nil t \"+2d\"))\n\n%i" :immediate-finish t)
-            ("er" "Read Later" entry (file+olp "~/org/beorg/org/Mails.org" "Read Later")
-             "* TODO Read %:subject\nSCHEDULED:%t\nDEADLINE: %(org-insert-time-stamp (org-read-date nil t \"+2d\"))\n\n%a\n\n%i" :immediate-finish t)
+	    ("e" "Email Workflow")
+	    ("ef" "Follow Up" entry (file+olp "~/org/beorg/org/Mails.org" "Follow Up")
+	     "* TODO Follow up with %:fromname on %a\nSCHEDULED:%t\nDEADLINE: %(org-insert-time-stamp (org-read-date nil t \"+2d\"))\n\n%i" :immediate-finish t)
+	    ("er" "Read Later" entry (file+olp "~/org/beorg/org/Mails.org" "Read Later")
+	     "* TODO Read %:subject\nSCHEDULED:%t\nDEADLINE: %(org-insert-time-stamp (org-read-date nil t \"+2d\"))\n\n%a\n\n%i" :immediate-finish t)
 
-            ("w" "Workflows")
-            ("we" "Checking Email" entry (file+olp+datetree "~/org/beorg/org/Journal.org")
-             "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1)
+	    ("w" "Workflows")
+	    ("we" "Checking Email" entry (file+olp+datetree "~/org/beorg/org/Journal.org")
+	     "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1)
 
-            ("m" "Metrics Capture")
-            ("mw" "Weight" table-line (file+headline "~/org/beorg/org/Metrics.org" "Weight")
-             "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)))
+	    ("m" "Metrics Capture")
+	    ("mw" "Weight" table-line (file+headline "~/org/beorg/org/Metrics.org" "Weight")
+	     "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)))
 
     (define-key global-map (kbd "C-c j")
       (lambda () (interactive) (org-capture nil "jj")))
@@ -2496,7 +2548,7 @@
 
   (defun efs/org-mode-visual-fill ()
     (setq visual-fill-column-width 100
-          visual-fill-column-center-text t)
+	  visual-fill-column-center-text t)
     (visual-fill-column-mode 1))
 
   (use-package visual-fill-column
@@ -2629,47 +2681,6 @@
                   (let ((org-attach-method 'cp))
                     (call-interactively #'org-attach-dired-to-subtree))))))
 #+end_src
-** Org Tree Slide
-#+begin_src emacs-lisp
-
-  (defun efs/presentation-setup ()
-    ;; Hide the mode line
-    (hide-mode-line-mode 1)
-
-    ;; Display images inline
-    (org-display-inline-images) ;; Can also use org-startup-with-inline-images
-
-    ;; Scale the text.  The next line is for basic scaling:
-    (setq text-scale-mode-amount 3)
-    (text-scale-mode 1))
-
-  ;; This option is more advanced, allows you to scale other faces too
-  ;; (setq-local face-remapping-alist '((default (:height 2.0) variable-pitch)
-  ;;                                    (org-verbatim (:height 1.75) org-verbatim)
-  ;;                                    (org-block (:height 1.25) org-block))))
-
-  (defun efs/presentation-end ()
-    ;; Turn off text scale mode (or use the next line if you didn't use text-scale-mode)
-    (text-scale-mode 0)
-    ;; Show the mode line again
-    (hide-mode-line-mode 0))
-  ;; If you use face-remapping-alist, this clears the scaling:
-  ;; (setq-local face-remapping-alist '((default variable-pitch default))))
-
-
-
-  (use-package org-tree-slide
-    :defer 3
-    :hook ((org-tree-slide-play . efs/presentation-setup)
-           (org-tree-slide-stop . efs/presentation-end))
-    :custom
-    (org-tree-slide-slide-in-effect t)
-    (org-tree-slide-activate-message "Presentation started!")
-    (org-tree-slide-deactivate-message "Presentation finished!")
-    (org-tree-slide-header t)
-    (org-tree-slide-breadcrumbs " > ")
-    (org-image-actual-width nil))
-#+end_src
 ** Org Evil
 #+begin_src emacs-lisp
   (use-package evil-org
@@ -2742,17 +2753,23 @@
   (use-package org-roam-ui
     :config
     (setq org-roam-ui-browser-function #'xwidget-webkit-browse-url))
-#+end_src
-** Deft
-#+begin_src emacs-lisp
-(use-package deft
-    :config
-    (setq deft-directory org-directory
-          deft-recursive t
-          deft-strip-summary-regexp ":PROPERTIES:\n\\(.+\n\\)+:END:\n"
-          deft-use-filename-as-title t)
-    :bind
-    ("C-c n d" . deft))
+
+  (use-package consult-org-roam
+   :init
+   (require 'consult-org-roam)
+   ;; Activate the minor-mode
+   (consult-org-roam-mode 1)
+   :custom
+   (consult-org-roam-grep-func #'consult-ripgrep)
+   :config
+   ;; Eventually suppress previewing for certain functions
+   (consult-customize
+    consult-org-roam-forward-links
+    :preview-key (kbd "M-."))
+   :bind
+   ("C-c n e" . consult-org-roam-file-find)
+   ("C-c n b" . consult-org-roam-backlinks)
+   ("C-c n r" . consult-org-roam-search))
 #+end_src
 ** Org Transclusion
 #+begin_src emacs-lisp
@@ -2816,19 +2833,6 @@
 * Music
 ** Function
 #+begin_src emacs-lisp
-  ;; (defun mpd-start ()
-  ;;   (interactive)
-  ;;   ;; Switch to `*shell*'
-  ;;   (shell)
-  ;;   ;; Goto last prompt, clear old input if any, and insert new one
-  ;;   (goto-char (point-max))
-  ;;   (comint-kill-input)
-  ;;   (insert "mpd")
-  ;;   ;; Execute
-  ;;   (comint-send-input))
-
-  ;; (add-to-list 'display-buffer-alist '("*Async Shell Command*" . (display-buffer-no-window . nil)) )
-
   (defun mpd-start ()
     (interactive)
     (setq-local display-buffer-alist '("*Async Shell Command*" . (display-buffer-no-window . nil)) )
@@ -2875,6 +2879,18 @@
 #+begin_src emacs-lisp
   (use-package chess
     :defer 6)
+#+end_src
+* Reader
+#+begin_src emacs-lisp
+  (use-package newsticker-mode
+    :ensure nil
+    :init
+    (setq newsticker-url-list '(("stackoverflow.com - emacs" "https://stackoverflow.com/feeds/tag?tagnames=emacs&sort=newest" nil nil nil)
+                                ("More Productive with Emacs" "https://lucidmanager.org/tags/emacs/index.xml" nil nil nil)
+                                ("Emacs on Reddit" "http://www.reddit.com/r/emacs/.rss" nil nil nil)
+                                ("CNN" "http://rss.cnn.com/rss/edition_world.rss" nil nil nil)
+                                ("TheHackerNews" "https://feeds.feedburner.com/TheHackersNews" nil nil nil))))
+
 #+end_src
 * Misc
 ** Line Number
@@ -2938,24 +2954,13 @@
   ;;(require 'zone)
   ;;(zone-when-idle 120)
 #+end_src
-** XWidget
-#+begin_src emacs-lisp
-      (use-package xwwp-full
-        :load-path "~/.emacs.d/xwwp"
-        ;; :custom
-        ;; (xwwp-follow-link-completion-system 'helm)
-        :bind (:map xwidget-webkit-mode-map
-                    ("v" . xwwp-follow-link)
-                    ("t" . xwwp-ace-toggle))
-        :config
-        (use-package ctable))
-#+end_src
-
 ** Hyperbole
 #+begin_src emacs-lisp
    ;; (use-package hyperbole
    ;;   :config
    ;;   (hyperbole-mode 1))
 #+end_src
+
+
 
 
