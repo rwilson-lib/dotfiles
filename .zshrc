@@ -11,6 +11,7 @@ export VISUAL=vim
 export EDITOR="$VISUAL"
 
 export HISTTIMEFORMAT="%F %T "
+export HISTCONTROL=ignoreboth
 
 export WORKON_HOME=~/.virtualenvs
 #
@@ -123,6 +124,8 @@ compinit
 
 # FZF
 export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+export FZF_CTRL_T_COMMAND="fd . $HOME"
+export FZF_ALT_C_COMMAND="fd -t d . $HOME"
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
