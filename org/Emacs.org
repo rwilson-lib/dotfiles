@@ -1,3 +1,4 @@
+
 #+TITLE: Emacs Configuration
 #+PROPERTY: header-args:emacs-lisp :tangle ~/.emacs.d/init.el
 
@@ -31,7 +32,35 @@
   (when (file-exists-p custom-file)
     (load custom-file))
 #+end_src
-** Use Package
+** Package Install
+Install straight
+#+begin_src emacs-lisp
+  ;; Install straight.el
+  ;; (defvar bootstrap-version)
+  ;; (let ((bootstrap-file
+  ;;        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+  ;;       (bootstrap-version 5))
+  ;;   (unless (file-exists-p bootstrap-file)
+  ;;     (with-current-buffer
+  ;;         (url-retrieve-synchronously
+  ;;          "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+  ;;          'silent 'inhibit-cookies)
+  ;;       (goto-char (point-max))
+  ;;       (eval-print-last-sexp)))
+  ;;   (load bootstrap-file nil 'nomessage))
+
+  ;; Disable package.el in favor of straight.el
+  ;; (setq package-enable-at-startup nil)
+
+  ;; Install use-package
+  ;; (straight-use-package 'use-package)
+
+  ;; Configure use-package to use straight.el by default
+  ;; (use-package straight
+  ;;  :ensure nil
+  ;;  :custom (straight-use-package-by-default t))
+#+end_src
+
 #+begin_src emacs-lisp
   (require 'package)
 
@@ -49,13 +78,18 @@
 
   (setq use-package-always-ensure t)
 
+  ;; (use-package quelpa
+  ;;   :config
+  ;;   (use-package quelpa-use-package))
+
   (use-package auto-package-update
     :config
     (setq auto-package-update-delete-old-versions t)
     (setq auto-package-update-hide-results t)
     (auto-package-update-maybe))
 
-  (use-package use-package-ensure-system-package)
+  (use-package use-package-ensure-system-package )
+  ;; (use-package abc-mode :quelpa)
 #+end_src
 ** Emacs
 #+begin_src emacs-lisp
@@ -338,7 +372,7 @@
     (if (equal current-prefix-arg nil) ; no C-u
         (tab-bar-switch-to-next-tab)
       (tab-bar-select-tab current-prefix-arg)))
-  
+
   (defun tab-bar-switch-to-prev-tab-m()
     (interactive)
     (if (equal current-prefix-arg nil) ; no C-u
@@ -352,11 +386,11 @@
                  ("<escape>" . custom/force-normal-state-or-exit)))
 
     :init
-    (setq evil-want-integration t)
+    (setq evil-want-C-i-jump nil)
     (setq evil-want-C-u-delete t)
     (setq evil-want-C-u-scroll t)
+    (setq evil-want-integration t)
     (setq evil-want-keybinding nil)
-    (setq evil-want-C-i-jump nil)
     ;; (setq evil-disable-insert-state-bindings t)
 
     (setq evil-undo-system 'undo-fu)
@@ -372,7 +406,7 @@
      :repeat nil
      (interactive "<c>")
      (let ((p (window-parent)))
- 
+
       (if (not count)
        (delete-window)
        (if (winum-get-window-by-number count)
@@ -474,13 +508,6 @@
     :after evil
     :config
     (global-evil-surround-mode 1))
-
-  (use-package evil-goggles
-    :after evil
-    :config
-    (evil-goggles-mode)
-    (evil-goggles-use-diff-faces))
-
 #+end_src
 ** IEdit
 #+begin_src emacs-lisp
@@ -2204,7 +2231,6 @@
                      ))))
          (message "mu4e loaded"))
 #+end_src
-
 ** MU4E Marker-Icons
 #+begin_src emacs-lisp
   ;;(use-package mu4e-marker-icons
@@ -2300,36 +2326,6 @@
             (diary-from-outlook-internal subject body)
             (message "Diary entry added"))))))
 #+end_src
-** Mu4e Views
-#+begin_src emacs-lisp
-  ;;(use-package mu4e-views
-  ;;  ;; :disabled t
-  ;;  :after mu4e
-  ;;  :defer nil
-  ;;  :bind (:map mu4e-headers-mode-map
-  ;;              ;; select viewing method
-  ;;              ("v" . mu4e-views-mu4e-select-view-msg-method) 
-  ;;              ;; from headers window scroll the email view
-  ;;              ("M-n" . mu4e-views-cursor-msg-view-window-down) 
-  ;;              ;; from headers window scroll the email view
-  ;;              ("M-p" . mu4e-views-cursor-msg-view-window-up) 
-  ;;              ;; toggle opening messages automatically when moving in the headers view
-  ;;              ("f" . mu4e-views-toggle-auto-view-selected-message) 
-  ;;              ;; show currently selected email with all remote content
-  ;;              ("i" . mu4e-views-mu4e-view-as-nonblocked-html))
-  ;;  :config
-  ;;  ;; use vertico for completion
-  ;;  (setq mu4e-views-completion-method 'default) 
-  ;;  ;; make xwidgets default
-  ;;  (setq mu4e-views-default-view-method "text") 
-  ;;  ;; (setq mu4e-views-default-view-method "html") ; make xwidgets default
-  ;;  ;; select the default
-  ;;  (mu4e-views-mu4e-use-view-msg-method "text") 
-  ;;  ;; when pressing n and p stay in the current window
-  ;;  (setq mu4e-views-next-previous-message-behaviour 'stick-to-current-window) 
-  ;;  ;; automatically open messages when moving in the headers view
-  ;;  (setq mu4e-views-auto-view-selected-message t)) 
-#+end_src
 ** Org MSG
 #+begin_src emacs-lisp
   (use-package org-msg
@@ -2361,6 +2357,45 @@
     (org-msg-mode))
 #+end_src
 
+** Mu4e Views
+#+begin_src emacs-lisp
+  ;;(use-package mu4e-views
+  ;;  ;; :disabled t
+  ;;  :after mu4e
+  ;;  :defer nil
+  ;;  :bind (:map mu4e-headers-mode-map
+  ;;              ;; select viewing method
+  ;;              ("v" . mu4e-views-mu4e-select-view-msg-method) 
+  ;;              ;; from headers window scroll the email view
+  ;;              ("M-n" . mu4e-views-cursor-msg-view-window-down) 
+  ;;              ;; from headers window scroll the email view
+  ;;              ("M-p" . mu4e-views-cursor-msg-view-window-up) 
+  ;;              ;; toggle opening messages automatically when moving in the headers view
+  ;;              ("f" . mu4e-views-toggle-auto-view-selected-message) 
+  ;;              ;; show currently selected email with all remote content
+  ;;              ("i" . mu4e-views-mu4e-view-as-nonblocked-html))
+  ;;  :config
+  ;;  ;; use vertico for completion
+  ;;  (setq mu4e-views-completion-method 'default) 
+  ;;  ;; make xwidgets default
+  ;;  (setq mu4e-views-default-view-method "text") 
+  ;;  ;; (setq mu4e-views-default-view-method "html") ; make xwidgets default
+  ;;  ;; select the default
+  ;;  (mu4e-views-mu4e-use-view-msg-method "text") 
+  ;;  ;; when pressing n and p stay in the current window
+  ;;  (setq mu4e-views-next-previous-message-behaviour 'stick-to-current-window) 
+  ;;  ;; automatically open messages when moving in the headers view
+  ;;  (setq mu4e-views-auto-view-selected-message t)) 
+#+end_src
+Straight Installation
+#+begin_src emacs-lisp
+  ;; (use-package mu4e-views
+  ;;   :straight (mu4e-views
+  ;;              :type git
+  ;;              :host github
+  ;;              :repo "lordpretzel/mu4e-views"
+  ;;              :branch "mu-1.7-support"))
+#+end_src
 * Org Mode
 ** Custom function
 #+begin_src emacs-lisp
@@ -2882,7 +2917,7 @@
 #+end_src
 * Reader
 #+begin_src emacs-lisp
-  (use-package newsticker-mode
+  (use-package newsticker
     :ensure nil
     :init
     (setq newsticker-url-list '(("stackoverflow.com - emacs" "https://stackoverflow.com/feeds/tag?tagnames=emacs&sort=newest" nil nil nil)
@@ -2960,6 +2995,7 @@
    ;;   :config
    ;;   (hyperbole-mode 1))
 #+end_src
+
 
 
 
