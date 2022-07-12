@@ -2987,9 +2987,16 @@ Straight Installation
 ** Link Hint
 #+begin_src emacs-lisp
   (use-package link-hint
+    :config
+    (defun custom/link-action()
+      (interactive)
+      (if (equal current-prefix-arg nil) ; no C-u
+          ;; then
+          (link-hint-open-link)
+        ;; else
+        (link-hint-open-multiple-links)))
     :bind ((:map evil-normal-state-map
-                 ("gslo" . link-hint-open-link)
-                 ("gslO" . link-hint-open-multiple-links)
+                 ("gx" . custom/link-action)
                  ("gslC" . link-hint-copy-all-links)
                  ("gslc" . link-hint-copy-link))))
 #+end_src
