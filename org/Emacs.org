@@ -198,6 +198,7 @@ Install straight
 #+end_src
 ** Font and Windows
 #+begin_src emacs-lisp
+
   (use-package window
     :ensure nil
     :custom
@@ -207,7 +208,14 @@ Install straight
                              (side . bottom)
                              ;; (window-parameters . ((mode-line-format . ("" "%b"))))
                              (slot . -1))
-                            ("\\*\\(Backtrace\\|Warnings\\|Compile-log\\|[Hh]elp\\|Messages\\)\\*"
+
+                            ;;[Hh]elp
+                            ("\\*help" 
+                             (display-buffer-reuse-window display-buffer-in-side-window)
+                             (side . right)
+                             (window-width . 80))
+
+                            ("\\*\\(Backtrace\\|Warnings\\|Compile-log\\|Messages\\)\\*"
                              (display-buffer-in-side-window)
                              (window-height . 0.25)
                              (side . bottom)
@@ -579,7 +587,6 @@ Install straight
       "; b" 'consult-buffer
       "; B" 'consult-buffer-other-window
       "; ;" 'execute-extended-command
-      "; /" 'comment-line
       "; a" (general-simulate-key "C-c")
       "; s" (general-simulate-key "C-x")
       "; w" (general-simulate-key "C-w")
@@ -594,23 +601,6 @@ Install straight
       "C-h" 'left-char)
 
 
-    (general-define-key
-     :keymaps '(insert)
-     :prefix "C-<tab>"
-     "p"  'completion-at-point ;; capf
-     "t"  'complete-tag        ;; etags
-     "d"  'cape-dabbrev
-     ;; or dabbrev-completion
-     "f"  'cape-file
-     "k"  'cape-keyword
-     "s"  'cape-symbol
-     "a"  'cape-abbrev
-     "i"  'cape-ispell
-     "l"  'cape-line
-     "w"  'cape-dict
-     "\\" 'cape-tex
-     "&" 'cape-sgml
-     "r" 'cape-rfc1345)
 
     (general-define-key
      :keymaps '(normal insert visual emacs)
@@ -687,7 +677,7 @@ Install straight
       (use-package doom-themes
         :config
         (doom-themes-visual-bell-config)
-        (load-theme 'modus-vivendi t))
+        (load-theme 'acme t))
 
       (use-package jazz-theme)
       (use-package exotica-theme)
@@ -941,12 +931,24 @@ Install straight
 ** Company
 #+begin_src emacs-lisp :async t
   (use-package company
+
+
+    ;; (define-key company-active-map [return] nil)
+    ;; (define-key company-active-map [tab] 'company-complete-common)
+    ;; (define-key company-active-map (kbd "TAB") 'company-complete-common)
+    ;; (define-key company-active-map (kbd "M-TAB") 'company-complete-selection)
     :bind (:map company-active-map
                 ("<escape>" . company-abort)
                 ("<tab>" . company-complete-selection))
     :custom
     (company-minimum-prefix-length 1)
-    (company-idle-delay 0.0))
+    (company-idle-delay 0.0)
+    :config
+    (setq company-selection-wrap-around t
+          company-tooltip-align-annotations t
+          company-idle-delay 0.36
+          company-minimum-prefix-length 2
+          company-tooltip-limit 10))
 
   (use-package company-box
     :after company
@@ -1023,23 +1025,31 @@ Install straight
     (setq kind-icon-use-icons t)
     (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
 #+end_src
-** Cape
+*** Cape
 #+begin_src emacs-lisp
   (use-package cape
+    :config
     ;; Bind dedicated completion commands
-    :bind (("s-i l" . cape-line)
-           ("s-i s" . cape-symbol)
-           ("s-i a" . cape-abbrev)
-           ("s-i A" . cape-dabbrev)
-           ("s-i k" . cape-keyword)
-           ("s-i f" . cape-file)
-           ("s-i d" . cape-dict)
-           ("s-i t" . complete-tag)
-           ("s-i i" . complete-at-point)
-           ("s-i \\" . cape-tex)
-           ("s-i &" . cape-sgml)
-           ("s-i w" . cape-ispell))
+    (general-define-key
+     :states '(insert)
+     :prefix "S-SPC"			; vim i_Ctrx-x
+     "l"  'cape-line
+     "n"  'completion-at-point            ; capf
+     "k"  'cape-dict
+     "t"  'powerthesaurus-lookup-synonyms-dwim
+     "T"  'powerthesaurus-lookup-dwim
+     "]"  'complete-tag                   ; etags
+     "i"  'cape-dabbrev                   ; or dabbrev-completion
+     "f"  'cape-file
+     "w"  'cape-keyword
+     "o"  'cape-symbol			; vim omni completion
+     "a"  'cape-abbrev
+     "s"  'cape-ispell
+     "\\" 'cape-tex
+     "&" 'cape-sgml
+     "r" 'cape-rfc1345)
     :init
+    (setq cape-dict-file "/usr/share/dict/words")
     ;; Add `completion-at-point-functions', used by `completion-at-point'.
     ;;(add-to-list 'completion-at-point-functions #'cape-dabbrev)
     ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
@@ -1137,8 +1147,28 @@ Install straight
 #+begin_src emacs-lisp
   (use-package crdt
     :defer 5
+    ;; (crdt-user-menu-mode-map)
+    ;; (crdt-buffer-menu-mode-map)
+    ;; (crdt-session-menu-mode-map)
+
+    :bind (:map crdt-session-menu-mode-map 
+                ("<return>" . crdt--session-menu-goto)
+                ("s" . crdt--session-menu-kill)
+           :map crdt-user-menu-mode-map
+                ("g" . crdt--user-menu-goto)
+                ("k" . crdt--user-menu-kill)
+                ("f" . crdt--user-menu-follow)
+           :map crdt-buffer-menu-mode-map
+                ("<return>" . crdt--buffer-menu-goto)
+                ("s" . crdt--buffer-menu-kill))
+
+    :custom
+    (crdt-tuntox-executable "/usr/local/bin/tuntox")
+    (crdt-use-tuntox t)
     :config
     (message "CRDT ready"))
+
+
 
   (use-package vimish-fold
     :after evil)
@@ -1300,12 +1330,12 @@ Install straight
                   lsp-ui-sideline-delay 0.5
                   lsp-ui-doc-delay 5
                   lsp-ui-sideline-ignore-duplicates t
+                  ;; lsp-ui-sideline-enable nil
                   lsp-ui-doc-position 'bottom
                   lsp-ui-doc-alignment 'frame
                   lsp-ui-doc-header nil
                   lsp-ui-doc-include-signature t
                   lsp-ui-doc-use-childframe t)
-
     (general-define-key
      :keymaps '(lsp-ui-mode-map)
      :states '(normal)
@@ -1322,8 +1352,14 @@ Install straight
      "C-h" 'lsp-ui-peek--select-prev-file
      "C-<return>" 'lsp-ui-peek--goto-xref-other-window))
 
-    (use-package lsp-treemacs
-      :after lsp)
+  (use-package lsp-treemacs
+    :after lsp)
+
+  ;; (use-package sideline
+  ;;   :hook (lsp-mode . sideline-mode)
+  ;;   :init
+  ;;   (setq sideline-backends-right '(sideline-lsp)))
+
 #+end_src
 ** DAP
 #+begin_src emacs-lisp
@@ -1480,13 +1516,6 @@ Install straight
 
   (use-package ipython-shell-send)
 
-  (use-package jupyter
-    :commands (jupyter-run-server-repl
-               jupyter-run-repl
-               jupyter-server-list-kernels)
-    :init (eval-after-load 'jupyter-org-extensions ; conflicts with my helm config, I use <f2 #>
-            '(unbind-key "C-c h" jupyter-org-interaction-mode-map)))
-
   (require 'dap-python)
   ;; lang python
   (provide 'lang-python)
@@ -1500,58 +1529,47 @@ Install straight
                            (lsp))))  ; or lsp-deferred
 
 #+end_src
-** R
-#+begin_src emacs-lisp
-  (use-package ess
-    :defer 3
-    :config
-    (setq ess-use-auto-complete nil))
-
-  (use-package julia-mode
-    :defer 3)
-#+end_src
 ** Virtual Envs
 #+begin_src emacs-lisp
+  (use-package conda
+    ;;:config
+    ;;(conda-env-autoactivate-mode nil)
+    :init
+    (progn
+      (conda-env-initialize-interactive-shells)
+      (conda-env-initialize-eshell)
+      (setq conda--executable-path "/Users/rwilson/opt/anaconda3/condabin/conda"
+            conda-env-home-directory (expand-file-name "~/opt/anaconda3/"))
+      (custom-set-variables '(conda-anaconda-home "~/opt/anaconda3/"))))
 
-    (use-package conda
-      :init
-      (progn
-        (conda-env-initialize-interactive-shells)
-        (conda-env-initialize-eshell)
-        (setq conda-env-home-directory (expand-file-name "~/anaconda3/"))
-        (custom-set-variables '(conda-anaconda-home "~/anaconda3/")))
-      :config
-      ;;(conda-env-autoactivate-mode t)
-      )
-
-    (use-package pipenv
-      :after python-mode 
-      :hook (python-mode . pipenv-mode))
-    ;;   :init
-    ;;   (setq
-    ;;    pipenv-projectile-after-switch-function
-    ;;    #'pipenv-projectile-after-switch-extended))
+  (use-package pipenv
+    :after python-mode 
+    :hook (python-mode . pipenv-mode))
+  ;;   :init
+  ;;   (setq
+  ;;    pipenv-projectile-after-switch-function
+  ;;    #'pipenv-projectile-after-switch-extended))
 
 
-    (use-package pyvenv
-      :demand t
-      :config
-      (pyvenv-tracking-mode 1)
-      (pyvenv-mode))  ; Automatically use pyvenv-workon via dir-locals
+  (use-package pyvenv
+    :demand t
+    :config
+    (pyvenv-tracking-mode 1)
+    (pyvenv-mode))  ; Automatically use pyvenv-workon via dir-locals
 
-    ;; (use-package pyvenv
-    ;;   :after python-mode
-    ;;   :config
-    ;;   (pyvenv-mode 1)
-    ;;   ;; Set correct Python interpreter
-    ;;   (setq pyvenv-post-activate-hooks
-    ;;         (list (lambda ()
-    ;;                 (setq python-shell-interpreter (concat pyvenv-virtual-env "bin/python")))))
-    ;;   (setq pyvenv-post-deactivate-hooks
-    ;;         (list (lambda ()
-    ;;                 (setq python-shell-interpreter (concat pyvenv-virtual-env "python3")))))
+  ;; (use-package pyvenv
+  ;;   :after python-mode
+  ;;   :config
+  ;;   (pyvenv-mode 1)
+  ;;   ;; Set correct Python interpreter
+  ;;   (setq pyvenv-post-activate-hooks
+  ;;         (list (lambda ()
+  ;;                 (setq python-shell-interpreter (concat pyvenv-virtual-env "bin/python")))))
+  ;;   (setq pyvenv-post-deactivate-hooks
+  ;;         (list (lambda ()
+  ;;                 (setq python-shell-interpreter (concat pyvenv-virtual-env "python3")))))
 
-    ;;   (pyvenv-tracking-mo de 1))
+  ;;   (pyvenv-tracking-mo de 1))
 #+end_src
 ** Projectile
 #+begin_src emacs-lisp
@@ -1673,6 +1691,74 @@ Install straight
   ;;   ("pyls.plugins.pycodestyle.enabled" nil t)
   ;;   ("pyls.plugins.mccabe.enabled" nil t)
   ;;   ("pyls.plugins.pyflakes.enabled" nil t))))
+#+end_src
+* Data Science
+** Jupyter
+#+begin_src emacs-lisp
+  (use-package jupyter
+    :mode "\\.py\\'"
+    :after python-mode
+    :commands (jupyter-run-server-repl
+               jupyter-run-repl
+               jupyter-server-list-kernels)
+    :init (eval-after-load 'jupyter-org-extensions ; conflicts with my helm config, I use <f2 #>
+            '(unbind-key "C-c h" jupyter-org-interaction-mode-map)))
+#+end_src
+** ESS
+#+begin_src emacs-lisp
+  (use-package ess
+    :defer t
+    :ensure t
+    :hook
+    (ess-help-mode . evil-normal-state)
+    :custom
+    (inferior-ess-fix-misaligned-output t)
+    (ess-eldoc-show-on-symbol t)
+    (ess-gen-proc-buffer-name-function 'ess-gen-proc-buffer-name:projectile-or-directory)
+    (ess-eval-visibly 'nil "Don't hog Emacs")
+    (ess-style 'RStudio)
+    (ess-use-flymake nil "Syntax checking is usually not helpful")
+    (ess-tab-complete-in-script nil "Do not interfere with Company")
+    (ess-use-ido nil "Prefer Ivy/Counsel")
+    ;; (ess-history-directory (expand-file-name "ESS-history/" no-littering-var-directory))
+    (inferior-R-args "--no-save")
+    (ess-R-font-lock-keywords
+     (quote
+      ((ess-R-fl-keyword:keywords . t)
+       (ess-R-fl-keyword:constants . t)
+       (ess-R-fl-keyword:modifiers . t)
+       (ess-R-fl-keyword:fun-defs . t)
+       (ess-R-fl-keyword:assign-ops . t)
+       (ess-R-fl-keyword:%op% . t)
+       (ess-fl-keyword:fun-calls . t)
+       (ess-fl-keyword:numbers . t)
+       (ess-fl-keyword:operators)
+       (ess-fl-keyword:delimiters)
+       (ess-fl-keyword:=)
+       (ess-R-fl-keyword:F&T))))
+    (ess-ask-for-ess-directory nil)
+    (ess-smart-S-assign-key nil)
+    (ess-indent-with-fancy-comments nil)
+    :config
+    (setq ess-can-eval-in-background nil)
+    (setq ess--command-default-timeout 1)
+    (defun my/add-pipe ()
+      "Add a pipe operator %>% at the end of the current line.
+  Don't add one if the end of line already has one.  Ensure one
+  space to the left and start a newline with indentation."
+      (interactive)
+      (end-of-line)
+      (unless (looking-back "%>%" nil)
+        (just-one-space 1)
+        (insert "%>%"))))
+
+  (use-package ess-view-data
+    :after ess)
+#+end_src
+** Julia
+#+begin_src emacs-lisp
+  (use-package julia-mode
+    :defer 3)
 #+end_src
 * Version Control
 ** Magit
@@ -1879,11 +1965,8 @@ Install straight
   (use-package dictionary)
 #+end_src
 ** Thesaurus
-#+begin_src emacs-lisp 
-  (use-package  powerthesaurus 
-    :bind ((:map evil-normal-state-map
-                 ("zs" . powerthesaurus-lookup-dwim)
-                 ("z_" . powerthesaurus-lookup-synonyms-dwim))))
+#+begin_src emacs-lisp
+  (use-package  powerthesaurus)
 #+end_src
 
 ** Latex
@@ -1984,39 +2067,47 @@ Install straight
 
 ** PDF Tools
 #+begin_src emacs-lisp
-  (use-package pdf-tools
-    :ensure t
-    :config
-(defun pdf-password-protect ()
-    "Password protect current pdf in buffer or `dired' file."
-    (interactive)
-    (unless (executable-find "qpdf")
-      (user-error "qpdf not installed"))
-    (unless (equal "pdf"
-                   (or (when (buffer-file-name)
-                         (downcase (file-name-extension (buffer-file-name))))
-                       (when (dired-get-filename nil t)
-                         (downcase (file-name-extension (dired-get-filename nil t))))))
-      (user-error "no pdf to act on"))
-    (let* ((user-password (read-passwd "user-password: "))
-           (owner-password (read-passwd "owner-password: "))
-           (input (or (buffer-file-name)
-                      (dired-get-filename nil t)))
-           (output (concat (file-name-sans-extension input)
-                           "_enc.pdf")))
-      (message
-       (string-trim
-        (shell-command-to-string
-         (format "qpdf --verbose --encrypt %s %s 256 -- %s %s"
-                 user-password owner-password input output))))))
+    (use-package pdf-tools
+      :ensure t
+      :config
+      (defun pdf-password-protect ()
+        "Password protect current pdf in buffer or `dired' file."
+        (interactive)
+        (unless (executable-find "qpdf")
+          (user-error "qpdf not installed"))
+        (unless (equal "pdf"
+                       (or (when (buffer-file-name)
+                             (downcase (file-name-extension (buffer-file-name))))
+                           (when (dired-get-filename nil t)
+                             (downcase (file-name-extension (dired-get-filename nil t))))))
+          (user-error "no pdf to act on"))
+        (let* ((user-password (read-passwd "user-password: "))
+               (owner-password (read-passwd "owner-password: "))
+               (input (or (buffer-file-name)
+                          (dired-get-filename nil t)))
+               (output (concat (file-name-sans-extension input)
+                               "_enc.pdf")))
+          (message
+           (string-trim
+            (shell-command-to-string
+             (format "qpdf --verbose --encrypt %s %s 256 -- %s %s"
+                     user-password owner-password input output))))))
+
+      ;; Use brew upgrade pdf-tools instead.
+      (custom-set-variables '(pdf-tools-handle-upgrades nil)) 
+      (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo")
+
+      (add-hook 'pdf-tools-enabled-hook 'pdf-view-midnight-minor-mode)
+      (add-hook 'LaTeX-mode-hook 'TeX-PDF-mode)
+      (add-hook 'LaTeX-mode-hook 'TeX-source-correlate-mode)
+      (setq TeX-source-correlate-method 'synctex)
+      (setq TeX-source-correlate-start-server t))
+
+    (pdf-tools-install)
 
 
-    (custom-set-variables
-     '(pdf-tools-handle-upgrades nil)) ; Use brew upgrade pdf-tools instead.
-    (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo"))
-  (pdf-tools-install)
-
-  (use-package org-noter-pdftools)
+    (use-package org-noter-pdftools
+      :after  pdf-tools)
 #+end_src
 ** Google
 #+begin_src emacs-lisp
@@ -2150,7 +2241,8 @@ Install straight
 
     (setq mu4e-text2speech-command "espeak")
 
-    (setq mu4e-headers-unread-mark    '("u" . "📩 ")
+    (setq mu4e-use-fancy-chars t
+          mu4e-headers-unread-mark    '("u" . "📩 ")
           mu4e-headers-draft-mark     '("D" . "🚧 ")
           mu4e-headers-flagged-mark   '("F" . "🚩 ")
           mu4e-headers-new-mark       '("N" . "✨ ")
@@ -2162,16 +2254,11 @@ Install straight
           mu4e-headers-encrypted-mark '("x" . "🔑 ")
           mu4e-headers-signed-mark    '("s" . "🖊 "))
 
-    (setq mu4e-use-fancy-chars t
-          mu4e-view-prefer-html nil
+    (setq mu4e-view-prefer-html nil
           mu4e-completing-read-function 'completing-read)
 
     (add-to-list 'mu4e-view-actions
                  '("Save to PDF" . do.mail.html/render-pdf) t)
-
-    ;; add option to view a message in the browser.
-    (add-to-list 'mu4e-view-actions
-                 '("View in browser" . mu4e-action-view-in-browser) t)
 
     ;; Add custom actions for our capture templates
     (add-to-list 'mu4e-headers-actions
@@ -2499,7 +2586,7 @@ Straight Installation
 			(efs/org-os-spefic)))
 
     :bind (:map org-mode-map
-		("<tab> TAB" . org-cycle))
+		("S-<backspace>" . org-table-blank-field))
 
     :config
     (setq org-directory (concat (getenv "HOME") "/org"))
@@ -2685,7 +2772,7 @@ Straight Installation
               (add-to-list 'org-structure-template-alist '("py" . "src python"))
               (add-to-list 'org-structure-template-alist '("rc" . "src restclient"))
               (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
-              (add-to-list 'org-structure-template-alist '("npp". "src napkin-puml"))
+            ;;(add-to-list 'org-structure-template-alist '("npp". "src napkin-puml"))
               (add-to-list 'org-structure-template-alist '("sql". "src sql-mode"))))
 #+end_src
 
@@ -2702,17 +2789,20 @@ Straight Installation
                  (julia . t)
                  (latex . t)
                  (python . t)
-              ;; (ledger . t)        
+                 ;; (ledger . t)        
                  (plantuml . t)
                  (restclient . t)
                  (emacs-lisp . t)
                  (jupyter . t)))
+              (setq org-confirm-babel-evaluate nil) 
               (setq org-babel-default-header-args:sh    '((:results . "output replace"))
                     org-babel-default-header-args:bash  '((:results . "output replace"))
                     org-babel-default-header-args:shell '((:results . "output replace"))
-                    org-babel-default-header-args:python '((:results . "output"))
-                    org-babel-default-header-args:jupyter-python '((:async . "yes")
-                                                                   (:session . "py")))
+                    ;;org-babel-default-header-args:jupyter-R '((:async . "yes")
+                    ;;                                          (:session . "R"))
+                    ;;org-babel-default-header-args:jupyter-python '((:async . "yes")
+                    ;;                                               (:session . "py"))
+                    org-babel-default-header-args:python '((:results . "output")))
               (add-to-list 'org-src-lang-modes (quote ("plantuml" . plantuml)))))
 #+end_src
 ** Org Bullets
@@ -2900,21 +2990,22 @@ Straight Installation
 #+end_src
 ** Prog Symbols
 #+begin_src emacs-lisp
-  (defun my/prog-mode/load-prettify-symbols ()
-    (interactive)
-    "Beautify prog mode keywords."
-    (setq prettify-symbols-alist '(("lambda" . "λ")
-                                   ("|>" . "▶")
-                                   ("<|" . "◁")
-                                   ("->>" . "↠")
-                                   ("->" . "➞")
-                                   ("<-" . "←")
-                                   ("=>" . "⇒")
-                                   ("<=" . "≤")
-                                   (">=" . "≥")))
-    (prettify-symbols-mode 1))
+    (defun my/prog-mode/load-prettify-symbols ()
+      (interactive)
+      "Beautify prog mode keywords."
+      (setq prettify-symbols-alist '(("lambda" . "λ")
+                                     ;;("|>" . "▶")
+                                     ;;("<|" . "◁")
+                                     ;;("->>" . "↠")
+                                     ;;("->" . "➞")
+                                     ;;("<-" . "←")
+                                     ;;("=>" . "⇒")
+                                     ;;("<=" . "≤")
+                                     ;;(">=" . "≥")
+                                     ))
+      (prettify-symbols-mode 1))
 
-  (add-hook 'prog-mode-hook 'my/prog-mode/load-prettify-symbols)
+    (add-hook 'prog-mode-hook 'my/prog-mode/load-prettify-symbols)
 #+end_src
 * Music
 ** Function
@@ -3057,7 +3148,6 @@ Straight Installation
 
 
 
-
 ** Xwwp
 #+begin_src emacs-lisp
   (use-package xwwp
@@ -3071,4 +3161,11 @@ Straight Installation
      :keymaps '(xwidget-webkit-mode-map)
      :states '(normal)
      "f" 'xwwp-follow-link))
+#+end_src
+
+** CSV
+#+begin_src emacs-lisp
+(use-package csv-mode
+  :mode ("\\.csv\\'" . csv-mode)
+  :init (add-hook 'csv-mode-hook (lambda () (font-lock-mode -1))))
 #+end_src
