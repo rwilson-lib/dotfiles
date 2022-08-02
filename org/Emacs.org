@@ -581,16 +581,15 @@ Install straight
       "g Y" 'aya-create
       "g y" 'aya-expand
       "g l" 'toggle-line-number
-      "; SPC" 'embark-act
-      "; f" 'find-file
-      "; F" 'find-file-other-window
-      "; b" 'consult-buffer
-      "; B" 'consult-buffer-other-window
-      "; ;" 'execute-extended-command
-      "; a" (general-simulate-key "C-c")
-      "; s" (general-simulate-key "C-x")
-      "; w" (general-simulate-key "C-w")
-      "; h" (general-simulate-key "C-h")
+      "SPC f" 'find-file
+      "SPC F" 'find-file-other-window
+      "SPC b" 'consult-buffer
+      "SPC B" 'consult-buffer-other-window
+      "SPC SPC" 'execute-extended-command
+      "SPC a" (general-simulate-key "C-c")
+      "SPC x" (general-simulate-key "C-x")
+      "SPC w" (general-simulate-key "C-w")
+      "SPC h" (general-simulate-key "C-h")
       "SPC g" (general-simulate-key "M-g")
       "SPC s" (general-simulate-key "M-s"))
 
@@ -640,11 +639,13 @@ Install straight
 #+begin_src emacs-lisp
   (defun toggle-line-number()
     (interactive)
-    (acase display-line-numbers-type
-      ('t (menu-bar--display-line-numbers-mode-relative))
-      ('relative (menu-bar--display-line-numbers-mode-absolute))
-      ('nil (menu-bar--display-line-numbers-mode-relative))
-      ('visual (menu-bar--display-line-numbers-mode-relative))))
+    (if (equal current-prefix-arg nil) ; no C-u
+        (acase display-line-numbers-type
+          ('t (menu-bar--display-line-numbers-mode-relative))
+          ('nil (menu-bar--display-line-numbers-mode-relative))
+          ('visual (menu-bar--display-line-numbers-mode-relative))
+          ('relative (menu-bar--display-line-numbers-mode-absolute)))
+      (menu-bar--display-line-numbers-mode-none)))
 #+end_src
 ** All Icons
 #+begin_src emacs-lisp
@@ -677,11 +678,9 @@ Install straight
       (use-package doom-themes
         :config
         (doom-themes-visual-bell-config)
-        (load-theme 'acme t))
+        (load-theme 'doom-badger t))
 
       (use-package jazz-theme)
-      (use-package exotica-theme)
-
 #+end_src
 ** Counsel Ivy
 #+begin_src emacs-lisp
@@ -1501,7 +1500,9 @@ Install straight
     ;; :custom
     ;; (dap-python-executable "python3")
     ;; (dap-python-debugger 'debugpy)
-    :interpreter ("python3" . python-mode))
+    :interpreter ("python3" . python-mode)
+    :init
+    (setq  python-shell-completion-native-enable nil))
 
   (when (executable-find "ipython")
     (setq python-shell-interpreter "ipython"
@@ -1544,6 +1545,7 @@ Install straight
 
   (use-package pipenv
     :after python-mode 
+    
     :hook (python-mode . pipenv-mode))
   ;;   :init
   ;;   (setq
@@ -1553,6 +1555,7 @@ Install straight
 
   (use-package pyvenv
     :demand t
+    :after python-mode 
     :config
     (pyvenv-tracking-mode 1)
     (pyvenv-mode))  ; Automatically use pyvenv-workon via dir-locals
@@ -1574,26 +1577,34 @@ Install straight
 ** Projectile
 #+begin_src emacs-lisp
 
-  (use-package consult-projectile
-    :after (consult projectile))
 
   (use-package projectile
     :diminish projectile-mode
-    :config (projectile-mode t)
+    :config
+    (projectile-register-project-type 'django '("manage.py")
+                                      :project-file "manage.py"
+                                      :compile "python manage.py runserver"
+                                      :test "npm test"
+                                      :run "python manage.py runserver"
+                                      :test-suffix ".py")
+    (projectile-mode t)
     :custom ((projectile-completion-system 'default))
     :bind-keymap
     ("C-c p" . projectile-command-map)
     :bind ((:map projectile-command-map
-           ("p" . consult-projectile-switch-project)
-           ("f" . consult-projectile-find-file)
-           ("e" . consult-projectile-recentf)
-           ("d" . consult-projectile-find-dir)))
+                 ("p" . consult-projectile-switch-project)
+                 ("f" . consult-projectile-find-file)
+                 ("e" . consult-projectile-recentf)
+                 ("d" . consult-projectile-find-dir)))
     :init
     (when (file-directory-p "~/Projects")
       (setq projectile-project-search-path '("~/Projects")))
     (setq projectile-switch-project-action
           '(lambda ()
              (consult-grep))))
+
+  (use-package consult-projectile
+    :after (consult projectile))
 
 
   ;; (use-package counsel-projectile
@@ -1668,7 +1679,7 @@ Install straight
                 ("M-g S" . consult-lsp-symbols) 
                 ("M-g s" . consult-lsp-file-symbols) 
                 ("C-!" . lsp-execute-code-action)
-                ("<tab> TAB" . company-indent-or-complete-common))
+                ("<tab>" . company-indent-or-complete-common))
 
     :config
     (setq lsp-idle-delay 0.5
@@ -2794,7 +2805,6 @@ Straight Installation
                  (restclient . t)
                  (emacs-lisp . t)
                  (jupyter . t)))
-              (setq org-confirm-babel-evaluate nil) 
               (setq org-babel-default-header-args:sh    '((:results . "output replace"))
                     org-babel-default-header-args:bash  '((:results . "output replace"))
                     org-babel-default-header-args:shell '((:results . "output replace"))
@@ -3070,102 +3080,3 @@ Straight Installation
 
 #+end_src
 * Misc
-** Line Number
-#+begin_src emacs-lisp
-  (global-display-line-numbers-mode 0)
-  (menu-bar-mode)
-#+end_src
-** Link Hint
-#+begin_src emacs-lisp
-  (use-package link-hint
-    :config
-    (defun custom/link-action()
-      (interactive)
-      (if (equal current-prefix-arg nil) ; no C-u
-          ;; then
-          (link-hint-open-link)
-        ;; else
-        (link-hint-open-multiple-links)))
-    :bind ((:map evil-normal-state-map
-                 ("gx" . custom/link-action)
-                 ("gslC" . link-hint-copy-all-links)
-                 ("gslc" . link-hint-copy-link))))
-#+end_src
-** Tab-Bar Mode
-#+begin_src emacs-lisp
-  ;; (setq tab-bar-show 1)
-  (defun my/tab-bar-tab-name-function ()
-    (let ((project (project-current)))
-      (if project
-          (project-root project)
-        (tab-bar-tab-name-current))))
-
-  (setq tab-bar-tab-name-function #'my/tab-bar-tab-name-function)
-  (set-face-attribute
-   'tab-bar-tab nil :inherit 'doom-modeline-panel
-   :foreground nil :background nil)
-
-  (setq tab-bar-format '(tab-bar-format-tabs tab-bar-separator tab-bar-format-align-right tab-bar-format-global))
-
-  (add-to-list 'global-mode-string "")
-
-  ;; Make sure mode line text in the tab bar can be read
-  (set-face-attribute 'tab-bar nil :foreground "#FFFFFF")
-
-
-  (set-face-attribute
-   'tab-line nil :inherit 'doom-modeline-panel
-   :foreground nil :background nil)
-#+end_src
-
-** Scanner
-#+begin_src emacs-lisp
-  (use-package scanner)
-#+end_src
-** Measure Load Time
-#+begin_src emacs-lisp
-  (defun efs/display-startup-time ()
-    (message "Emacs loaded in %s with %d garbage collections."
-             (format "%.2f seconds"
-                     (float-time
-                      (time-subtract after-init-time before-init-time)))
-             gcs-done))
-
-  (add-hook 'emacs-startup-hook #'efs/display-startup-time)
-#+end_src
-** Screen Saver
-#+begin_src emacs-lisp
-  ;;(require 'zone)
-  ;;(zone-when-idle 120)
-#+end_src
-** Hyperbole
-#+begin_src emacs-lisp
-   ;; (use-package hyperbole
-   ;;   :config
-   ;;   (hyperbole-mode 1))
-#+end_src
-
-
-
-
-** Xwwp
-#+begin_src emacs-lisp
-  (use-package xwwp
-    :config
-    (general-define-key
-     :keymaps '(xwidget-webkit-mode-map)
-     :states '(insert)
-     "<esc>" 'keyboard-quit)
-
-    (general-define-key
-     :keymaps '(xwidget-webkit-mode-map)
-     :states '(normal)
-     "f" 'xwwp-follow-link))
-#+end_src
-
-** CSV
-#+begin_src emacs-lisp
-(use-package csv-mode
-  :mode ("\\.csv\\'" . csv-mode)
-  :init (add-hook 'csv-mode-hook (lambda () (font-lock-mode -1))))
-#+end_src
