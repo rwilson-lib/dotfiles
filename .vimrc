@@ -35,6 +35,9 @@ set wildignore+=**/node_modules/**
 set splitbelow
 set splitright
 
+set dictionary+=/usr/share/dict/words
+" set thesaurus+=/home/jsmith/mythesaurus.txt
+
 set timeoutlen=500
 
 autocmd BufRead,BufNewFile * setlocal signcolumn=auto
@@ -112,8 +115,10 @@ set backup
 set undodir=~/.vim/undo-dir
 set undofile
 
+set omnifunc=syntaxcomplete#Complete
 
 inoremap <silent> <C-g> <ESC>
+
 nnoremap <silent> j gj
 nnoremap <silent> k gk
 nnoremap <silent> <leader>gf :e <cfile><cr>
@@ -339,3 +344,4 @@ set rtp+=/usr/local/opt/fzf
 
 " define an abbreviation for write and delete
 cnorea wd w\|:bd
+
