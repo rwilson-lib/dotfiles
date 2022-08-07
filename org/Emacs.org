@@ -132,9 +132,8 @@ Install straight
     (setq alert-default-style 'notifier)
 
     :bind (("C-x C-b" . ibuffer)
-           ("s-<up>" . scroll-other-window)
-           ("s-<down>" . scroll-other-window-down)
-           ("C-`" . universal-argument)
+           ("C-S-u" . universal-argument)
+           ("C-`" . scratch-buffer)
            ("<f12>" . tmm-menubar)
            (:map minibuffer-local-map
                  ("<tab>" . completion-at-point)))
@@ -664,10 +663,6 @@ Install straight
       (setq display-time-day-and-date t
             display-time-24hr-format t)
       ;; (display-time)
-
-      (use-package smart-mode-line
-        :config
-        (smart-mode-line-enable))
 
       (use-package doom-modeline
         :init (doom-modeline-mode 1)
@@ -1228,14 +1223,30 @@ Install straight
     (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
     (message "Tree-Sitter ready"))
 
+  (use-package evil-textobj-tree-sitter
+    :after (evil tree-sitter)
+    :config
+    (general-define-key
+     :keymaps '(evil-outer-text-objects-map)
+     "a" (evil-textobj-tree-sitter-get-textobj "statement.outer")
+     "\\" (evil-textobj-tree-sitter-get-textobj "comment.outer")
+     "*" (evil-textobj-tree-sitter-get-textobj "block.outer")
+     "&" (evil-textobj-tree-sitter-get-textobj "parameter.outer")
+     "l" (evil-textobj-tree-sitter-get-textobj "loop.outer")
+     "d" (evil-textobj-tree-sitter-get-textobj "conditional.outer")
+     "c" (evil-textobj-tree-sitter-get-textobj  "class.outer")
+     "f" (evil-textobj-tree-sitter-get-textobj "function.outer"))
 
-  (use-package tree-edit
-    :after tree-sitter)
-
-  (use-package evil-tree-edit
-    :defer 2
-    :after (evil tree-edit))
+    (general-define-key
+     :keymaps '(evil-inner-text-objects-map)
+     "*" (evil-textobj-tree-sitter-get-textobj "block.inner")
+     "&" (evil-textobj-tree-sitter-get-textobj "parameter.inner")
+     "l" (evil-textobj-tree-sitter-get-textobj "loop.inner")
+     "d" (evil-textobj-tree-sitter-get-textobj "conditional.inner")
+     "c" (evil-textobj-tree-sitter-get-textobj "class.inner")
+     "f" (evil-textobj-tree-sitter-get-textobj "function.inner")))
 #+end_src
+
 ** Doc String
 #+begin_src emacs-lisp
   (use-package docstr)
@@ -1498,22 +1509,21 @@ Install straight
     ;;:mode "\\.py\\'"
     :hook (python-mode . lsp-deferred)
     ;; :custom
-    ;; (dap-python-executable "python3")
+    ;; (dap-python-executable "python")
     ;; (dap-python-debugger 'debugpy)
-    :interpreter ("python3" . python-mode)
+    :interpreter ("python" . python-mode)
     :init
-    (setq  python-shell-completion-native-enable nil))
+    (setq  python-indent-offset 4
+           python-shell-completion-native-enable nil))
 
   (when (executable-find "ipython")
     (setq python-shell-interpreter "ipython"
           python-shell-interpreter-args "-i --simple-prompt --InteractiveShell.display_page=True"))
 
-  (add-hook 'python-mode-hook #'evil-tree-edit-mode)
-
   (use-package live-py-mode
     :config
-    (setq live-py-path "/usr/bin/python3")
-    (setq live-py-version "python3"))
+    ;; (setq live-py-path "/usr/bin/python3")
+    (setq live-py-version "python"))
 
   (use-package ipython-shell-send)
 
@@ -1776,8 +1786,6 @@ Install straight
 #+begin_src emacs-lisp
   (use-package magit
     :defer 2
-    :bind (:map evil-normal-state-map
-                (";gg" . magit-dispatch))
     :custom (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
     :config
     (setq git-gutter:hide-gutter t)
@@ -2142,6 +2150,7 @@ Install straight
 ** Ace Windows
 #+begin_src emacs-lisp
   (use-package ace-window
+    :after evil
     :init
     (progn
       (global-set-key [remap other-window] 'ace-window)
@@ -2153,8 +2162,8 @@ Install straight
           aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 
     :bind (:map evil-window-map
-                ("fn" . make-frame)
-                ("fc" . delete-frame)
+                ("f" . make-frame)
+                ("x" . delete-frame)
                 ("d" . evil-delete-buffer)
                 ("c" . evil-window-delete-m)
                 ("T" . tab-bar-move-window-to-tab)
