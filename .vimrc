@@ -2,6 +2,13 @@ syntax on
 "
 " enable all Python syntax highlighting features
 let python_highlight_all = 1
+let g:python3_host_prog = '/usr/local/bin/python3'
+
+" disable perl provider
+let g:loaded_perl_provider = 0
+
+" disable ruby provider
+let g:loaded_ruby_provider = 0
 
 let g:mapleader = "\<Space>"
 let g:maplocalleader = ';'
