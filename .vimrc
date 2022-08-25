@@ -132,10 +132,14 @@ nnoremap <silent> <leader>gf :e <cfile><cr>
 nnoremap <silent> gl :set relativenumber!<CR>
 nnoremap <silent> <localleader><space> :set hls!<CR>
 
+nnoremap <silent> ;; <c-6>
+
+
 inoremap <C-h> <Left>
 inoremap <C-j> <Down>
 inoremap <C-k> <Up>
 inoremap <C-l> <Right>
+
 cnoremap <C-h> <Left>
 cnoremap <C-j> <Down>
 cnoremap <C-k> <Up>
@@ -143,9 +147,8 @@ cnoremap <C-l> <Right>
 
  
 " Tabs
-nmap <silent> <S-H> :tabprev<cr>
-nmap <silent> <S-L> :tabnext<cr>
 nnoremap <silent> <c-w>t :tabnew<cr>
+nnoremap <silent> <c-w>C :tabclose<cr>
 
 " ZFZ
 nmap <silent><nowait> <leader><space>t :ZTags<CR>
@@ -223,27 +226,25 @@ call plug#begin('~/.vim/plugged')
     Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
     Plug 'junegunn/fzf.vim'
 
-    Plug 'neoclide/coc.nvim', {'branch': 'release'}
-    Plug 'neoclide/coc-python', {'do': 'yarn install --frozen-lockfile'}
-    Plug 'neoclide/coc-tabnine', {'do': 'yarn install --frozen-lockfile'}
-    Plug 'neoclide/coc-yaml', {'do': 'yarn install --frozen-lockfile'}
-    Plug 'neoclide/coc-json', {'do': 'yarn install --frozen-lockfile'}
-    Plug 'neoclide/coc-snippets'
+    " Plug 'neoclide/coc.nvim', {'branch': 'release'}
+    " Plug 'neoclide/coc-python', {'do': 'yarn install --frozen-lockfile'}
+    " Plug 'neoclide/coc-tabnine', {'do': 'yarn install --frozen-lockfile'}
+    " Plug 'neoclide/coc-yaml', {'do': 'yarn install --frozen-lockfile'}
+    " Plug 'neoclide/coc-json', {'do': 'yarn install --frozen-lockfile'}
+    " Plug 'neoclide/coc-snippets'
 
     " Fuzzy finder
     Plug 'yuki-yano/fzf-preview.vim', { 'branch': 'release/rpc' }
     Plug 'nvim-lua/plenary.nvim'
     Plug 'nvim-telescope/telescope.nvim'
 
-    " Treesitter
-    Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 
 " Initialize plugin system
 call plug#end()
 
-source ~/.vimrc_coc
+" source ~/.vimrc_coc
 source ~/.vimrc_nerdtree
-source ~/.vimrc_coc_markdown
+" source ~/.vimrc_coc_markdown
 source ~/.vimrc_python
 source ~/.vimrc_web
 source ~/.vimrc_vimspector
@@ -268,8 +269,9 @@ let g:airline_powerline_fonts = 1
 let g:gitgutter_max_signs = -1
 
 " " Configure error/warning section to use coc.nvim
-let g:airline_section_error = '%{airline#util#wrap(airline#extensions#coc#get_error(),0)}'
-let g:airline_section_warning = '%{airline#util#wrap(airline#extensions#coc#get_warning(),0)}'
+" let g:airline_section_error = '%{airline#util#wrap(airline#extensions#coc#get_error(),0)}'
+" let g:airline_section_warning = '%{airline#util#wrap(airline#extensions#coc#get_warning(),0)}'
+
 let g:airline_theme='papercolor'
 
 let g:vimspector_enable_mappings='HUMAN'
@@ -303,19 +305,19 @@ nnoremap <LocalLeader>vz :call VimuxZoomRunner()<CR>
 "
 " let g:airline_section_y = '%{bufnr("%")} %{winnr()}'
 " let g:airline_section_z = airline#section#create_right(['%{getcwd()}'])
-function! StatusLineBuffWinNum()
-    let bufferNumber = bufnr("%")
-    let splitNumber = winnr()
-    return bufferNumber . "|" . splitNumber
-endfunction
-
-call airline#parts#define_function('BufandSplitNum', 'StatusLineBuffWinNum')
-let g:airline_section_u = airline#section#create_right(['BufandSplitNum'])
-
-let g:airline#extensions#default#layout = [
-  \ [ 'a', 'b', 'c' ],
-  \ [ 'x', 'y', 'z', 'warning', 'error', 'u']
-\ ]
+" function! StatusLineBuffWinNum()
+"     let bufferNumber = bufnr("%")
+"     let splitNumber = winnr()
+"     return bufferNumber . "|" . splitNumber
+" endfunction
+" 
+" call airline#parts#define_function('BufandSplitNum', 'StatusLineBuffWinNum')
+" let g:airline_section_u = airline#section#create_right(['BufandSplitNum'])
+" 
+" let g:airline#extensions#default#layout = [
+"   \ [ 'a', 'b', 'c' ],
+"   \ [ 'x', 'y', 'z', 'warning', 'error', 'u']
+" \ ]
 
 
 " Easymotion
@@ -334,7 +336,7 @@ nmap <Leader>L <Plug>(easymotion-overwin-line)
 map  <Leader>w <Plug>(easymotion-bd-w)
 nmap <Leader>w <Plug>(easymotion-overwin-w)
 
-let g:coc_filetype_map = {'tex': 'latex'}
+" let g:coc_filetype_map = {'tex': 'latex'}
 
 " enable gtags module
 " let g:gutentags_modules = ['ctags', 'gtags_cscope']
@@ -352,3 +354,5 @@ set rtp+=/usr/local/opt/fzf
 " define an abbreviation for write and delete
 cnorea wd w\|:bd
 
+autocmd FileType vim nnoremap <silent><buffer> K <Esc>:vert help <C-R><C-W><CR>:wincmd L | vert resize 80<CR>
+autocmd FileType vim nnoremap <silent><buffer> K <Esc>:vert term python -m pydoc <C-R><C-W><CR>:wincmd L | vert resize 80<CR>
