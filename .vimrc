@@ -124,13 +124,12 @@ set undofile
 
 set omnifunc=syntaxcomplete#Complete
 
-inoremap <silent> <C-g> <ESC>
-
 nnoremap <silent> j gj
 nnoremap <silent> k gk
 nnoremap <silent> <leader>gf :e <cfile><cr>
 nnoremap <silent> gl :set relativenumber!<CR>
 nnoremap <silent> <localleader><space> :set hls!<CR>
+map gm :call cursor(0, virtcol('$')/2)<CR>
 
 nnoremap <silent> ;; <c-6>
 
@@ -211,8 +210,6 @@ call plug#begin('~/.vim/plugged')
 
     Plug 'airblade/vim-gitgutter'
     Plug 'tpope/vim-fugitive'
-
-    Plug 'jamessan/vim-gnupg'
 
     " Plug 'liuchengxu/vim-which-key'
     Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
@@ -319,6 +316,17 @@ nnoremap <LocalLeader>vz :call VimuxZoomRunner()<CR>
 "   \ [ 'x', 'y', 'z', 'warning', 'error', 'u']
 " \ ]
 
+function! BufDelete()
+  let buf_num = winbufnr(v:count)
+  if buf_num == -1
+      echom "None"
+  else
+      let cmd = ':bd'.buf_num
+      execute cmd
+  endif
+endfunction
+
+nmap <C-w>Q :call BufDelete()<CR>
 
 " Easymotion
 " <Leader>f{char} to move to {char}
