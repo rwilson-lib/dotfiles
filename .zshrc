@@ -1,7 +1,8 @@
 # If you come from bash you might have to change your $PATH.
 #
 # alias python=/usr/local/bin/python3
-export PATH=$HOME/bin:/usr/local/bin:$HOME/Library/Python/3.8/bin:$HOME/Library/Python/3.9/bin:/Library/PostgreSQL/13/bin:/usr/local/opt/mysql-client/bin:$HOME/go/bin:./node_modules/.bin:/Applications/Emacs.app/Contents/MacOS/bin:$PATH 
+export PATH=$HOME/bin:/usr/local/bin:$HOME/Library/Python/3.8/bin:$HOME/Library/Python/3.9/bin:/Library/PostgreSQL/13/bin:/usr/local/opt/mysql-client/bin:$HOME/go/bin:./node_modules/.bin:/Applications/Emacs.app/Contents/MacOS/bin:$HOME/.local/share/nvim/lsp_servers:$PATH 
+
 
 # Path to your oh-my-zsh installation.
 export ZSH=$HOME/.oh-my-zsh
@@ -115,6 +116,7 @@ alias tmux="TERM=screen-256color-bce tmux"
 alias gls="gls --hyperlink=auto --color"
 alias l="ls -d $PWD/*"
 alias n="nvim"
+alias e="emacs -nw"
 
 ctags='/usr/local /bin/ctags'
 source /usr/local/opt/git-extras/share/git-extras/git-extras-completion.zsh
@@ -159,3 +161,36 @@ export GPG_TTY
 alias config='/usr/bin/git --git-dir=/Users/rwilson/.cfg/ --work-tree=/Users/rwilson'
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+
+
+## https://github.dev/sdaschner/dotfiles/blob/master/.zshrc
+# vim cursor
+# zle-line-finish zle-line-init zle-keymap-select () {
+#     if [ $TERM != linux ]; then
+#         if [ $KEYMAP = vicmd ]; then
+#             echo -ne "\e[2 q"
+#         else
+#             echo -ne "\e[5 q"
+#         fi
+#     fi
+# }
+
+
+# key bindings
+bindkey '^R' history-incremental-search-backward
+bindkey '^S' history-incremental-search-forward
+# enable Ctrl + S / Q
+stty start undef
+stty stop undef
+setopt noflowcontrol
+setopt extendedglob
+
+autoload zmv
+
+
+# start ssh-agent w/ git ssh key
+# eval $(keychain --eval --quiet)
+#
+
+export DBUS_LAUNCHD_SESSION_BUS_SOCKET="/tmp/dbus/$USER.session.usock"
