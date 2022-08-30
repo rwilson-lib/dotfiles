@@ -265,7 +265,13 @@ Install straight
   ;; (set-frame-parameter nil 'fullscreen 'fullboth)
   (setq visible-bell t)
   ;; (set-face-attribute 'default nil :font "FiraCode Nerd Font" :height 160)
-  (setq tab-bar-tab-hints t)
+
+  ;; Tab Bar
+  (setq tab-bar-tab-hints t
+        tab-bar-new-button-show nil
+        tab-bar-close-button-show nil)
+
+
   (setq inhibit-startup-message t)
   ;; (menu-bar-mode 1)
   (scroll-bar-mode -1)
@@ -274,7 +280,8 @@ Install straight
   (set-fringe-mode 10)
   (display-battery-mode 1)
   (column-number-mode)
-  (set-window-fringes nil 0 0)
+  ; (set-window-fringes nil 0 0)
+
 #+end_src
 ** Shell
 #+begin_src emacs-lisp
@@ -348,19 +355,23 @@ Install straight
 #+end_src
 ** Try
 #+begin_src emacs-lisp
-  (use-package try)
+  (use-package try
+    :config
+    (message "Done Loading Try"))
 #+end_src
 ** Async
 #+begin_src emacs-lisp
   (use-package async-await
     :config
-    (async-bytecomp-package-mode 1))
+    (async-bytecomp-package-mode 1)
+    (message "Done Loading Async Await"))
 #+end_src
 ** Alert
 #+begin_src emacs-lisp
  (use-package alert
     :config
-    (setq alert-default-style "fringe"))
+    (setq alert-default-style "fringe")
+    (message "Done Loading Alert"))
 #+end_src
 * Key Binding
 ** Evil
@@ -371,7 +382,7 @@ Install straight
      ((eq evil-state 'normal) (keyboard-quit))
      (t (evil-force-normal-state))))
 
-    (defun tab-bar-switch-to-next-tab-m()
+  (defun tab-bar-switch-to-next-tab-m()
     (interactive)
     (if (equal current-prefix-arg nil) ; no C-u
         (tab-bar-switch-to-next-tab)
@@ -402,25 +413,45 @@ Install straight
     :config
     (setq evil-ex-search-case "insensitive")
 
-    (evil-define-command evil-window-delete-m (&optional count)
-     "Deletes the current window.
-     If `evil-auto-balance-windows' is non-nil then all children of
-     the deleted window's parent window are rebalanced."
-     :repeat nil
-     (interactive "<c>")
-     (let ((p (window-parent)))
+    (evil-define-command evil-delete-buffer-m (&optional count)
+      "Deletes the current window.
+       If `evil-auto-balance-windows' is non-nil then all children of
+       the deleted window's parent window are rebalanced."
+      :repeat nil
+      (interactive "<c>")
+      (let ((p (window-parent)))
 
-      (if (not count)
-       (delete-window)
-       (if (winum-get-window-by-number count)
-        (delete-window(winum-get-window-by-number count))
-        (message "cant delete window")))
-      (when evil-auto-balance-windows
-       ;; balance-windows raises an error if the parent does not have
-       ;; any further children (then rebalancing is not necessary anyway)
-       (condition-case nil
-        (balance-windows p)
-        (error)))))
+        (if (not count)
+            (evil-delete-buffer)
+          (if (winum-get-window-by-number count)
+              (evil-delete-buffer (window-buffer (winum-get-window-by-number count)))
+            (message "cant delete window")))
+        (when evil-auto-balance-windows
+          ;; balance-windows raises an error if the parent does not have
+          ;; any further children (then rebalancing is not necessary anyway)
+          (condition-case nil
+              (balance-windows p)
+            (error)))))
+
+    (evil-define-command evil-window-delete-m (&optional count)
+      "Deletes the current window.
+       If `evil-auto-balance-windows' is non-nil then all children of
+       the deleted window's parent window are rebalanced."
+      :repeat nil
+      (interactive "<c>")
+      (let ((p (window-parent)))
+
+        (if (not count)
+            (delete-window)
+          (if (winum-get-window-by-number count)
+              (delete-window(winum-get-window-by-number count))
+            (message "cant delete window")))
+        (when evil-auto-balance-windows
+          ;; balance-windows raises an error if the parent does not have
+          ;; any further children (then rebalancing is not necessary anyway)
+          (condition-case nil
+              (balance-windows p)
+            (error)))))
 
     (evil-define-command evil-sfind (file)
       "Open FILE in a split"
@@ -435,11 +466,11 @@ Install straight
 
     (evil-define-operator evil-write-delete-buffer (beg end type file-or-append &optional bang)
       "Save the current buffer, from BEG to END, to FILE-OR-APPEND.
-    If FILE-OR-APPEND is of the form \" FILE\", append to FILE
-    instead of overwriting.  The current buffer's filename is not
-    changed unless it has no associated file and no region is
-    specified.  If the file already exists and the BANG argument is
-    non-nil, it is overwritten without confirmation."
+      If FILE-OR-APPEND is of the form \" FILE\", append to FILE
+      instead of overwriting.  The current buffer's filename is not
+      changed unless it has no associated file and no region is
+      specified.  If the file already exists and the BANG argument is
+      non-nil, it is overwritten without confirmation."
       :motion nil
       :move-point nil
       :type line
@@ -482,7 +513,8 @@ Install straight
     (define-key evil-normal-state-map (kbd "z <return>") 'enlarge-window)
     (define-key evil-normal-state-map (kbd "g t") 'tab-bar-switch-to-next-tab-m)
     (define-key evil-normal-state-map (kbd "g T") 'tab-bar-switch-to-prev-tab-m)
-    (evil-mode 1))
+    (evil-mode 1)
+    (message "Done Loading Evil"))
 
   (defun moon-override-yank-pop (&optional arg)
     "Delete the region before inserting poped string."
@@ -577,9 +609,8 @@ Install straight
     (general-evil-setup t)
 
     (general-nvmap
-      "g Y" 'aya-create
-      "g y" 'aya-expand
       "g l" 'toggle-line-number
+      "; ;" 'evil-buffer
       "SPC f" 'find-file
       "SPC F" 'find-file-other-window
       "SPC b" 'consult-buffer
@@ -597,8 +628,6 @@ Install straight
       "C-k" 'previous-line
       "C-l" 'right-char
       "C-h" 'left-char)
-
-
 
     (general-define-key
      :keymaps '(normal insert visual emacs)
@@ -657,26 +686,29 @@ Install straight
 #+end_src
 ** Doom Themes and Modeline
 #+begin_src emacs-lisp
-      (use-package hide-mode-line
-        :hook ((calc-mode) . hide-mode-line))
+  (use-package hide-mode-line
+    :hook ((calc-mode) . hide-mode-line))
 
-      (setq display-time-day-and-date t
-            display-time-24hr-format t)
-      ;; (display-time)
+  (setq display-time-day-and-date t
+	display-time-24hr-format t)
+  ;; (display-time)
 
-      (use-package doom-modeline
-        :init (doom-modeline-mode 1)
-        :config
-        (setq find-file-visit-truename t)
-        :custom ((doom-modeline-height 0)))
+  (use-package doom-modeline
+    :init (doom-modeline-mode 1)
+    :config
+    (setq find-file-visit-truename t)
+    :custom ((doom-modeline-height 0)))
 
-      (use-package doom-themes
-        :config
-        (doom-themes-visual-bell-config)
-        (load-theme 'doom-badger t))
+  (use-package doom-themes
+    :config
+    (doom-themes-visual-bell-config)
+    (load-theme 'doom-badger t))
 
-      (use-package jazz-theme)
+  (use-package jazz-theme)
+  ;; Install Graphite-theme
+  ;; https://github.com/codemicmaves/graphite-theme
 #+end_src
+
 ** Counsel Ivy
 #+begin_src emacs-lisp
   ;; (use-package counsel
@@ -716,6 +748,7 @@ Install straight
 #+begin_src emacs-lisp
   (use-package avy
     :bind ((:map evil-normal-state-map
+                 ("s" . evil-avy-goto-char-2)
                  ("gsac" . avy-goto-char)
                  ("gsal" . avy-goto-line))))
 
@@ -1181,6 +1214,17 @@ Install straight
   (use-package ripgrep)
   (use-package projectile-ripgrep)
 #+end_src
+
+#+begin_src emacs-lisp
+  (use-package websearch
+    :config
+    (general-define-key
+     :prefix "C-c s"
+     ;; application spefic binding 
+     "t" 'websearch-term
+     "r" 'websearch-region
+     "." 'websearch-point))
+#+end_src
 * Developer Packages
 ** Format all
 #+begin_src emacs-lisp
@@ -1256,12 +1300,13 @@ Install straight
   (use-package prog-mode
     :ensure nil
     :hook (prog-mode . ( lambda ()
-                         ;; (corfu-mode)
-                         (hl-todo-mode)
-                         (company-mode)
-                         (docstr-mode)
-                         (display-line-numbers-mode 1)
-                         (flyspell-prog-mode))))
+			 ;; (corfu-mode)
+			 (setq-local fill-column 80)
+			 (hl-todo-mode)
+			 (company-mode)
+			 (docstr-mode)
+			 (display-line-numbers-mode 1)
+			 (flyspell-prog-mode))))
 
   (use-package rainbow-delimiters
     :hook (prog-mode . rainbow-delimiters-mode))
@@ -1586,10 +1631,9 @@ Install straight
 #+end_src
 ** Projectile
 #+begin_src emacs-lisp
-
-
   (use-package projectile
     :diminish projectile-mode
+    :defer 2
     :config
     (projectile-register-project-type 'django '("manage.py")
                                       :project-file "manage.py"
@@ -1615,17 +1659,13 @@ Install straight
 
   (use-package consult-projectile
     :after (consult projectile))
-
-
-  ;; (use-package counsel-projectile
-  ;;  :config (counsel-projectile-mode))
-
 #+end_src
 ** Universal Modeling Language
 #+begin_src emacs-lisp
   (use-package plantuml-mode
     :mode (("\\.pu\\'" . plantuml-mode)
            ("\\.puml\\'" . plantuml-mode))
+    :defer 3
     :init
     (setq org-plantuml-jar-path (expand-file-name "/usr/local/Cellar/plantuml/1.2022.5/libexec/plantuml.jar"))
 
@@ -2128,13 +2168,6 @@ Install straight
     (use-package org-noter-pdftools
       :after  pdf-tools)
 #+end_src
-** Google
-#+begin_src emacs-lisp
-  (use-package google-this
-    :config
-    (setq google-this-browse-url-function #'xwidget-webkit-browse-url)
-    (google-this-mode 1))
-#+end_src
 ** Ledger
 #+begin_src emacs-lisp
   (use-package ledger-mode)
@@ -2161,17 +2194,22 @@ Install straight
     (setq aw-dispatch-always t
           aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 
-    :bind (:map evil-window-map
-                ("f" . make-frame)
-                ("x" . delete-frame)
-                ("d" . evil-delete-buffer)
-                ("c" . evil-window-delete-m)
-                ("T" . tab-bar-move-window-to-tab)
-                ("SPC" . custom/display-buffer-at-bottom)
-                ("a" . ace-window)))
+    (general-define-key
+     :states '(normal insert)
+     "C-6" 'evil-switch-to-windows-last-buffer)
+
+    (general-define-key
+     :keymaps '(evil-window-map)
+     "f"  'make-frame
+     "x"  'delete-frame
+     "d"  'evil-delete-buffer-m
+     "c"  'evil-window-delete-m
+     "t"  'tab-bar-move-window-to-tab
+     "C"  'tab-close
+     "SPC" 'custom/display-buffer-at-bottom
+     "a" 'ace-window))
 #+end_src
-* Email
-** Email Global Variables
+* Email** Email Global Variables
 #+begin_src emacs-lisp
   (setq
    user-full-name               "Ramus Jabee Lloyd Wilson"
@@ -2805,6 +2843,7 @@ Straight Installation
                'org-babel-load-languages
                '((C . t)
                  (R . t)
+                 (lua . t)
                  (shell . t)
                  (julia . t)
                  (latex . t)
@@ -2823,6 +2862,7 @@ Straight Installation
                     ;;                                               (:session . "py"))
                     org-babel-default-header-args:python '((:results . "output")))
               (add-to-list 'org-src-lang-modes (quote ("plantuml" . plantuml)))))
+  
 #+end_src
 ** Org Bullets
 #+begin_src emacs-lisp
@@ -2913,59 +2953,6 @@ Straight Installation
   (use-package gnuplot)
   (use-package gnuplot-mode)
 #+end_src
-** Org Roam
-#+begin_src emacs-lisp
-  (use-package org-roam
-    :ensure t
-    :init
-    (setq org-roam-v2-ack t)
-    (setq org-roam-capture-templates '(("d" "default" plain "%?" :target
-                                      (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-                                                 "#+title: ${title}\n#+date: %u\n#+lastmod: %t\n#+filetags: :emacs:note:roam: \n")
-                                      :unnarrowed t)))
-    :custom
-    (org-roam-directory "~/org/notes/roam")
-    ;; (org-roam-completion-everywhere t)
-    :bind (("C-c n f" . org-roam-node-find)
-           ("C-c n r" . org-roam-node-random)		    
-           :map org-mode-map
-           ("C-M-i" . completion-at-point)
-           ("C-c n i" . org-roam-node-insert)
-           ("C-c n o" . org-id-get-create)
-           ("C-c n t" . org-roam-tag-add)
-           ("C-c n l" . org-roam-buffer-toggle)
-           ("C-c n a" . org-roam-alias-add)
-
-           :map org-roam-dailies-map
-           ("Y" . org-roam-dailies-capture-yesterday)
-           ("T" . org-roam-dailies-capture-tomorrow))
-    :bind-keymap
-    ("C-c n d" . org-roam-dailies-map)
-    :config
-    (require 'org-roam-dailies) ;; Ensure the keymap is available
-    (org-roam-db-autosync-mode))
-
-  (use-package org-roam-ui
-    :config
-    (setq org-roam-ui-browser-function #'xwidget-webkit-browse-url))
-
-  (use-package consult-org-roam
-   :init
-   (require 'consult-org-roam)
-   ;; Activate the minor-mode
-   (consult-org-roam-mode 1)
-   :custom
-   (consult-org-roam-grep-func #'consult-ripgrep)
-   :config
-   ;; Eventually suppress previewing for certain functions
-   (consult-customize
-    consult-org-roam-forward-links
-    :preview-key (kbd "M-."))
-   :bind
-   ("C-c n e" . consult-org-roam-file-find)
-   ("C-c n b" . consult-org-roam-backlinks)
-   ("C-c n r" . consult-org-roam-search))
-#+end_src
 ** Org Transclusion
 #+begin_src emacs-lisp
 (use-package org-transclusion)
@@ -3025,6 +3012,77 @@ Straight Installation
       (prettify-symbols-mode 1))
 
     (add-hook 'prog-mode-hook 'my/prog-mode/load-prettify-symbols)
+#+end_src
+* Notes
+** Org Roam
+#+begin_src emacs-lisp
+  (use-package org-roam
+    :ensure t
+    :init
+    (setq org-roam-v2-ack t)
+    (setq org-roam-capture-templates '(("d" "default" plain "%?" :target
+				      (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+						 "#+title: ${title}\n#+date: %u\n#+lastmod: %t\n#+filetags: :emacs:note:roam: \n")
+				      :unnarrowed t)))
+    :custom
+    (org-roam-directory "~/org/notes/roam")
+    ;; (org-roam-completion-everywhere t)
+    :bind (("C-c n f" . org-roam-node-find)
+	   ("C-c n r" . org-roam-node-random)		    
+	   :map org-mode-map
+	   ("C-M-i" . completion-at-point)
+	   ("C-c n i" . org-roam-node-insert)
+	   ("C-c n o" . org-id-get-create)
+	   ("C-c n t" . org-roam-tag-add)
+	   ("C-c n l" . org-roam-buffer-toggle)
+	   ("C-c n a" . org-roam-alias-add)
+
+	   :map org-roam-dailies-map
+	   ("Y" . org-roam-dailies-capture-yesterday)
+	   ("T" . org-roam-dailies-capture-tomorrow))
+    :bind-keymap
+    ("C-c n d" . org-roam-dailies-map)
+    :config
+    (require 'org-roam-dailies) ;; Ensure the keymap is available
+    (org-roam-db-autosync-mode))
+
+  (use-package org-roam-ui
+    :config
+    (setq org-roam-ui-browser-function #'xwidget-webkit-browse-url))
+
+  (use-package consult-org-roam
+   :init
+   (require 'consult-org-roam)
+   ;; Activate the minor-mode
+   (consult-org-roam-mode 1)
+   :custom
+   (consult-org-roam-grep-func #'consult-ripgrep)
+   :config
+   ;; Eventually suppress previewing for certain functions
+   (consult-customize
+    consult-org-roam-forward-links
+    :preview-key (kbd "M-."))
+   :bind
+   ("C-c n e" . consult-org-roam-file-find)
+   ("C-c n b" . consult-org-roam-backlinks)
+   ("C-c n r" . consult-org-roam-search))
+#+end_src
+** Obsidian
+#+begin_src emacs-lisp
+  (use-package obsidian
+  :ensure t
+  :demand t
+  :config
+  (obsidian-specify-path "~/MY_OBSIDIAN_FOLDER")
+  (global-obsidian-mode t)
+  :custom
+  ;; This directory will be used for `obsidian-capture' if set.
+  (obsidian-inbox-directory "Inbox")
+  :bind (:map obsidian-mode-map
+		;; Replace C-c C-o with Obsidian.el's implementation. It's ok to use another key binding.
+		("C-c C-o" . obsidian-follow-link-at-point)
+		;; If you prefer you can use `obsidian-insert-wikilink'
+		("C-c C-l" . obsidian-insert-wikilink)))
 #+end_src
 * Music
 ** Function
@@ -3089,3 +3147,35 @@ Straight Installation
 
 #+end_src
 * Misc
+#+begin_src emacs-lisp
+  (use-package hammy
+    :config
+    (hammy-define (propertize "🍅" 'face '(:foreground "tomato"))
+                  :documentation "The classic pomodoro timer."
+                  :intervals
+                  (list
+                   (interval :name "Work"
+                             :duration "25 minutes"
+                             :before (do (announce "Starting work time.")
+                                         (notify "Starting work time."))
+                             :advance (do (announce "Break time!")
+                                          (notify "Break time!")))
+                   (interval :name "Break"
+                             :duration (do (if (and (not (zerop cycles))
+                                                    (zerop (mod cycles 3)))
+                                               ;; If a multiple of three cycles have
+                                               ;; elapsed, the fourth work period was
+                                               ;; just completed, so take a longer break.
+                                               "30 minutes"
+                                             "5 minutes"))
+                             :before (do (announce "Starting break time.")
+                                         (notify "Starting break time."))
+                             :advance (do (announce "Break time is over!")
+                                          (notify "Break time is over!"))))))
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package activity-watch-mode)
+#+end_src
+
+
