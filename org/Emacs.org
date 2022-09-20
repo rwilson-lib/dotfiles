@@ -113,6 +113,11 @@ Install straight
     (setq read-extended-command-predicate
           #'command-completion-default-include-p)
 
+    ;; Case in-sensitivie-search
+    (setq read-file-name-completion-ignore-case t
+          read-buffer-completion-ignore-case t
+          completion-ignore-case t)
+
     ;; Do not use system clip board
     ;; (setq x-select-enable-clipboard nil)
 
@@ -197,7 +202,6 @@ Install straight
 #+end_src
 ** Font and Windows
 #+begin_src emacs-lisp
-
   (use-package window
     :ensure nil
     :custom
@@ -212,7 +216,7 @@ Install straight
                             ("\\*help" 
                              (display-buffer-reuse-window display-buffer-in-side-window)
                              (side . right)
-                             (window-width . 80))
+                             (window-width . 75))
 
                             ("\\*\\(Backtrace\\|Warnings\\|Compile-log\\|Messages\\)\\*"
                              (display-buffer-in-side-window)
@@ -220,6 +224,30 @@ Install straight
                              (side . bottom)
                              (slot . 0))))
     :bind (("<f8>" . window-toggle-side-windows)))
+
+  (use-package popper
+    :init
+    (setq popper-reference-buffers
+          '(compilation-mode
+            messages-mode
+            help-mode
+            occur-mode
+            "^\\*Warning\\*"
+            "^\\*Compile-Log\\*"
+            "^\\*Messages\\*"
+            "^\\*Backtrace\\*"
+            "^\\*evil-registers\*"
+            "^\\*Apropos\\*"
+            "^Calc:"
+            "^\\*ielm\\*"
+            "^\\*TeX Help\\*"
+            "^\\*Shell Command Output\\*"
+            "^\\*Async Shell Command\\*"
+            "^\\*Completions\\*"
+            "[Oo]utput\\*"))
+    :config
+    (setq popper-mode-line 'nil)
+    (setq popper-display-control 'user))
 
   (defun efs/set-font-faces ()
     (message "Setting faces!")
@@ -319,7 +347,7 @@ Install straight
 
 #+end_src
 
-** Global Settings
+** COMMENT Global Settings
 #+begin_src emacs-lisp
   ;; change all prompts to y or n
   (fset 'yes-or-no-p 'y-or-n-p)
@@ -338,8 +366,8 @@ Install straight
   (setq global-auto-revert-non-file-buffers t)
   (setq tab-width 4)
 
-  (setq browse-url-browser-function 'browse-url-firefox
-        browse-url-firefox-program "firefox")
+  ;; (setq browse-url-browser-function 'browse-url-firefox
+        ;; browse-url-firefox-program "firefox")
 #+end_src
 ** Line Number
 #+begin_src emacs-lisp
@@ -420,7 +448,6 @@ Install straight
       :repeat nil
       (interactive "<c>")
       (let ((p (window-parent)))
-
         (if (not count)
             (evil-delete-buffer)
           (if (winum-get-window-by-number count)
@@ -603,6 +630,13 @@ Install straight
 #+end_src
 ** General
 #+begin_src emacs-lisp
+  (defun my/move-to-middle ()
+    (interactive)
+    (let* ((begin (line-beginning-position))
+           (end (line-end-position))
+           (middle (/ (+ end begin) 2)))
+      (goto-char middle)))
+
   (use-package general
     :after evil
     :config
@@ -610,6 +644,7 @@ Install straight
 
     (general-nvmap
       "g l" 'toggle-line-number
+      "g m" 'my/move-to-middle
       "; ;" 'evil-buffer
       "SPC f" 'find-file
       "SPC F" 'find-file-other-window
@@ -643,17 +678,10 @@ Install straight
      "5mc" 'compose-mail-other-frame
      "mm" 'mu4e)
 
-    (general-define-key
-     :prefix "C-c a"
-     ;; application spefic binding 
-     "b" 'xwidget-webkit-browse-url
-     "B" 'browse-url)
-
     (nvmap :prefix "SPC"
       "m" '(:ignore t :which-key "music")
       "mc" '(hydra-mpc/body :which-key "mpc-music")
       "mv" '(hydra-vuiet/body :which-key "vuiet-music")))
-
 #+end_src
 ** Which-Key
 #+begin_src emacs-lisp
@@ -686,8 +714,7 @@ Install straight
 #+end_src
 ** Doom Themes and Modeline
 #+begin_src emacs-lisp
-  (use-package hide-mode-line
-    :hook ((calc-mode) . hide-mode-line))
+  (use-package hide-mode-line)
 
   (setq display-time-day-and-date t
 	display-time-24hr-format t)
@@ -702,13 +729,12 @@ Install straight
   (use-package doom-themes
     :config
     (doom-themes-visual-bell-config)
-    (load-theme 'doom-badger t))
+    (load-theme 'doom-dracula t))
 
   (use-package jazz-theme)
   ;; Install Graphite-theme
   ;; https://github.com/codemicmaves/graphite-theme
 #+end_src
-
 ** Counsel Ivy
 #+begin_src emacs-lisp
   ;; (use-package counsel
@@ -766,6 +792,7 @@ Install straight
                 ("<tab>" . vertico-insert)
                 :map minibuffer-local-map
                 ("M-h" . backward-kill-word))
+
     :config
     ;; Use 'consult-completion-in-region' if Vertico is enabled.
     ;; Otherwise use the default 'completion--in-region' function.
@@ -1090,10 +1117,6 @@ Install straight
     (add-to-list 'completion-at-point-functions #'cape-symbol)
     (add-to-list 'completion-at-point-functions #'cape-keyword))
 #+end_src
-** Popup
-#+begin_src emacs-lisp
-  (use-package popup)
-#+end_src
 ** Highlight
 #+begin_src emacs-lisp
   (use-package hl-prog-extra
@@ -1149,6 +1172,14 @@ Install straight
 
   (use-package term
     :config
+    ;; Match eshell, shell, term and/or vterm buffers
+    (setq popper-reference-buffers
+          (append popper-reference-buffers
+                  '("^\\*eshell.*\\*$" eshell-mode ;eshell as a popup
+                    "^\\*shell.*\\*$"  shell-mode  ;shell as a popup
+                    "^\\*term.*\\*$"   term-mode   ;term as a popup
+                    "^\\*vterm.*\\*$"  vterm-mode  ;vterm as a popup
+                    )))
     (setq explicit-shell-file-name "zsh")
     (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *")
     (setq mode-line-format nil))
@@ -1251,11 +1282,6 @@ Install straight
   ;;                              (thing-at-point 'line))))))
 
 #+end_src
-** Tags
-#+begin_src emacs-lisp
-  (use-package ggtags
-    :load-path "/usr/local/share/gtags/gtags.el")
-#+end_src
 ** Treesitter
 #+begin_src emacs-lisp
   (use-package tree-sitter
@@ -1299,58 +1325,64 @@ Install straight
 #+begin_src emacs-lisp
   (use-package prog-mode
     :ensure nil
-    :hook (prog-mode . ( lambda ()
-			 ;; (corfu-mode)
-			 (setq-local fill-column 80)
-			 (hl-todo-mode)
-			 (company-mode)
-			 (docstr-mode)
-			 (display-line-numbers-mode 1)
-			 (flyspell-prog-mode))))
+    :config
+    (use-package smartparens)
 
-  (use-package rainbow-delimiters
-    :hook (prog-mode . rainbow-delimiters-mode))
+    (use-package hl-todo
+      :config
+      (setq hl-todo-keyword-faces
+            '(("TODO"   . "#FF0000")
+              ("FIXME"  . "#FF0000")
+              ("DEBUG"  . "#A020F0")
+              ("GOTCHA" . "#FF4500")
+              ("STUB"   . "#1E90FF"))))
+
+    :hook (prog-mode . ( lambda ()
+                         ;; (corfu-mode)
+                         (setq-local fill-column 80)
+                         (hl-todo-mode)
+                         (smartparens-mode)
+                         (company-mode)
+                         (docstr-mode)
+                         (rainbow-mode)
+                         (rainbow-delimiters-mode)
+                         (display-line-numbers-mode 1)
+                         (flyspell-prog-mode))))
+
 
   (use-package rainbow-mode
     :config
-    (setq rainbow-x-colors nil)
-    (add-hook 'prog-mode-hook 'rainbow-mode))
-
-  (use-package smartparens
-    :config
-    (add-hook 'prog-mode-hook 'smartparens-mode))
+    (use-package rainbow-delimiters)
+    (setq rainbow-x-colors nil))
 #+end_src
 ** Snippet
 #+begin_src emacs-lisp
 
   (use-package yasnippet
+    :defer 2
     ;; :bind
     ;; ("C-c y s" . yas-insert-snippet)
     ;; ("C-c y v" . yas-visit-snippet-file)
-    :config
-    (use-package js-react-redux-yasnippets)
-
-    (add-hook 'yas-minor-mode-hook (lambda ()
-                                     (define-key yas-minor-mode-map (kbd "<tab>") nil)
-                                     (define-key yas-minor-mode-map (kbd "TAB") nil)
-                                     ;; Bind 'SPC' to 'yas-expand' when snippet expansion available (it
-                                     ;; will still call 'self-insert-command' otherwise).
-                                     (define-key yas-minor-mode-map (kbd "SPC") yas-maybe-expand)
-                                     ;; Bind `C-c y' to 'yas-expand' ONLY.
-                                     (define-key yas-minor-mode-map (kbd "C-c y") #'yas-expand)
-                                     (yas-activate-extra-mode 'fundamental-mode)))
+    :hook
+    (org-mode . (lambda () 
+                  (setq-local yas-buffer-local-condition
+                              '(not (org-in-src-block-p t)))))
+    (yas-minor-mode . (lambda ()
+                        (define-key yas-minor-mode-map (kbd "<tab>") nil)
+                        (define-key yas-minor-mode-map (kbd "TAB") nil)
+                        ;; Bind 'SPC' to 'yas-expand' when snippet expansion available (it
+                        ;; will still call 'self-insert-command' otherwise).
+                        (define-key yas-minor-mode-map (kbd "SPC") yas-maybe-expand)
+                        ;; Bind `C-c y' to 'yas-expand' ONLY.
+                        (define-key yas-minor-mode-map (kbd "C-c y") #'yas-expand)
+                        (yas-activate-extra-mode 'fundamental-mode)))
     ;; (add-to-list 'yas-snippet-dirs "~/.emacs.d/snippets")
+    :config
+    (use-package yasnippet-snippets)
+    (use-package js-react-redux-yasnippets)
     (yas-global-mode 1))
 
-
-  (use-package yasnippet-snippets)
-
   (use-package auto-yasnippet)
-
-  (defun org-mode-allow-yas-snippet-src-hook ()
-    (setq-local yas-buffer-local-condition
-                '(not (org-in-src-block-p t))))
-  (add-hook 'org-mode-hook #'org-mode-allow-yas-snippet-src-hook)
 #+end_src
 ** Emmet
 #+begin_src emacs-lisp
@@ -1776,11 +1808,11 @@ Install straight
     (inferior-ess-fix-misaligned-output t)
     (ess-eldoc-show-on-symbol t)
     (ess-gen-proc-buffer-name-function 'ess-gen-proc-buffer-name:projectile-or-directory)
-    (ess-eval-visibly 'nil "Don't hog Emacs")
+    (ess-eval-visibly 'nil); "Don't hog Emacs"
     (ess-style 'RStudio)
-    (ess-use-flymake nil "Syntax checking is usually not helpful")
-    (ess-tab-complete-in-script nil "Do not interfere with Company")
-    (ess-use-ido nil "Prefer Ivy/Counsel")
+    (ess-use-flymake nil) ;"Syntax checking is usually not helpful"
+    (ess-tab-complete-in-script nil) ;"Do not interfere with Company"
+    (ess-use-ido nil) ;"Prefer Ivy/Counsel"
     ;; (ess-history-directory (expand-file-name "ESS-history/" no-littering-var-directory))
     (inferior-R-args "--no-save")
     (ess-R-font-lock-keywords
@@ -1803,6 +1835,7 @@ Install straight
     :config
     (setq ess-can-eval-in-background nil)
     (setq ess--command-default-timeout 1)
+    (setq ess-use-company nil )
     (defun my/add-pipe ()
       "Add a pipe operator %>% at the end of the current line.
   Don't add one if the end of line already has one.  Ensure one
@@ -1949,7 +1982,7 @@ Install straight
     (blamer-min-offset 70)
     :custom-face
     (blamer-face ((t :foreground "#7a88cf"
-                     :background nil
+                     :background unspecified
                      :height 140
                      :italic t))))
 #+end_src
@@ -2201,7 +2234,6 @@ Install straight
     (general-define-key
      :keymaps '(evil-window-map)
      "f"  'make-frame
-     "x"  'delete-frame
      "d"  'evil-delete-buffer-m
      "c"  'evil-window-delete-m
      "t"  'tab-bar-move-window-to-tab
@@ -2209,7 +2241,8 @@ Install straight
      "SPC" 'custom/display-buffer-at-bottom
      "a" 'ace-window))
 #+end_src
-* Email** Email Global Variables
+* Email
+** Email Global Variables
 #+begin_src emacs-lisp
   (setq
    user-full-name               "Ramus Jabee Lloyd Wilson"
@@ -3172,10 +3205,12 @@ Straight Installation
                                          (notify "Starting break time."))
                              :advance (do (announce "Break time is over!")
                                           (notify "Break time is over!"))))))
+  (use-package activity-watch-mode)
+  (use-package emacs-everywhere)
 #+end_src
 
-#+begin_src emacs-lisp
-(use-package activity-watch-mode)
-#+end_src
+
+
+
 
 
