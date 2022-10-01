@@ -1,6 +1,10 @@
 #+TITLE: Emacs Configuration
 #+PROPERTY: header-args:emacs-lisp :tangle ~/.emacs.d/init.el
 
+Weir fixed for Emacs MacOS 
+#+begin_src emacs-lisp
+  (when (eq system-type 'darwin) (customize-set-variable 'native-comp-driver-options '("-Wl,-w")))
+#+end_src
 * Custom Function
 ** Utilities Function
 #+begin_src emacs-lisp
@@ -138,7 +142,6 @@ Install straight
 
     :bind (("C-x C-b" . ibuffer)
            ("C-S-u" . universal-argument)
-           ("C-`" . scratch-buffer)
            ("<f12>" . tmm-menubar)
            (:map minibuffer-local-map
                  ("<tab>" . completion-at-point)))
@@ -308,7 +311,7 @@ Install straight
   (set-fringe-mode 10)
   (display-battery-mode 1)
   (column-number-mode)
-  ; (set-window-fringes nil 0 0)
+                                          ; (set-window-fringes nil 0 0)
 
 #+end_src
 ** Shell
@@ -347,7 +350,7 @@ Install straight
 
 #+end_src
 
-** COMMENT Global Settings
+** Global Settings
 #+begin_src emacs-lisp
   ;; change all prompts to y or n
   (fset 'yes-or-no-p 'y-or-n-p)
@@ -367,7 +370,7 @@ Install straight
   (setq tab-width 4)
 
   ;; (setq browse-url-browser-function 'browse-url-firefox
-        ;; browse-url-firefox-program "firefox")
+  ;; browse-url-firefox-program "firefox")
 #+end_src
 ** Line Number
 #+begin_src emacs-lisp
@@ -396,7 +399,7 @@ Install straight
 #+end_src
 ** Alert
 #+begin_src emacs-lisp
- (use-package alert
+  (use-package alert
     :config
     (setq alert-default-style "fringe")
     (message "Done Loading Alert"))
@@ -423,7 +426,6 @@ Install straight
       (tab-bar-select-tab current-prefix-arg)))
 
   (use-package evil
-
     :bind ((:map evil-normal-state-map
                  ("<escape>" . custom/force-normal-state-or-exit)))
 
@@ -439,20 +441,21 @@ Install straight
     (setq evil-want-fine-undo t) 
 
     :config
-    (setq evil-ex-search-case "insensitive")
+    (setq evil-ex-search-case "insensitive"
+          evil-auto-balance-w nil)
 
-    (evil-define-command evil-delete-buffer-m (&optional count)
+    (evil-define-command evil-delete-buffer-m (count)
       "Deletes the current window.
-       If `evil-auto-balance-windows' is non-nil then all children of
-       the deleted window's parent window are rebalanced."
+           If `evil-auto-balance-windows' is non-nil then all children of
+           the deleted window's parent window are rebalanced."
       :repeat nil
       (interactive "<c>")
       (let ((p (window-parent)))
         (if (not count)
-            (evil-delete-buffer)
+            (evil-delete-buffer (current-buffer))
           (if (winum-get-window-by-number count)
               (evil-delete-buffer (window-buffer (winum-get-window-by-number count)))
-            (message "cant delete window")))
+            (message "window does not exist")))
         (when evil-auto-balance-windows
           ;; balance-windows raises an error if the parent does not have
           ;; any further children (then rebalancing is not necessary anyway)
@@ -460,14 +463,33 @@ Install straight
               (balance-windows p)
             (error)))))
 
+    (evil-define-command evil-window-exchange-m (count)
+      "Without COUNT: exchange current window with next one.
+    With COUNT: Exchange current window with COUNTth window."
+      :repeat nil
+      (interactive "<c>")
+      (let ((this-buffer (window-buffer))
+            (this-window (selected-window))
+            other-buffer other-window)
+        (if (not count)
+            (setq other-buffer (window-buffer (next-window))
+                  other-window (next-window))
+          (save-window-excursion
+            (evil-window-next count)
+            (setq other-buffer (window-buffer)
+                  other-window (selected-window))))
+        (switch-to-buffer other-buffer nil t)
+        (select-window other-window)
+        (switch-to-buffer this-buffer nil t)
+        (select-window this-window)))
+
     (evil-define-command evil-window-delete-m (&optional count)
       "Deletes the current window.
-       If `evil-auto-balance-windows' is non-nil then all children of
-       the deleted window's parent window are rebalanced."
+           If `evil-auto-balance-windows' is non-nil then all children of
+           the deleted window's parent window are rebalanced."
       :repeat nil
       (interactive "<c>")
       (let ((p (window-parent)))
-
         (if (not count)
             (delete-window)
           (if (winum-get-window-by-number count)
@@ -490,14 +512,13 @@ Install straight
       (interactive "<f>")
       (find-file-other-tab file))
 
-
     (evil-define-operator evil-write-delete-buffer (beg end type file-or-append &optional bang)
       "Save the current buffer, from BEG to END, to FILE-OR-APPEND.
-      If FILE-OR-APPEND is of the form \" FILE\", append to FILE
-      instead of overwriting.  The current buffer's filename is not
-      changed unless it has no associated file and no region is
-      specified.  If the file already exists and the BANG argument is
-      non-nil, it is overwritten without confirmation."
+          If FILE-OR-APPEND is of the form \" FILE\", append to FILE
+          instead of overwriting.  The current buffer's filename is not
+          changed unless it has no associated file and no region is
+          specified.  If the file already exists and the BANG argument is
+          non-nil, it is overwritten without confirmation."
       :motion nil
       :move-point nil
       :type line
@@ -532,7 +553,6 @@ Install straight
                         (not bang))))))
 
     (evil-ex-define-cmd "wd[elete]" 'evil-write-delete-buffer)
-
     (evil-ex-define-cmd "sf[ind]" 'evil-sfind)
     (evil-ex-define-cmd "tabedit" 'evil-tabedit)
 
@@ -706,18 +726,18 @@ Install straight
 ** All Icons
 #+begin_src emacs-lisp
   (use-package all-the-icons
-    :if (display-graphic-p)
     :config
-    (use-package all-the-icons-completion)
     (add-hook 'marginalia-mode-hook #'all-the-icons-completion-marginalia-setup)
     (all-the-icons-completion-mode))
+
+  (use-package all-the-icons-completion)
 #+end_src
 ** Doom Themes and Modeline
 #+begin_src emacs-lisp
   (use-package hide-mode-line)
 
   (setq display-time-day-and-date t
-	display-time-24hr-format t)
+        display-time-24hr-format t)
   ;; (display-time)
 
   (use-package doom-modeline
@@ -729,7 +749,7 @@ Install straight
   (use-package doom-themes
     :config
     (doom-themes-visual-bell-config)
-    (load-theme 'doom-dracula t))
+    (load-theme 'doom-zenburn t))
 
   (use-package jazz-theme)
   ;; Install Graphite-theme
@@ -769,7 +789,6 @@ Install straight
   ;; (use-package ivy-rich
   ;;   :init (ivy-rich-mode 1)) 
 #+end_src
-
 ** Avy
 #+begin_src emacs-lisp
   (use-package avy
@@ -781,17 +800,45 @@ Install straight
   (use-package avy-flycheck
     :after (avy flycheck))
 #+end_src
+** Orderless
+#+begin_src emacs-lisp
+  (use-package orderless
+    :init
+    (setq completion-styles '(orderless)
+          completion-category-default nil
+          completion-category-overrides '((file (styles . (partial-completion))))))
+#+end_src
 ** Vertico
 #+begin_src emacs-lisp
   (use-package vertico
-    :bind (:map vertico-map
-                ("C-j" . vertico-next)
-                ("C-k" . vertico-previous)
-                ("C-f" . vertico-exit)
-                ("C-SPC" . vertico-quick-jump)
-                ("<tab>" . vertico-insert)
-                :map minibuffer-local-map
-                ("M-h" . backward-kill-word))
+    :demand t 
+
+    :general
+    (:keymaps 'vertico-map
+              "<tab>" #'vertico-next        ; Insert selected candidate into text area
+              "<S-tab>" #'vertico-previous  ; Insert selected candidate into text area
+              "C-j" #'vertico-next
+              "C-k" #'vertico-previous
+              "C-f" 'vertico-exit
+              "<escape>" #'abort-minibuffers ; Close minibuffer
+              "C-SPC" #'kb/vertico-quick-insert-and-run
+              "M-o" #'kb/vertico-quick-embark
+
+              ;; NOTE 2022-02-05: Cycle through candidate groups
+              "C-M-j" #'vertico-next-group
+              "C-M-k" #'vertico-previous-group
+
+              ;; Toggle Vertico multiforms in active minibuffer
+              "C-o" #'vertico-quick-exit
+              "M-G" #'vertico-multiform-grid
+              "M-F" #'vertico-multiform-flat
+              "M-R" #'vertico-multiform-reverse
+              "M-U" #'vertico-multiform-unobtrusive)
+
+    (:keymaps 'minibuffer-local-map
+              "<escape>" #'abort-minibuffers ; Close minibuffer
+              "C-l"  #'delete-minibuffer-contents
+              "C-w"  #'backward-kill-word)
 
     :config
     ;; Use 'consult-completion-in-region' if Vertico is enabled.
@@ -803,25 +850,50 @@ Install straight
                      #'completion--in-region)
                    args)))
 
+    (defun kb/vertico-quick-embark (&optional arg)
+      "Embark on candidate using quick keys."
+      (interactive)
+      (when (vertico-quick-jump)
+        (embark-act arg)))
+
+    (defun kb/vertico-quick-insert-and-run (&optional arg)
+      "Embark on candidate using quick keys."
+      (interactive)
+      (when (vertico-quick-jump)
+        (vertico-exit)))
     ;;(advice-add #'completing-read-multiple
     ;;            :override #'consult-completing-read-multiple)
+
+    ;; Enable vertico-multiform
+    ;; (vertico-multiform-mode)
+
+    ;; Configure the display per command.
+    ;; Use a buffer with indices for imenu
+    ;; and a flat (Ido-like) menu for M-x.
+    (setq vertico-multiform-commands
+          '((consult-imenu buffer indexed)
+            (consult-buffer flat indexed)
+            (consult-grep buffer)
+            (execute-extended-command flat indexed)))
+
+    ;; Configure the display per completion category.
+    ;; Use the grid display for files and a buffer
+    ;; for the consult-grep commands.
+    (setq vertico-multiform-categories
+          '((file grid indexed)
+            (t reverse)))
     :custom
     (vertico-cycle t)
     :init
     (vertico-mode 1))
 #+end_src
-** Orderless
-#+begin_src emacs-lisp
-  (use-package orderless
-    :init
-    (setq completion-styles '(orderless)
-          completion-category-default nil
-          completion-category-overrides '((file (styles . (partial-completion))))))
-#+end_src
 ** History 
 #+begin_src emacs-lisp
   ;; Emacs remeber recently open files
   (recentf-mode 1)
+
+  ;; Remeber window layout
+  (winner-mode)
 
   ;; Emacs remeber cursor last position
   (save-place-mode 1)
@@ -1134,27 +1206,27 @@ Install straight
 #+end_src
 * SQL Servers Settings
 #+begin_src emacs-lisp
-    (setq sql-sqlite-options '("-table"))
-    (setq sql-connection-alist
-          '((pgsql-prod (sql-product 'postgres)
-                        (sql-port 5432)
-                        (sql-server "localhost")
-                        (sql-user "postgres")
-                        (sql-password "root")
-                        (sql-database ""))
-            (pgsql-staging (sql-product 'postgres)
-                           (sql-port 5432)
-                           (sql-server "db.staging.com")
-                           (sql-user "user")
-                           (sql-password "password")
-                           (sql-database "my-app"))
-            (mysql-dev (sql-product 'mysql)
-                       (sql-port 3306)
-                       (sql-server "localhost")
-                       (sql-user "root")
-                       (sql-password "root")
-                       (sql-mysql-options '("--protocol=tcp"))
-                       (sql-database ""))))
+  (setq sql-sqlite-options '("-table"))
+  (setq sql-connection-alist
+        '((pgsql-prod (sql-product 'postgres)
+                      (sql-port 5432)
+                      (sql-server "localhost")
+                      (sql-user "postgres")
+                      (sql-password "root")
+                      (sql-database ""))
+          (pgsql-staging (sql-product 'postgres)
+                         (sql-port 5432)
+                         (sql-server "db.staging.com")
+                         (sql-user "user")
+                         (sql-password "password")
+                         (sql-database "my-app"))
+          (mysql-dev (sql-product 'mysql)
+                     (sql-port 3306)
+                     (sql-server "localhost")
+                     (sql-user "root")
+                     (sql-password "root")
+                     (sql-mysql-options '("--protocol=tcp"))
+                     (sql-database ""))))
 #+end_src
 
 * Terminal
@@ -1212,11 +1284,11 @@ Install straight
     :bind (:map crdt-session-menu-mode-map 
                 ("<return>" . crdt--session-menu-goto)
                 ("s" . crdt--session-menu-kill)
-           :map crdt-user-menu-mode-map
+                :map crdt-user-menu-mode-map
                 ("g" . crdt--user-menu-goto)
                 ("k" . crdt--user-menu-kill)
                 ("f" . crdt--user-menu-follow)
-           :map crdt-buffer-menu-mode-map
+                :map crdt-buffer-menu-mode-map
                 ("<return>" . crdt--buffer-menu-goto)
                 ("s" . crdt--buffer-menu-kill))
 
@@ -1242,15 +1314,14 @@ Install straight
 #+end_src
 * Searches
 #+begin_src emacs-lisp
-  (use-package ripgrep)
-  (use-package projectile-ripgrep)
+  (use-package fd-dired)
 #+end_src
 
 #+begin_src emacs-lisp
   (use-package websearch
     :config
     (general-define-key
-     :prefix "C-c s"
+     :prefix "C-c ?"
      ;; application spefic binding 
      "t" 'websearch-term
      "r" 'websearch-region
@@ -1536,8 +1607,8 @@ Install straight
     :init (setq markdown-command "multimarkdown"))
 
   (use-package css-mode
-   :config
-   (add-to-list 'company-backends 'company-css))
+    :config
+    (add-to-list 'company-backends 'company-css))
 #+end_src
 ** JavaScript
 #+begin_src emacs-lisp
@@ -1620,19 +1691,24 @@ Install straight
 ** Virtual Envs
 #+begin_src emacs-lisp
   (use-package conda
+    :defer t
     ;;:config
     ;;(conda-env-autoactivate-mode nil)
+    :config
+    (unless (getenv "CONDA_DEFAULT_ENV")
+      (conda-env-activate "base"))
     :init
     (progn
       (conda-env-initialize-interactive-shells)
       (conda-env-initialize-eshell)
       (setq conda--executable-path "/Users/rwilson/opt/anaconda3/condabin/conda"
             conda-env-home-directory (expand-file-name "~/opt/anaconda3/"))
-      (custom-set-variables '(conda-anaconda-home "~/opt/anaconda3/"))))
+      (custom-set-variables '(conda-anaconda-home (expand-file-name "~/opt/anaconda3/")))))
+
 
   (use-package pipenv
     :after python-mode 
-    
+
     :hook (python-mode . pipenv-mode))
   ;;   :init
   ;;   (setq
@@ -1943,16 +2019,7 @@ Install straight
 ** Git Gutter
 #+begin_src emacs-lisp
   (use-package git-gutter
-    :after magit
-    :init (global-git-gutter-mode +1)
-    :bind (("C-c C-g s" . git-gutter:stage-hunk)
-           ("C-c C-g d" . git-gutter:popup-hunk)
-           ("C-c C-g r" . git-gutter:revert-hunk)
-           ("C-c C-g k" . git-gutter:previous-hunk)
-           ("C-c C-g j" . git-gutter:next-hunk)
-           ("C-c C-g C-j" . git-gutter:end-of-hunk)
-           ("C-c C-g SPC" . git-gutter:mark-hunk)))
-
+    :after magit)
 #+end_src
 
 #+begin_src emacs-lisp
@@ -1976,7 +2043,6 @@ Install straight
     :defer 20
     :bind (:map evil-normal-state-map
                 (";gb" . blamer-mode))
-
     :custom
     (blamer-idle-time 0.3)
     (blamer-min-offset 70)
@@ -2149,57 +2215,57 @@ Install straight
                 ("k" . biblio--selection-previous)
                 ("j" . biblio--selection-next)))
 
-    (use-package org-ref
-      :bind (:map bibtex-mode-map
-                  ("H-b" . org-ref-bibtex-hydra/body))
-      :config
-      (setq org-ref-bibtex-hydra-key-binding (kbd "H-b"))
-      (require 'org-ref-pdf))
+  (use-package org-ref
+    :bind (:map bibtex-mode-map
+                ("H-b" . org-ref-bibtex-hydra/body))
+    :config
+    (setq org-ref-bibtex-hydra-key-binding (kbd "H-b"))
+    (require 'org-ref-pdf))
 #+end_src
 
 ** PDF Tools
 #+begin_src emacs-lisp
-    (use-package pdf-tools
-      :ensure t
-      :config
-      (defun pdf-password-protect ()
-        "Password protect current pdf in buffer or `dired' file."
-        (interactive)
-        (unless (executable-find "qpdf")
-          (user-error "qpdf not installed"))
-        (unless (equal "pdf"
-                       (or (when (buffer-file-name)
-                             (downcase (file-name-extension (buffer-file-name))))
-                           (when (dired-get-filename nil t)
-                             (downcase (file-name-extension (dired-get-filename nil t))))))
-          (user-error "no pdf to act on"))
-        (let* ((user-password (read-passwd "user-password: "))
-               (owner-password (read-passwd "owner-password: "))
-               (input (or (buffer-file-name)
-                          (dired-get-filename nil t)))
-               (output (concat (file-name-sans-extension input)
-                               "_enc.pdf")))
-          (message
-           (string-trim
-            (shell-command-to-string
-             (format "qpdf --verbose --encrypt %s %s 256 -- %s %s"
-                     user-password owner-password input output))))))
+  (use-package pdf-tools
+    :ensure t
+    :config
+    (defun pdf-password-protect ()
+      "Password protect current pdf in buffer or `dired' file."
+      (interactive)
+      (unless (executable-find "qpdf")
+        (user-error "qpdf not installed"))
+      (unless (equal "pdf"
+                     (or (when (buffer-file-name)
+                           (downcase (file-name-extension (buffer-file-name))))
+                         (when (dired-get-filename nil t)
+                           (downcase (file-name-extension (dired-get-filename nil t))))))
+        (user-error "no pdf to act on"))
+      (let* ((user-password (read-passwd "user-password: "))
+             (owner-password (read-passwd "owner-password: "))
+             (input (or (buffer-file-name)
+                        (dired-get-filename nil t)))
+             (output (concat (file-name-sans-extension input)
+                             "_enc.pdf")))
+        (message
+         (string-trim
+          (shell-command-to-string
+           (format "qpdf --verbose --encrypt %s %s 256 -- %s %s"
+                   user-password owner-password input output))))))
 
-      ;; Use brew upgrade pdf-tools instead.
-      (custom-set-variables '(pdf-tools-handle-upgrades nil)) 
-      (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo")
+    ;; Use brew upgrade pdf-tools instead.
+    (custom-set-variables '(pdf-tools-handle-upgrades nil)) 
+    (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo")
 
-      (add-hook 'pdf-tools-enabled-hook 'pdf-view-midnight-minor-mode)
-      (add-hook 'LaTeX-mode-hook 'TeX-PDF-mode)
-      (add-hook 'LaTeX-mode-hook 'TeX-source-correlate-mode)
-      (setq TeX-source-correlate-method 'synctex)
-      (setq TeX-source-correlate-start-server t))
+    (add-hook 'pdf-tools-enabled-hook 'pdf-view-midnight-minor-mode)
+    (add-hook 'LaTeX-mode-hook 'TeX-PDF-mode)
+    (add-hook 'LaTeX-mode-hook 'TeX-source-correlate-mode)
+    (setq TeX-source-correlate-method 'synctex)
+    (setq TeX-source-correlate-start-server t))
 
-    (pdf-tools-install)
+  (pdf-tools-install)
 
 
-    (use-package org-noter-pdftools
-      :after  pdf-tools)
+  (use-package org-noter-pdftools
+    :after  pdf-tools)
 #+end_src
 ** Ledger
 #+begin_src emacs-lisp
@@ -2234,6 +2300,9 @@ Install straight
     (general-define-key
      :keymaps '(evil-window-map)
      "f"  'make-frame
+     "N"  'evil-buffer-new
+     "m"  'evil-window-exchange
+     "x"  'evil-window-exchange-m
      "d"  'evil-delete-buffer-m
      "c"  'evil-window-delete-m
      "t"  'tab-bar-move-window-to-tab
@@ -2516,13 +2585,13 @@ Install straight
     :after mu4e
     :config
     (setq org-mime-export-options '(:section-numbers nil
-						     :with-author nil
-						     :with-toc nil))
+                                                     :with-author nil
+                                                     :with-toc nil))
     (add-hook 'org-mime-html-hook
-	      (lambda ()
-		(org-mime-change-element-style
-		 "pre" (format "color: %s; background-color: %s; padding: 0.5em;"
-			       "#E6E1DC" "#232323")))))
+              (lambda ()
+                (org-mime-change-element-style
+                 "pre" (format "color: %s; background-color: %s; padding: 0.5em;"
+                               "#E6E1DC" "#232323")))))
 #+end_src
 #+begin_src emacs-lisp
   (require 'mu4e-icalendar)
@@ -2562,7 +2631,7 @@ Install straight
     :ensure t
     :hook (org-msg-mode lambda ()
                         (flyspell-mode))
- 
+
     :config
     (setq org-msg-options "tex:dvisvgm html-postamble:nil H:5 num:nil ^:{} toc:nil author:nil email:nil \\n:t"
           org-msg-startup "hidestars indent inlineimages"
@@ -2573,9 +2642,9 @@ Install straight
           org-msg-convert-citation t
           org-msg-greeting-fmt "\nHi%s,\n\n"
           org-msg-signature
-  "
+          "
   Regards,
- 
+
   ,#+begin_signature
   ---------------------------
   ,*Ramus Jabee Lloyd Wilson*
@@ -2673,11 +2742,11 @@ Straight Installation
   (use-package org
 
     :hook (org-mode . ( lambda ()
-			(efs/org-mode-setup)
-			(efs/org-os-spefic)))
+                        (efs/org-mode-setup)
+                        (efs/org-os-spefic)))
 
     :bind (:map org-mode-map
-		("S-<backspace>" . org-table-blank-field))
+                ("S-<backspace>" . org-table-blank-field))
 
     :config
     (setq org-directory (concat (getenv "HOME") "/org"))
@@ -2688,123 +2757,123 @@ Straight Installation
     (setq org-startup-folded t)
     (setq org-hide-emphasis-markers t)
     (setq org-agenda-files
-	  '("~/org/beorg/org/Tasks.org"
-	    "~/org/beorg/org/Habits.org"
-	    "~/org/beorg/org/Mails.org"
-	    "~/org/beorg/org/Birthdays.org"))
+          '("~/org/beorg/org/Tasks.org"
+            "~/org/beorg/org/Habits.org"
+            "~/org/beorg/org/Mails.org"
+            "~/org/beorg/org/Birthdays.org"))
 
     (setq my/org-latex-scale 1.75)
     (setq org-preview-latex-default-process 'dvisvgm)
     (setq org-format-latex-options (plist-put org-format-latex-options
-					      :scale my/org-latex-scale))
+                                              :scale my/org-latex-scale))
 
     (setq org-cite-csl-styles-dir "~/Zotero/styles")
 
     (setq org-todo-keywords
-	  '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
-	    (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+          '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
+            (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
 
     (setq org-refile-targets
-	  '(("Archive.org" :maxlevel . 1)
-	    ("Tasks.org" :maxlevel . 1)))
+          '(("Archive.org" :maxlevel . 1)
+            ("Tasks.org" :maxlevel . 1)))
 
     ;; Save Org buffers after refiling!
     (advice-add 'org-refile :after 'org-save-all-org-buffers)
 
     (setq org-tag-alist
-	  '((:startgroup)
-	    ;; Put mutually exclusive tags here
-	    (:endgroup)
-	    ("note" . ?n)
-	    ("@home" . ?H)
-	    ("@work" . ?W)
-	    ("batch" . ?b)
-	    ("agenda" . ?a)
-	    ("publish" . ?P)
-	    ("@errand" . ?E)
-	    ("planning" . ?p)
-	    ("idea" . ?i)))
+          '((:startgroup)
+            ;; Put mutually exclusive tags here
+            (:endgroup)
+            ("note" . ?n)
+            ("@home" . ?H)
+            ("@work" . ?W)
+            ("batch" . ?b)
+            ("agenda" . ?a)
+            ("publish" . ?P)
+            ("@errand" . ?E)
+            ("planning" . ?p)
+            ("idea" . ?i)))
 
     ;; Configure custom agenda views
     (setq org-agenda-custom-commands
-	  '(("d" "Dashboard"
-	     ((agenda "" ((org-deadline-warning-days 7)))
-	      (todo "NEXT"
-		    ((org-agenda-overriding-header "Next Tasks")))
-	      (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
+          '(("d" "Dashboard"
+             ((agenda "" ((org-deadline-warning-days 7)))
+              (todo "NEXT"
+                    ((org-agenda-overriding-header "Next Tasks")))
+              (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
 
-	    ("n" "Next Tasks"
-	     ((todo "NEXT"
-		    ((org-agenda-overriding-header "Next Tasks")))))
+            ("n" "Next Tasks"
+             ((todo "NEXT"
+                    ((org-agenda-overriding-header "Next Tasks")))))
 
-	    ("W" "Work Tasks" tags-todo "+work-email")
+            ("W" "Work Tasks" tags-todo "+work-email")
 
-	    ;; Low-effort next actions
-	    ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
-	     ((org-agenda-overriding-header "Low Effort Tasks")
-	      (org-agenda-max-todos 20)
-	      (org-agenda-files org-agenda-files)))
+            ;; Low-effort next actions
+            ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
+             ((org-agenda-overriding-header "Low Effort Tasks")
+              (org-agenda-max-todos 20)
+              (org-agenda-files org-agenda-files)))
 
-	    ("w" "Workflow Status"
-	     ((todo "WAIT"
-		    ((org-agenda-overriding-header "Waiting on External")
-		     (org-agenda-files org-agenda-files)))
-	      (todo "REVIEW"
-		    ((org-agenda-overriding-header "In Review")
-		     (org-agenda-files org-agenda-files)))
-	      (todo "PLAN"
-		    ((org-agenda-overriding-header "In Planning")
-		     (org-agenda-todo-list-sublevels nil)
-		     (org-agenda-files org-agenda-files)))
-	      (todo "BACKLOG"
-		    ((org-agenda-overriding-header "Project Backlog")
-		     (org-agenda-todo-list-sublevels nil)
-		     (org-agenda-files org-agenda-files)))
-	      (todo "READY"
-		    ((org-agenda-overriding-header "Ready for Work")
-		     (org-agenda-files org-agenda-files)))
-	      (todo "ACTIVE"
-		    ((org-agenda-overriding-header "Active Projects")
-		     (org-agenda-files org-agenda-files)))
-	      (todo "COMPLETED"
-		    ((org-agenda-overriding-header "Completed Projects")
-		     (org-agenda-files org-agenda-files)))
-	      (todo "CANC"
-		    ((org-agenda-overriding-header "Cancelled Projects")
-		     (org-agenda-files org-agenda-files)))))))
+            ("w" "Workflow Status"
+             ((todo "WAIT"
+                    ((org-agenda-overriding-header "Waiting on External")
+                     (org-agenda-files org-agenda-files)))
+              (todo "REVIEW"
+                    ((org-agenda-overriding-header "In Review")
+                     (org-agenda-files org-agenda-files)))
+              (todo "PLAN"
+                    ((org-agenda-overriding-header "In Planning")
+                     (org-agenda-todo-list-sublevels nil)
+                     (org-agenda-files org-agenda-files)))
+              (todo "BACKLOG"
+                    ((org-agenda-overriding-header "Project Backlog")
+                     (org-agenda-todo-list-sublevels nil)
+                     (org-agenda-files org-agenda-files)))
+              (todo "READY"
+                    ((org-agenda-overriding-header "Ready for Work")
+                     (org-agenda-files org-agenda-files)))
+              (todo "ACTIVE"
+                    ((org-agenda-overriding-header "Active Projects")
+                     (org-agenda-files org-agenda-files)))
+              (todo "COMPLETED"
+                    ((org-agenda-overriding-header "Completed Projects")
+                     (org-agenda-files org-agenda-files)))
+              (todo "CANC"
+                    ((org-agenda-overriding-header "Cancelled Projects")
+                     (org-agenda-files org-agenda-files)))))))
 
     (setq org-capture-templates
-	  '(("t" "Tasks / Projects")
-	    ("tt" "Task" entry (file+olp "~/org/beorg/org/Tasks.org" "Inbox")
-	     "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
+          '(("t" "Tasks / Projects")
+            ("tt" "Task" entry (file+olp "~/org/beorg/org/Tasks.org" "Inbox")
+             "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
 
-	    ("j" "Journal Entries")
-	    ("jj" "Journal" entry
-	     (file+olp+datetree "~/org/beorg/org/Journal.org")
-	     "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
-	     ;; ,(dw/read-file-as-string "~/Notes/Templates/Daily.org")
-	     :clock-in :clock-resume
-	     :empty-lines 1)
-	    ("jm" "Meeting" entry
-	     (file+olp+datetree "~/org/beorg/org/Journal.org")
-	     "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
-	     :clock-in :clock-resume
-	     :empty-lines 1)
+            ("j" "Journal Entries")
+            ("jj" "Journal" entry
+             (file+olp+datetree "~/org/beorg/org/Journal.org")
+             "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
+             ;; ,(dw/read-file-as-string "~/Notes/Templates/Daily.org")
+             :clock-in :clock-resume
+             :empty-lines 1)
+            ("jm" "Meeting" entry
+             (file+olp+datetree "~/org/beorg/org/Journal.org")
+             "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
+             :clock-in :clock-resume
+             :empty-lines 1)
 
 
-	    ("e" "Email Workflow")
-	    ("ef" "Follow Up" entry (file+olp "~/org/beorg/org/Mails.org" "Follow Up")
-	     "* TODO Follow up with %:fromname on %a\nSCHEDULED:%t\nDEADLINE: %(org-insert-time-stamp (org-read-date nil t \"+2d\"))\n\n%i" :immediate-finish t)
-	    ("er" "Read Later" entry (file+olp "~/org/beorg/org/Mails.org" "Read Later")
-	     "* TODO Read %:subject\nSCHEDULED:%t\nDEADLINE: %(org-insert-time-stamp (org-read-date nil t \"+2d\"))\n\n%a\n\n%i" :immediate-finish t)
+            ("e" "Email Workflow")
+            ("ef" "Follow Up" entry (file+olp "~/org/beorg/org/Mails.org" "Follow Up")
+             "* TODO Follow up with %:fromname on %a\nSCHEDULED:%t\nDEADLINE: %(org-insert-time-stamp (org-read-date nil t \"+2d\"))\n\n%i" :immediate-finish t)
+            ("er" "Read Later" entry (file+olp "~/org/beorg/org/Mails.org" "Read Later")
+             "* TODO Read %:subject\nSCHEDULED:%t\nDEADLINE: %(org-insert-time-stamp (org-read-date nil t \"+2d\"))\n\n%a\n\n%i" :immediate-finish t)
 
-	    ("w" "Workflows")
-	    ("we" "Checking Email" entry (file+olp+datetree "~/org/beorg/org/Journal.org")
-	     "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1)
+            ("w" "Workflows")
+            ("we" "Checking Email" entry (file+olp+datetree "~/org/beorg/org/Journal.org")
+             "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1)
 
-	    ("m" "Metrics Capture")
-	    ("mw" "Weight" table-line (file+headline "~/org/beorg/org/Metrics.org" "Weight")
-	     "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)))
+            ("m" "Metrics Capture")
+            ("mw" "Weight" table-line (file+headline "~/org/beorg/org/Metrics.org" "Weight")
+             "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)))
 
     (define-key global-map (kbd "C-c j")
       (lambda () (interactive) (org-capture nil "jj")))
@@ -2812,7 +2881,7 @@ Straight Installation
 
   (defun efs/org-mode-visual-fill ()
     (setq visual-fill-column-width 100
-	  visual-fill-column-center-text t)
+          visual-fill-column-center-text t)
     (visual-fill-column-mode 1))
 
   (use-package visual-fill-column
@@ -2863,7 +2932,7 @@ Straight Installation
               (add-to-list 'org-structure-template-alist '("py" . "src python"))
               (add-to-list 'org-structure-template-alist '("rc" . "src restclient"))
               (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
-            ;;(add-to-list 'org-structure-template-alist '("npp". "src napkin-puml"))
+              ;;(add-to-list 'org-structure-template-alist '("npp". "src napkin-puml"))
               (add-to-list 'org-structure-template-alist '("sql". "src sql-mode"))))
 #+end_src
 
@@ -2895,7 +2964,7 @@ Straight Installation
                     ;;                                               (:session . "py"))
                     org-babel-default-header-args:python '((:results . "output")))
               (add-to-list 'org-src-lang-modes (quote ("plantuml" . plantuml)))))
-  
+
 #+end_src
 ** Org Bullets
 #+begin_src emacs-lisp
@@ -2920,13 +2989,13 @@ Straight Installation
 
 ** Ox Reveal
 #+begin_src emacs-lisp
-    (use-package ox-reveal
-      :defer 3)
+  (use-package ox-reveal
+    :defer 3)
 #+end_src
 ** Org Present
 #+begin_src emacs-lisp
-    (use-package org-present
-      :defer 3)
+  (use-package org-present
+    :defer 3)
 #+end_src
 ** Org Alert
 #+begin_src emacs-lisp
@@ -2973,8 +3042,8 @@ Straight Installation
 #+end_src
 ** Flash card
 #+begin_src emacs-lisp
-    (use-package org-anki
-      :defer t)
+  (use-package org-anki
+    :defer t)
 #+end_src
 ** Org Table Color
 #+begin_src emacs-lisp
@@ -2988,7 +3057,7 @@ Straight Installation
 #+end_src
 ** Org Transclusion
 #+begin_src emacs-lisp
-(use-package org-transclusion)
+  (use-package org-transclusion)
 #+end_src
 * Pretty Symbols
 ** Org Symbols
@@ -3029,22 +3098,22 @@ Straight Installation
 #+end_src
 ** Prog Symbols
 #+begin_src emacs-lisp
-    (defun my/prog-mode/load-prettify-symbols ()
-      (interactive)
-      "Beautify prog mode keywords."
-      (setq prettify-symbols-alist '(("lambda" . "λ")
-                                     ;;("|>" . "▶")
-                                     ;;("<|" . "◁")
-                                     ;;("->>" . "↠")
-                                     ;;("->" . "➞")
-                                     ;;("<-" . "←")
-                                     ;;("=>" . "⇒")
-                                     ;;("<=" . "≤")
-                                     ;;(">=" . "≥")
-                                     ))
-      (prettify-symbols-mode 1))
+  (defun my/prog-mode/load-prettify-symbols ()
+    (interactive)
+    "Beautify prog mode keywords."
+    (setq prettify-symbols-alist '(("lambda" . "λ")
+                                   ;;("|>" . "▶")
+                                   ;;("<|" . "◁")
+                                   ;;("->>" . "↠")
+                                   ;;("->" . "➞")
+                                   ;;("<-" . "←")
+                                   ;;("=>" . "⇒")
+                                   ;;("<=" . "≤")
+                                   ;;(">=" . "≥")
+                                   ))
+    (prettify-symbols-mode 1))
 
-    (add-hook 'prog-mode-hook 'my/prog-mode/load-prettify-symbols)
+  (add-hook 'prog-mode-hook 'my/prog-mode/load-prettify-symbols)
 #+end_src
 * Notes
 ** Org Roam
@@ -3054,25 +3123,25 @@ Straight Installation
     :init
     (setq org-roam-v2-ack t)
     (setq org-roam-capture-templates '(("d" "default" plain "%?" :target
-				      (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-						 "#+title: ${title}\n#+date: %u\n#+lastmod: %t\n#+filetags: :emacs:note:roam: \n")
-				      :unnarrowed t)))
+                                        (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                                                   "#+title: ${title}\n#+date: %u\n#+lastmod: %t\n#+filetags: :emacs:note:roam: \n")
+                                        :unnarrowed t)))
     :custom
     (org-roam-directory "~/org/notes/roam")
     ;; (org-roam-completion-everywhere t)
     :bind (("C-c n f" . org-roam-node-find)
-	   ("C-c n r" . org-roam-node-random)		    
-	   :map org-mode-map
-	   ("C-M-i" . completion-at-point)
-	   ("C-c n i" . org-roam-node-insert)
-	   ("C-c n o" . org-id-get-create)
-	   ("C-c n t" . org-roam-tag-add)
-	   ("C-c n l" . org-roam-buffer-toggle)
-	   ("C-c n a" . org-roam-alias-add)
+           ("C-c n r" . org-roam-node-random)		    
+           :map org-mode-map
+           ("C-M-i" . completion-at-point)
+           ("C-c n i" . org-roam-node-insert)
+           ("C-c n o" . org-id-get-create)
+           ("C-c n t" . org-roam-tag-add)
+           ("C-c n l" . org-roam-buffer-toggle)
+           ("C-c n a" . org-roam-alias-add)
 
-	   :map org-roam-dailies-map
-	   ("Y" . org-roam-dailies-capture-yesterday)
-	   ("T" . org-roam-dailies-capture-tomorrow))
+           :map org-roam-dailies-map
+           ("Y" . org-roam-dailies-capture-yesterday)
+           ("T" . org-roam-dailies-capture-tomorrow))
     :bind-keymap
     ("C-c n d" . org-roam-dailies-map)
     :config
@@ -3084,38 +3153,38 @@ Straight Installation
     (setq org-roam-ui-browser-function #'xwidget-webkit-browse-url))
 
   (use-package consult-org-roam
-   :init
-   (require 'consult-org-roam)
-   ;; Activate the minor-mode
-   (consult-org-roam-mode 1)
-   :custom
-   (consult-org-roam-grep-func #'consult-ripgrep)
-   :config
-   ;; Eventually suppress previewing for certain functions
-   (consult-customize
-    consult-org-roam-forward-links
-    :preview-key (kbd "M-."))
-   :bind
-   ("C-c n e" . consult-org-roam-file-find)
-   ("C-c n b" . consult-org-roam-backlinks)
-   ("C-c n r" . consult-org-roam-search))
+    :init
+    (require 'consult-org-roam)
+    ;; Activate the minor-mode
+    (consult-org-roam-mode 1)
+    :custom
+    (consult-org-roam-grep-func #'consult-ripgrep)
+    :config
+    ;; Eventually suppress previewing for certain functions
+    (consult-customize
+     consult-org-roam-forward-links
+     :preview-key (kbd "M-."))
+    :bind
+    ("C-c n e" . consult-org-roam-file-find)
+    ("C-c n b" . consult-org-roam-backlinks)
+    ("C-c n r" . consult-org-roam-search))
 #+end_src
 ** Obsidian
 #+begin_src emacs-lisp
   (use-package obsidian
-  :ensure t
-  :demand t
-  :config
-  (obsidian-specify-path "~/MY_OBSIDIAN_FOLDER")
-  (global-obsidian-mode t)
-  :custom
-  ;; This directory will be used for `obsidian-capture' if set.
-  (obsidian-inbox-directory "Inbox")
-  :bind (:map obsidian-mode-map
-		;; Replace C-c C-o with Obsidian.el's implementation. It's ok to use another key binding.
-		("C-c C-o" . obsidian-follow-link-at-point)
-		;; If you prefer you can use `obsidian-insert-wikilink'
-		("C-c C-l" . obsidian-insert-wikilink)))
+    :ensure t
+    :demand t
+    :config
+    (obsidian-specify-path "~/MY_OBSIDIAN_FOLDER")
+    (global-obsidian-mode t)
+    :custom
+    ;; This directory will be used for `obsidian-capture' if set.
+    (obsidian-inbox-directory "Inbox")
+    :bind (:map obsidian-mode-map
+                ;; Replace C-c C-o with Obsidian.el's implementation. It's ok to use another key binding.
+                ("C-c C-o" . obsidian-follow-link-at-point)
+                ;; If you prefer you can use `obsidian-insert-wikilink'
+                ("C-c C-l" . obsidian-insert-wikilink)))
 #+end_src
 * Music
 ** Function
@@ -3140,10 +3209,10 @@ Straight Installation
 #+end_src
 ** MPC
 #+begin_src emacs-lisp
-        (use-package mpc
-          :defer 5
-          :config
-          (message "mpc ready"))
+  (use-package mpc
+    :defer 5
+    :config
+    (message "mpc ready"))
 #+end_src
 * Games
 ** Key-quiz
@@ -3184,29 +3253,37 @@ Straight Installation
   (use-package hammy
     :config
     (hammy-define (propertize "🍅" 'face '(:foreground "tomato"))
-                  :documentation "The classic pomodoro timer."
-                  :intervals
-                  (list
-                   (interval :name "Work"
-                             :duration "25 minutes"
-                             :before (do (announce "Starting work time.")
-                                         (notify "Starting work time."))
-                             :advance (do (announce "Break time!")
-                                          (notify "Break time!")))
-                   (interval :name "Break"
-                             :duration (do (if (and (not (zerop cycles))
-                                                    (zerop (mod cycles 3)))
-                                               ;; If a multiple of three cycles have
-                                               ;; elapsed, the fourth work period was
-                                               ;; just completed, so take a longer break.
-                                               "30 minutes"
-                                             "5 minutes"))
-                             :before (do (announce "Starting break time.")
-                                         (notify "Starting break time."))
-                             :advance (do (announce "Break time is over!")
-                                          (notify "Break time is over!"))))))
+      :documentation "The classic pomodoro timer."
+      :intervals
+      (list
+       (interval :name "Work"
+                 :duration "25 minutes"
+                 :before (do (announce "Starting work time.")
+                             (notify "Starting work time."))
+                 :advance (do (announce "Break time!")
+                              (notify "Break time!")))
+       (interval :name "Break"
+                 :duration (do (if (and (not (zerop cycles))
+                                        (zerop (mod cycles 3)))
+                                   ;; If a multiple of three cycles have
+                                   ;; elapsed, the fourth work period was
+                                   ;; just completed, so take a longer break.
+                                   "30 minutes"
+                                 "5 minutes"))
+                 :before (do (announce "Starting break time.")
+                             (notify "Starting break time."))
+                 :advance (do (announce "Break time is over!")
+                              (notify "Break time is over!"))))))
+
   (use-package activity-watch-mode)
+
   (use-package emacs-everywhere)
+
+  (use-package org-clock
+    :ensure nil
+    :config)
+#+end_src
+
 #+end_src
 
 
