@@ -129,7 +129,7 @@ nnoremap <silent> k gk
 nnoremap <silent> <leader>gf :e <cfile><cr>
 nnoremap <silent> gl :set relativenumber!<CR>
 nnoremap <silent> <localleader><space> :set hls!<CR>
-map gm :call cursor(0, virtcol('$')/2)<CR>
+map <silent> gm :call cursor(0, virtcol('$')/2)<CR>
 
 nnoremap <silent> ;; <c-6>
 
@@ -260,7 +260,7 @@ set background=dark
 colorscheme gruvbox
 
 " air-line
-let g:airline_powerline_fonts = 1
+let g:airline_powerline_fonts = -1
 
 " gitgutter
 let g:gitgutter_max_signs = -1
