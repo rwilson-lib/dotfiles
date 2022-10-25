@@ -6,8 +6,8 @@ api.nvim_set_keymap("i", "C-^", ":normal C-^", {noremap = true, silent=true})
 
 vim.keymap.set('i', '<C-^>', '<esc><C-^>', {noremap = true, silent = true})
 vim.keymap.set('n', ';;', '<esc><C-^>', {noremap = true, silent = true})
-vim.keymap.set('n', 'gl', ':set relativenumber!<CR>', {noremap = true, silent = true})
-vim.keymap.set('n', 'gm', ":call cursor(0, virtcol('$')/2)<CR>")
+vim.keymap.set('n', 'gl', ':set relativenumber!<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', 'gm', ":call cursor(0, virtcol('$')/2)<CR>", { silent = true })
 
 -- Telescope
 vim.keymap.set('n', ';f', '<cmd>Telescope find_files<cr>', default_opts) -- Telescope Find Files

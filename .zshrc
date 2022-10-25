@@ -3,6 +3,8 @@
 # alias python=/usr/local/bin/python3
 export PATH=$HOME/bin:/usr/local/bin:$HOME/Library/Python/3.8/bin:$HOME/Library/Python/3.9/bin:/Library/PostgreSQL/13/bin:/usr/local/opt/mysql-client/bin:$HOME/go/bin:./node_modules/.bin:/Applications/Emacs.app/Contents/MacOS/bin:$HOME/.local/share/nvim/lsp_servers:$PATH 
 
+# DBus Socket Directory
+export DBUS_LAUNCHD_SESSION_BUS_SOCKET="/tmp/dbus/$USER.session.usock"
 
 # Path to your oh-my-zsh installation.
 export ZSH=$HOME/.oh-my-zsh
@@ -81,7 +83,7 @@ ZSH_THEME="cloud"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git zsh-autosuggestions zsh-syntax-highlighting git-prompt docker web-search autoswitch_virtualenv pip pipenv genpass z)
+plugins=(git zsh-autosuggestions zsh-syntax-highlighting git-prompt docker web-search autoswitch_virtualenv pip pipenv conda-zsh-completion genpass z)
 
 source $ZSH/oh-my-zsh.sh
 
