@@ -11,10 +11,9 @@ Weir fixed for Emacs MacOS
   (defun vim-open-buffer ()
     (interactive)
     (async-shell-command
-     (format "vim +%d %s"
+     (format "vim -u NONE +%d %s"
              (+ (if (bolp) 1 0) (count-lines 1 (point)))
              (shell-quote-argument buffer-file-name))))
-  ;; (buffer-file-name) get name
 
   ;; Check os type
   (pcase system-type
@@ -98,6 +97,15 @@ Install straight
 #+begin_src emacs-lisp
   ;; A few more useful configurations...
   (use-package emacs
+    :hook (xwidget-webkit-mode . (lambda ()
+                                   (goto-address-mode 0 )))
+
+    ;; start emacs-server if not running
+    :hook (after-init .
+              (lambda ()
+                (require 'server)
+                (unless (server-running-p)
+                  (server-start))))
     :init
     ;; Add prompt indicator to `completing-read-multiple'.
     ;; Alternatively try `consult-completing-read-multiple'.
@@ -105,12 +113,20 @@ Install straight
       (cons (concat "[CRM] " (car args)) (cdr args)))
     (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
 
+
+    (global-goto-address-mode)
+
+    (setq system-packages-package-manager 'brew
+          system-packages-packagemanager 'brew
+          system-packages-use-sudo nil
+          system-packages-usesudo nil)
+
     ;; Do not allow the cursor in the minibuffer prompt
     (setq minibuffer-prompt-properties
           '(read-only t cursor-intangible t face minibuffer-prompt))
     (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
 
-    (add-hook 'after-init-hook #'server-start)
+
 
     ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
     ;; Vertico commands are hidden in normal buffers.
@@ -158,7 +174,7 @@ Install straight
                     ;; (window-height . 0.25)
                     ))))))
 #+end_src
-** DirED
+** Dried
 #+begin_src emacs-lisp
   ;;;###autoload
   (defun ora-dired-rsync (dest)
@@ -193,15 +209,21 @@ Install straight
   (use-package dired
     :ensure nil
     :hook (dired-mode . (lambda ()
-                          ;; Set dired-x buffer-local variables here.  For example:
-                          ;; (dired-omit-mode 1)
-                          ))
+                             ;; Set dired-x buffer-local variables here.  For example:
+                             ;; (dired-omit-mode 1)
+                             (define-key dired-mode-map (kbd "C-c C-x c")
+                               (lambda ()
+                                 (interactive)
+                                 (let ((org-attach-method 'cp))
+                                   (call-interactively #'org-attach-dired-to-subtree))))))
+
     :bind ((:map dired-mode-map
                  ("Y" . ora-dired-rsync)))
     :config
     (setq dired-dwim-target t
           dired-listing-switches "-alh")
     (require 'dired-x))
+
 #+end_src
 ** Font and Windows
 #+begin_src emacs-lisp
@@ -220,7 +242,6 @@ Install straight
                              (display-buffer-reuse-window display-buffer-in-side-window)
                              (side . right)
                              (window-width . 75))
-
                             ("\\*\\(Backtrace\\|Warnings\\|Compile-log\\|Messages\\)\\*"
                              (display-buffer-in-side-window)
                              (window-height . 0.25)
@@ -394,7 +415,7 @@ Install straight
 #+begin_src emacs-lisp
   (use-package async-await
     :config
-    (async-bytecomp-package-mode 1)
+    ;; (async-bytecomp-package-mode 1)
     (message "Done Loading Async Await"))
 #+end_src
 ** Alert
@@ -446,8 +467,8 @@ Install straight
 
     (evil-define-command evil-delete-buffer-m (count)
       "Deletes the current window.
-           If `evil-auto-balance-windows' is non-nil then all children of
-           the deleted window's parent window are rebalanced."
+             If `evil-auto-balance-windows' is non-nil then all children of
+             the deleted window's parent window are rebalanced."
       :repeat nil
       (interactive "<c>")
       (let ((p (window-parent)))
@@ -465,7 +486,7 @@ Install straight
 
     (evil-define-command evil-window-exchange-m (count)
       "Without COUNT: exchange current window with next one.
-    With COUNT: Exchange current window with COUNTth window."
+      With COUNT: Exchange current window with COUNTth window."
       :repeat nil
       (interactive "<c>")
       (let ((this-buffer (window-buffer))
@@ -485,8 +506,8 @@ Install straight
 
     (evil-define-command evil-window-delete-m (&optional count)
       "Deletes the current window.
-           If `evil-auto-balance-windows' is non-nil then all children of
-           the deleted window's parent window are rebalanced."
+             If `evil-auto-balance-windows' is non-nil then all children of
+             the deleted window's parent window are rebalanced."
       :repeat nil
       (interactive "<c>")
       (let ((p (window-parent)))
@@ -514,11 +535,11 @@ Install straight
 
     (evil-define-operator evil-write-delete-buffer (beg end type file-or-append &optional bang)
       "Save the current buffer, from BEG to END, to FILE-OR-APPEND.
-          If FILE-OR-APPEND is of the form \" FILE\", append to FILE
-          instead of overwriting.  The current buffer's filename is not
-          changed unless it has no associated file and no region is
-          specified.  If the file already exists and the BANG argument is
-          non-nil, it is overwritten without confirmation."
+            If FILE-OR-APPEND is of the form \" FILE\", append to FILE
+            instead of overwriting.  The current buffer's filename is not
+            changed unless it has no associated file and no region is
+            specified.  If the file already exists and the BANG argument is
+            non-nil, it is overwritten without confirmation."
       :motion nil
       :move-point nil
       :type line
@@ -581,10 +602,14 @@ Install straight
       ;; "[[" "["
       ))
 
+
   (add-hook 'evil-collection-setup-hook #'unbind-M-x-prefix)
 
   (use-package evil-collection
     :after evil
+    ;; (evil-set-initial-state 'calc-mode 'emacs)
+    ;; (evil-set-initial-state 'calendar-mode 'emacs)
+
     :config
     (condition-case err
         (evil-collection-init)
@@ -614,13 +639,6 @@ Install straight
                  ("g /" . iedit-mode-from-isearch)))) 
   ;; iedit-goto-last-occurrences
   ;; iedit-goto-first-occurrences
-
-  (use-package evil-multiedit
-    :bind ((:map evil-normal-state-map
-                 ("g h" . evil-multiedit-match-symbol-and-next)
-                 ("g H" . evil-multiedit-match-symbol-and-prev)
-                 ("g SPC" . evil-multiedit-match-all)))
-    :after evil)
 #+end_src
 ** Hydra
 #+begin_src emacs-lisp
@@ -732,13 +750,14 @@ Install straight
 
   (use-package all-the-icons-completion)
 #+end_src
-** Doom Themes and Modeline
+** Themes and Mode-line
 #+begin_src emacs-lisp
   (use-package hide-mode-line)
 
   (setq display-time-day-and-date t
         display-time-24hr-format t)
-  ;; (display-time)
+
+  (display-time)
 
   (use-package doom-modeline
     :init (doom-modeline-mode 1)
@@ -746,10 +765,37 @@ Install straight
     (setq find-file-visit-truename t)
     :custom ((doom-modeline-height 0)))
 
-  (use-package doom-themes
+  (load-theme 'modus-operandi t)
+
+  (use-package modus-themes
+    :ensure
+    :init
+    ;; Add all your customizations prior to loading the themes
+    ;; Configure the Modus Themes' appearance
+    (setq modus-themes-mode-line '(accented borderless)
+          modus-themes-bold-constructs t
+          modus-themes-italic-constructs t
+          modus-themes-fringes 'subtle
+          modus-themes-tabs-accented t
+          modus-themes-paren-match '(bold intense)
+          modus-themes-prompts '(bold intense)
+          modus-themes-completions 'opinionated
+          modus-themes-region '(bg-only))
+
+    (setq modus-themes-scale-headings t
+          modus-themes-org-blocks 'tinted-background
+          modus-themes-headings
+          '((1 . (rainbow overline background 1.4))
+            (2 . (rainbow background 1.3))
+            (3 . (rainbow bold 1.2))
+            (t . (semilight 1.1))))
+
+    ;; Load the theme files before enabling a theme
+    (modus-themes-load-themes)
     :config
-    (doom-themes-visual-bell-config)
-    (load-theme 'doom-zenburn t))
+    ;; Load the theme of your choice:
+    (modus-themes-load-operandi) ;; OR (modus-themes-load-vivendi)
+    :bind ("<f5>" . modus-themes-toggle))
 
   (use-package jazz-theme)
   ;; Install Graphite-theme
@@ -799,8 +845,18 @@ Install straight
 
   (use-package avy-flycheck
     :after (avy flycheck))
+
+  (use-package ace-link
+    :defer 10
+    :config
+    (message "ace-link loaded!"))
+
+  (use-package link-hint
+    :defer 10
+    :config
+    (message "link-hint loaded!"))
 #+end_src
-** Orderless
+** Order-less
 #+begin_src emacs-lisp
   (use-package orderless
     :init
@@ -810,82 +866,79 @@ Install straight
 #+end_src
 ** Vertico
 #+begin_src emacs-lisp
-  (use-package vertico
-    :demand t 
+    (use-package vertico
+      :demand t 
 
-    :general
-    (:keymaps 'vertico-map
-              "<tab>" #'vertico-next        ; Insert selected candidate into text area
-              "<S-tab>" #'vertico-previous  ; Insert selected candidate into text area
-              "C-j" #'vertico-next
-              "C-k" #'vertico-previous
-              "C-f" 'vertico-exit
-              "<escape>" #'abort-minibuffers ; Close minibuffer
-              "C-SPC" #'kb/vertico-quick-insert-and-run
-              "M-o" #'kb/vertico-quick-embark
+      :general
+      (:keymaps 'vertico-map
+                "<tab>" #'vertico-insert        ; Insert selected candidate into text area
+                "<S-tab>" #'vertico-previous  ; Insert selected candidate into text area
+                "C-j" #'vertico-next
+                "C-k" #'vertico-previous
+                "C-f" 'vertico-exit
+                "<escape>" #'abort-minibuffers ; Close minibuffer
+                "C-SPC" #'vertico-quick-exit
+                "C-S-SPC" #'vertico-quick-insert
+                "M-o" #'embark-act
+                "C-M-o" #'kb/vertico-quick-embark
 
-              ;; NOTE 2022-02-05: Cycle through candidate groups
-              "C-M-j" #'vertico-next-group
-              "C-M-k" #'vertico-previous-group
+                ;; NOTE 2022-02-05: Cycle through candidate groups
+                "C-M-j" #'vertico-next-group
+                "C-M-k" #'vertico-previous-group
 
-              ;; Toggle Vertico multiforms in active minibuffer
-              "C-o" #'vertico-quick-exit
-              "M-G" #'vertico-multiform-grid
-              "M-F" #'vertico-multiform-flat
-              "M-R" #'vertico-multiform-reverse
-              "M-U" #'vertico-multiform-unobtrusive)
+                ;; Toggle Vertico multiforms in active minibuffer
+                "M-G" #'vertico-multiform-grid
+                "M-F" #'vertico-multiform-flat
+                "M-V" #'vertico-multiform-vertical
+                "M-U" #'vertico-multiform-unobtrusive)
 
-    (:keymaps 'minibuffer-local-map
-              "<escape>" #'abort-minibuffers ; Close minibuffer
-              "C-l"  #'delete-minibuffer-contents
-              "C-w"  #'backward-kill-word)
+      (:keymaps 'minibuffer-local-map
+                "<escape>" #'abort-minibuffers ; Close minibuffer
+                "C-u"  #'delete-minibuffer-contents
+                "C-w"  #'backward-kill-word)
 
-    :config
-    ;; Use 'consult-completion-in-region' if Vertico is enabled.
-    ;; Otherwise use the default 'completion--in-region' function.
-    (setq completion-in-region-function
-          (lambda (&rest args)
-            (apply (if vertico-mode
-                       #'consult-completion-in-region
-                     #'completion--in-region)
-                   args)))
+      :config
+      ;; Use 'consult-completion-in-region' if Vertico is enabled.
+      ;; Otherwise use the default 'completion--in-region' function.
+      (setq completion-in-region-function
+            (lambda (&rest args)
+              (apply (if vertico-mode
+                         #'consult-completion-in-region
+                       #'completion--in-region)
+                     args)))
 
-    (defun kb/vertico-quick-embark (&optional arg)
-      "Embark on candidate using quick keys."
-      (interactive)
-      (when (vertico-quick-jump)
-        (embark-act arg)))
+      (defun kb/vertico-quick-embark (&optional arg)
+        "Embark on candidate using quick keys."
+        (interactive)
+        (when (vertico-quick-jump)
+          (embark-act arg)))
 
-    (defun kb/vertico-quick-insert-and-run (&optional arg)
-      "Embark on candidate using quick keys."
-      (interactive)
-      (when (vertico-quick-jump)
-        (vertico-exit)))
-    ;;(advice-add #'completing-read-multiple
-    ;;            :override #'consult-completing-read-multiple)
+      ;;(advice-add #'completing-read-multiple
+      ;;            :override #'consult-completing-read-multiple)
 
-    ;; Enable vertico-multiform
-    ;; (vertico-multiform-mode)
 
-    ;; Configure the display per command.
-    ;; Use a buffer with indices for imenu
-    ;; and a flat (Ido-like) menu for M-x.
-    (setq vertico-multiform-commands
-          '((consult-imenu buffer indexed)
-            (consult-buffer flat indexed)
-            (consult-grep buffer)
-            (execute-extended-command flat indexed)))
+      ;; Configure the display per command.
+      ;; Use a buffer with indices for imenu
+      ;; and a flat (Ido-like) menu for M-x.
+      (setq vertico-multiform-commands
+            '((consult-imenu buffer indexed)
+              (consult-grep buffer)
+              (consult-buffer flat indexed)
+              (execute-extended-command flat indexed)))
 
-    ;; Configure the display per completion category.
-    ;; Use the grid display for files and a buffer
-    ;; for the consult-grep commands.
-    (setq vertico-multiform-categories
-          '((file grid indexed)
-            (t reverse)))
-    :custom
-    (vertico-cycle t)
-    :init
-    (vertico-mode 1))
+      ;; Configure the display per completion category.
+      ;; Use the grid display for files and a buffer
+      ;; for the consult-grep commands.
+      (setq vertico-multiform-categories
+            '((file grid indexed)
+              ;;(t reverse)
+              ))
+      :custom
+      (vertico-cycle t)
+      :init
+      (vertico-mode 1)
+      ;; Enable vertico-multiform
+      (vertico-multiform-mode))
 #+end_src
 ** History 
 #+begin_src emacs-lisp
@@ -974,7 +1027,7 @@ Install straight
            ("C-j" . avy-isearch)))
 
 
-  (use-package consult-lsp)
+  ;; (use-package consult-lsp)
   (use-package consult-flycheck)
   (use-package consult-yasnippet)
   (use-package consult-company)
@@ -1015,7 +1068,7 @@ Install straight
     :hook
     (embark-collect-mode . consult-preview-at-point-mode))
 #+end_src
-** Tree macs
+** Tree-Macs
 #+begin_src emacs-lisp
   (use-package treemacs)
 
@@ -1055,10 +1108,8 @@ Install straight
     (keycast-mode))
 #+end_src
 ** Company
-#+begin_src emacs-lisp :async t
+#+begin_src emacs-lisp 
   (use-package company
-
-
     ;; (define-key company-active-map [return] nil)
     ;; (define-key company-active-map [tab] 'company-complete-common)
     ;; (define-key company-active-map (kbd "TAB") 'company-complete-common)
@@ -1072,7 +1123,7 @@ Install straight
     :config
     (setq company-selection-wrap-around t
           company-tooltip-align-annotations t
-          company-idle-delay 0.36
+          company-idle-delay 0
           company-minimum-prefix-length 2
           company-tooltip-limit 10))
 
@@ -1081,7 +1132,7 @@ Install straight
     :hook (company-mode . company-box-mode))
 #+end_src
 ** Company Back-ends
-#+begin_src emacs-lisp :async t
+#+begin_src emacs-lisp 
   (use-package company-web
     :after (company web-mode)
     :config
@@ -1274,6 +1325,7 @@ Install straight
     (coterm-mode t))
 #+end_src
 * Editor
+** CRDT
 #+begin_src emacs-lisp
   (use-package crdt
     :defer 5
@@ -1299,18 +1351,14 @@ Install straight
     (message "CRDT ready"))
 
 
-
   (use-package vimish-fold
+    :defer 5 
     :after evil)
 
   (use-package evil-vimish-fold
+    :defer 5
     :after vimish-fold
     :hook ((prog-mode conf-mode text-mode) . evil-vimish-fold-mode))
-
-  (use-package flyspell-lazy
-    :after flyspell
-    :config
-    (setq flyspell-lazy-idle-seconds 2))
 #+end_src
 * Searches
 #+begin_src emacs-lisp
@@ -1321,36 +1369,39 @@ Install straight
   (use-package websearch
     :config
     (general-define-key
-     :prefix "C-c ?"
+     :prefix "C-x /"
      ;; application spefic binding 
      "t" 'websearch-term
      "r" 'websearch-region
      "." 'websearch-point))
 #+end_src
+
 * Developer Packages
 ** Format all
 #+begin_src emacs-lisp
-  (use-package format-all
-    :bind (("C-=" . 'format-all-buffer))
-    :config
-    (add-hook 'prog-mode-hook 'format-all-mode))
+    (use-package format-all
+      :defer
+      :bind (("C-=" . 'format-all-buffer))
+      :config
+      (add-hook 'prog-mode-hook 'format-all-mode)
+      (message "format-all loaded"))
 
-  ;; (use-package aggressive-indent
-  ;;   :hook
-  ;;   (prog-mode . aggressive-indent-mode)
-  ;;   :config
-  ;;   (add-to-list 'aggressive-indent-excluded-modes 'html-mode)
-  ;;   (add-to-list 'aggressive-indent-excluded-modes 'json-mode)
-  ;;   (add-to-list
-  ;;    'aggressive-indent-dont-indent-if
-  ;;    '(and (derived-mode-p 'c++-mode)
-  ;;          (null (string-match "\\([;{}]\\|\\b\\(if\\|for\\|while\\)\\b\\)"
-  ;;                              (thing-at-point 'line)))))
-  ;;   (add-to-list
-  ;;    'aggressive-indent-dont-indent-if
-  ;;    '(and (derived-mode-p 'python-mode)
-  ;;          (null (string-match "\\([:;{}]\\|\\b\\(if\\|for\\|while\\)\\b\\)"
-  ;;                              (thing-at-point 'line))))))
+    ;; (use-package aggressive-indent
+    ;;   :hook
+    ;;   (prog-mode . aggressive-indent-mode)
+    ;;   :config
+    ;;   (add-to-list 'aggressive-indent-excluded-modes 'html-mode)
+    ;;   (add-to-list 'aggressive-indent-excluded-modes 'json-mode)
+    ;;   (add-to-list
+    ;;    'aggressive-indent-dont-indent-if
+    ;;    '(and (derived-mode-p 'c++-mode)
+    ;;          (null (string-match "\\([;{}]\\|\\b\\(if\\|for\\|while\\)\\b\\)"
+    ;;                              (thing-at-point 'line)))))
+    ;;   (add-to-list
+    ;;    'aggressive-indent-dont-indent-if
+    ;;    '(and (derived-mode-p 'python-mode)
+    ;;          (null (string-match "\\([:;{}]\\|\\b\\(if\\|for\\|while\\)\\b\\)"
+    ;;                              (thing-at-point 'line))))))
 
 #+end_src
 ** Treesitter
@@ -1358,13 +1409,13 @@ Install straight
   (use-package tree-sitter
     :init
     (use-package tree-sitter-langs)
-
     :config 
     (global-tree-sitter-mode)
     (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
-    (message "Tree-Sitter ready"))
+    (message "tree-sitter loaded"))
 
   (use-package evil-textobj-tree-sitter
+    :defer
     :after (evil tree-sitter)
     :config
     (general-define-key
@@ -1480,81 +1531,81 @@ Install straight
 #+end_src
 ** LSP-UI
 #+begin_src emacs-lisp
-  (use-package lsp-ui
-    :after lsp-mode
-    :hook (lsp-mode . lsp-ui-mode)
-    ;; :custom (lsp-ui-doc-position 'bottom)
-    :config (setq lsp-ui-sideline-show-hover t
-                  lsp-ui-sideline-delay 0.5
-                  lsp-ui-doc-delay 5
-                  lsp-ui-sideline-ignore-duplicates t
-                  ;; lsp-ui-sideline-enable nil
-                  lsp-ui-doc-position 'bottom
-                  lsp-ui-doc-alignment 'frame
-                  lsp-ui-doc-header nil
-                  lsp-ui-doc-include-signature t
-                  lsp-ui-doc-use-childframe t)
-    (general-define-key
-     :keymaps '(lsp-ui-mode-map)
-     :states '(normal)
-     "gd" 'lsp-ui-peek-find-definitions
-     "gr" 'lsp-ui-peek-find-references
-     "gi" 'lsp-ui-peek-find-implementation
-     "Ni" 'lsp-ui-imenu)
+  ;; (use-package lsp-ui
+  ;;   :after lsp-mode
+  ;;   :hook (lsp-mode . lsp-ui-mode)
+  ;;   ;; :custom (lsp-ui-doc-position 'bottom)
+  ;;   :config (setq lsp-ui-sideline-show-hover t
+  ;;                 lsp-ui-sideline-delay 0.5
+  ;;                 lsp-ui-doc-delay 5
+  ;;                 lsp-ui-sideline-ignore-duplicates t
+  ;;                 ;; lsp-ui-sideline-enable nil
+  ;;                 lsp-ui-doc-position 'bottom
+  ;;                 lsp-ui-doc-alignment 'frame
+  ;;                 lsp-ui-doc-header nil
+  ;;                 lsp-ui-doc-include-signature t
+  ;;                 lsp-ui-doc-use-childframe t)
+  ;;   (general-define-key
+  ;;    :keymaps '(lsp-ui-mode-map)
+  ;;    :states '(normal)
+  ;;    "gd" 'lsp-ui-peek-find-definitions
+  ;;    "gr" 'lsp-ui-peek-find-references
+  ;;    "gi" 'lsp-ui-peek-find-implementation
+  ;;    "Ni" 'lsp-ui-imenu)
 
-    (general-define-key
-     :keymaps '(lsp-ui-peek-mode-map)
-     "C-k" 'lsp-ui-peek--select-prev
-     "C-j" 'lsp-ui-peek--select-next
-     "C-l" 'lsp-ui-peek--select-next-file
-     "C-h" 'lsp-ui-peek--select-prev-file
-     "C-<return>" 'lsp-ui-peek--goto-xref-other-window))
+  ;;   (general-define-key
+  ;;    :keymaps '(lsp-ui-peek-mode-map)
+  ;;    "C-k" 'lsp-ui-peek--select-prev
+  ;;    "C-j" 'lsp-ui-peek--select-next
+  ;;    "C-l" 'lsp-ui-peek--select-next-file
+  ;;    "C-h" 'lsp-ui-peek--select-prev-file
+  ;;    "C-<return>" 'lsp-ui-peek--goto-xref-other-window))
 
-  (use-package lsp-treemacs
-    :after lsp)
+  ;; (use-package lsp-treemacs
+  ;;   :after lsp)
 
-  ;; (use-package sideline
-  ;;   :hook (lsp-mode . sideline-mode)
+  ;; ;; (use-package sideline
+  ;; ;;   :hook (lsp-mode . sideline-mode)
   ;;   :init
   ;;   (setq sideline-backends-right '(sideline-lsp)))
 
 #+end_src
 ** DAP
 #+begin_src emacs-lisp
-  (use-package dap-mode
-    :after lsp-mode
-    :config
-    ;; Bind `C-c l d` to `dap-hydra` for easy access
-    (general-define-key
-     :keymaps 'lsp-mode-map
-     :prefix lsp-keymap-prefix
-     "d" '(dap-hydra t :wk "debugger"))
-    ;; Set up Node debugging
-    ;; (require 'dap-node)
-    ;; (dap-node-setup) ;; Automatically installs Node debug adapter if needed
-    ;; (require 'dap-go)
-    ;; (dap-go-setup)
-    ;; (require 'dap-hydra)
-    ;; (require 'dap-gdb-lldb)
-    ;; (dap-gdb-lldb-setup)
-    (require 'dap-ui)
-    (dap-mode t)
-    (dap-ui-mode t)
-    ;; enables mouse hover support
-    (dap-tooltip-mode t)
-    ;; if it is not enabled `dap-mode' will use the minibuffer.
-    (tooltip-mode t)
-    :commands dap-debug
-    :custom
-    ;; (lsp-enable-dap-auto-configure nil)
-    ;; (dap-python-executable "python3")
-    (dap-python-debugger 'debugpy)
-    (dap-auto-configure-features '(sessions locals controls tooltip)))
+  ;; (use-package dap-mode
+  ;;   :after lsp-mode
+  ;;   :config
+  ;;   ;; Bind `C-c l d` to `dap-hydra` for easy access
+  ;;   (general-define-key
+  ;;    :keymaps 'lsp-mode-map
+  ;;    :prefix lsp-keymap-prefix
+  ;;    "d" '(dap-hydra t :wk "debugger"))
+  ;;   ;; Set up Node debugging
+  ;;   ;; (require 'dap-node)
+  ;;   ;; (dap-node-setup) ;; Automatically installs Node debug adapter if needed
+  ;;   ;; (require 'dap-go)
+  ;;   ;; (dap-go-setup)
+  ;;   ;; (require 'dap-hydra)
+  ;;   ;; (require 'dap-gdb-lldb)
+  ;;   ;; (dap-gdb-lldb-setup)
+  ;;   (require 'dap-ui)
+  ;;   (dap-mode t)
+  ;;   (dap-ui-mode t)
+  ;;   ;; enables mouse hover support
+  ;;   (dap-tooltip-mode t)
+  ;;   ;; if it is not enabled `dap-mode' will use the minibuffer.
+  ;;   (tooltip-mode t)
+  ;;   :commands dap-debug
+  ;;   :custom
+  ;;   ;; (lsp-enable-dap-auto-configure nil)
+  ;;   ;; (dap-python-executable "python3")
+  ;;   (dap-python-debugger 'debugpy)
+  ;;   (dap-auto-configure-features '(sessions locals controls tooltip)))
 
-  ;; (use-package dap-LANGUAGE) to load the dap adapter for your language
+  ;; ;; (use-package dap-LANGUAGE) to load the dap adapter for your language
 
-  ;; base lang
-  (provide 'lang)
+  ;; ;; base lang
+  ;; (provide 'lang)
 #+end_src
 ** Web Mode
 #+begin_src emacs-lisp
@@ -1598,7 +1649,6 @@ Install straight
           '(("django" . "focus/.*\\.html\\'")
             ("ctemplate" . "realtimecrm/.*\\.html\\'"))))
 
-
   (use-package markdown-mode
     :commands (markdown-mode gfm-mode)
     :mode (("README\\.md\\'" . gfm-mode)
@@ -1615,18 +1665,18 @@ Install straight
   (use-package js-mode
     ;; :mode "\\.js\\'"
     :ensure nil
-    :hook (js-mode . lsp-deferred)
+    :hook (js-mode . eglot-ensure)
     :config
     (setq js-indent-level 4))
 
   (use-package typescript-mode
-    :hook (typescript-mode . lsp-deferred)
+    :hook (typescript-mode . eglot-ensure)
     :config
     (setq typescript-indent-level 4))
 
   (use-package rjsx-mode
     :mode "\\.js\\'"
-    :hook (rjsx-mode . lsp-deferred)
+    :hook (rjsx-mode . eglot-ensure)
     :bind (:map rjsx-mode-map
                 ("<" . self-insert-command))
     :config
@@ -1650,12 +1700,29 @@ Install straight
   ;; (require 'dap-firefox)
   ;; (require 'dap-node)
 #+end_src
+** Eglot
+#+begin_src emacs-lisp
+      (use-package eglot
+        :hook ((go-mode . eglot-ensure)
+               (web-mode . eglot-ensure)
+               (html-mode . eglot-ensure))
+        :bind (:map eglot-mode-map
+                    ("C-c r" . eglot-rename)
+                    ("C-c h" . eldoc)
+                    ("C-c f" . eglot-format)
+                    ("C-c F" . eglot-format-buffer))
+        :config
+        (add-to-list 'eglot-server-programs
+                     '(web-mode . ("vscode-html-language-server" "--node-ipc"))
+                     '(csharp-mode . ("omnisharp" "-lsp"))))
+#+end_src
 ** Python
 #+begin_src emacs-lisp
   ;; fix issues with python inferial process
   (use-package python-mode
-    ;;:mode "\\.py\\'"
-    :hook (python-mode . lsp-deferred)
+    :mode "\\.py\\'"
+    ;; :hook (python-mode . lsp-deferred)
+    :hook (python-mode . eglot-ensure)
     ;; :custom
     ;; (dap-python-executable "python")
     ;; (dap-python-debugger 'debugpy)
@@ -1673,19 +1740,17 @@ Install straight
     ;; (setq live-py-path "/usr/bin/python3")
     (setq live-py-version "python"))
 
-  (use-package ipython-shell-send)
-
-  (require 'dap-python)
+  ;;(require 'dap-python)
   ;; lang python
-  (provide 'lang-python)
+  ;;(provide 'lang-python)
 #+end_src
 
 #+begin_src emacs-lisp
-  (use-package lsp-python-ms
-    :init (setq lsp-python-ms-auto-install-server t)
-    :hook (python-mode . (lambda ()
-                           (require 'lsp-python-ms)
-                           (lsp))))  ; or lsp-deferred
+  ;; (use-package lsp-python-ms
+  ;;   :init (setq lsp-python-ms-auto-install-server t)
+  ;;   :hook (python-mode . (lambda ()
+  ;;                          (require 'lsp-python-ms)
+  ;;                          (lsp))))  ; or lsp-deferred
 
 #+end_src
 ** Virtual Envs
@@ -1783,13 +1848,14 @@ Install straight
 
 #+end_src
 ** SQL
+# TODO Fixed SQl
 #+begin_src emacs-lisp
-  (setq lsp-sqls-connections
-        '(((driver . "mysql") (dataSourceName . "root:root@tcp(localhost:3306)/mysql"))
-          ((driver . "postgresql") (dataSourceName . "host=127.0.0.1 port=5432 user=yyoncho password=local dbname=sammy sslmode=disable"))))
+  ;;(setq lsp-sqls-connections
+  ;;      '(((driver . "mysql") (dataSourceName . "root:root@tcp(localhost:3306)/mysql"))
+  ;;       ((driver . "postgresql") (dataSourceName . "host=127.0.0.1 port=5432 user=yyoncho password=local dbname=sammy sslmode=disable"))))
 
-  (require 'lsp-sqls)
-  (add-hook 'sql-mode-hook 'lsp) 
+  ;;(require 'lsp-sqls)
+  ;;(add-hook 'sql-mode-hook 'lsp) 
 
   (use-package sqlformat
     :commands (sqlformat sqlformat-buffer sqlformat-region)
@@ -1817,49 +1883,49 @@ Install straight
 #+end_src
 ** Language Server Protocol
 #+begin_src emacs-lisp
-  (setq gc-cons-threshold 100000000)
-  (setq read-process-output-max (* 1024 1024)) ;; 1mb
+  ;; (setq gc-cons-threshold 100000000)
+  ;; (setq read-process-output-max (* 1024 1024)) ;; 1mb
 
-  (defun efs/lsp-mode-setup ()
-    (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
-    (lsp-headerline-breadcrumb-mode))
+  ;; (defun efs/lsp-mode-setup ()
+  ;;   (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+  ;;   (lsp-headerline-breadcrumb-mode))
 
-  (use-package lsp-mode
-    :commands (lsp lsp-deferred)
+  ;; (use-package lsp-mode
+  ;;   :commands (lsp lsp-deferred)
 
-    :hook
-    (lsp-mode . efs/lsp-mode-setup)
+  ;;   :hook
+  ;;   (lsp-mode . efs/lsp-mode-setup)
 
-    :bind-keymap
-    ("C-c l" . lsp-command-map)
+  ;;   :bind-keymap
+  ;;   ("C-c l" . lsp-command-map)
 
-    :bind (:map lsp-mode-map
-                ("M-g S" . consult-lsp-symbols) 
-                ("M-g s" . consult-lsp-file-symbols) 
-                ("C-!" . lsp-execute-code-action)
-                ("<tab>" . company-indent-or-complete-common))
+  ;;   :bind (:map lsp-mode-map
+  ;;               ("M-g S" . consult-lsp-symbols) 
+  ;;               ("M-g s" . consult-lsp-file-symbols) 
+  ;;               ("C-!" . lsp-execute-code-action)
+  ;;               ("<tab>" . company-indent-or-complete-common))
 
-    :config
-    (setq lsp-idle-delay 0.5
-          ;;lsp-enable-symbol-highlighting t
-          ;;Not supported by company capf, which is the recommended company backend
-          lsp-enable-snippet nil))
+  ;;   :config
+  ;;   (setq lsp-idle-delay 0.5
+  ;;         ;;lsp-enable-symbol-highlighting t
+  ;;         ;;Not supported by company capf, which is the recommended company backend
+  ;;         lsp-enable-snippet nil))
 
-  ;;  (add-hook 'python-mode-hook
-  ;;            (lambda ()
-  ;;              (lsp-python-enable)))
+  ;; ;;  (add-hook 'python-mode-hook
+  ;; ;;            (lambda ()
+  ;; ;;              (lsp-python-enable)))
 
-  ;;  (setq lsp-pyls-plugins-flake8-enabled t)
-  ;;  (lsp-register-custom-settings
-  ;; '(("pyls.plugins.pyls_mypy.enabled" t t)
-  ;;   ("pyls.plugins.pyls_mypy.live_mode" nil t)
-  ;;   ("pyls.plugins.pyls_black.enabled" t t)
-  ;;   ("pyls.plugins.pyls_isort.enabled" t t)
+  ;; ;;  (setq lsp-pyls-plugins-flake8-enabled t)
+  ;; ;;  (lsp-register-custom-settings
+  ;; ;; '(("pyls.plugins.pyls_mypy.enabled" t t)
+  ;; ;;   ("pyls.plugins.pyls_mypy.live_mode" nil t)
+  ;; ;;   ("pyls.plugins.pyls_black.enabled" t t)
+  ;; ;;   ("pyls.plugins.pyls_isort.enabled" t t)
 
-  ;;   ;; Disable these as they're duplicated by flake8
-  ;;   ("pyls.plugins.pycodestyle.enabled" nil t)
-  ;;   ("pyls.plugins.mccabe.enabled" nil t)
-  ;;   ("pyls.plugins.pyflakes.enabled" nil t))))
+  ;; ;;   ;; Disable these as they're duplicated by flake8
+  ;; ;;   ("pyls.plugins.pycodestyle.enabled" nil t)
+  ;; ;;   ("pyls.plugins.mccabe.enabled" nil t)
+  ;; ;;   ("pyls.plugins.pyflakes.enabled" nil t))))
 #+end_src
 * Data Science
 ** Jupyter
@@ -1929,6 +1995,18 @@ Install straight
 #+begin_src emacs-lisp
   (use-package julia-mode
     :defer 3)
+#+end_src
+** Gnu Plot
+#+begin_src emacs-lisp
+  (use-package gnuplot
+    :defer 5
+    :config
+    (message "gnuplot loaded"))
+
+  (use-package gnuplot-mode
+    :defer 5
+    :config
+    (message "gnuplot mode loaded"))
 #+end_src
 * Version Control
 ** Magit
@@ -2019,23 +2097,25 @@ Install straight
 ** Git Gutter
 #+begin_src emacs-lisp
   (use-package git-gutter
-    :after magit)
+    :after magit
+    :config
+    (global-git-gutter-mode))
 #+end_src
 
 #+begin_src emacs-lisp
-  (use-package git-timemachine
-    :after magit
-    :bind (:map evil-normal-state-map
-                (";gt" . git-timemachine-toggle))
-    :config
-    (general-define-key
-     :keymaps '(git-timemachine-mode-map)
-     :states '(normal)
-     "B" 'git-timemachine-blame
-     "b" 'git-timemachine-switch-branch
-     "d" 'git-timemachine-show-commit
-     "m" 'git-timemachine-show-revision-fuzzy
-     "<escape>" 'git-timemachine-quit))
+    (use-package git-timemachine
+      :after magit
+      :bind (:map evil-normal-state-map
+                  (";gt" . git-timemachine-toggle))
+      :config
+      (general-define-key
+       :keymaps '(git-timemachine-mode-map)
+       :states '(normal)
+       "B" 'git-timemachine-blame
+       "b" 'git-timemachine-switch-branch
+       "d" 'git-timemachine-show-commit
+       "m" 'git-timemachine-show-revision-fuzzy
+       "<escape>" 'git-timemachine-quit))
 #+end_src
 ** Blamer
 #+begin_src emacs-lisp
@@ -2061,12 +2141,17 @@ Install straight
     :ensure nil
     :hook (text-mode . flyspell-mode))
 
-  (use-package lsp-ltex
-    :init
-    (setq lsp-ltex-version "15.2.0")
-    :hook (latex-mode-hook . (lambda ()
-                               (require 'lsp-ltex)
-                               (lsp)))) ; or lsp-deferred
+  (use-package flyspell-lazy
+    :after flyspell
+    :config
+    (setq flyspell-lazy-idle-seconds 2))
+
+  ;; (use-package lsp-ltex
+  ;;   :init
+  ;;   (setq lsp-ltex-version "15.2.0")
+  ;;   :hook (latex-mode-hook . (lambda ()
+  ;;                              (require 'lsp-ltex)
+  ;;                              (lsp)))) ; or lsp-deferred
 #+end_src
 ** Lang tools
 #+begin_src emacs-lisp
@@ -2076,15 +2161,14 @@ Install straight
 
   ;; (dolist (hook '(change-log-mode-hook log-edit-mode-hook))
   ;;   (add-hook hook (lambda () (flyspell-mode -1))))
-
-  (defun langtool-autoshow-detail-popup (overlays)
-    (when (require 'popup nil t)
-      ;; Do not interrupt current popup
-      (unless (or popup-instances
-                  ;; suppress popup after type `C-g` .
-                  (memq last-command '(keyboard-quit)))
-        (let ((msg (langtool-details-error-message overlays)))
-          (popup-tip msg)))))
+  ;; (defun langtool-autoshow-detail-popup (overlays)
+  ;;   (when (require 'popup nil t)
+  ;;     ;; Do not interrupt current popup
+  ;;     (unless (or popup-instances
+  ;;                 ;; suppress popup after type `C-g` .
+  ;;                 (memq last-command '(keyboard-quit)))
+  ;;       (let ((msg (langtool-details-error-message overlays)))
+  ;;         (popup-tip msg)))))
 
   ;; (use-package langtool
   ;;   :defer 10
@@ -2106,7 +2190,8 @@ Install straight
   ;;         langtool-default-language "en-US"
   ;;         langtool-autoshow-message-function 'langtool-autoshow-detail-popup))
 
-  (use-package flycheck-languagetool
+
+  (use-package flycheck-languagetool 	
     :defer 10
     :ensure t
     :hook (text-mode . flycheck-languagetool-setup)
@@ -2267,10 +2352,6 @@ Install straight
   (use-package org-noter-pdftools
     :after  pdf-tools)
 #+end_src
-** Ledger
-#+begin_src emacs-lisp
-  (use-package ledger-mode)
-#+end_src
 * Window Management
 ** Winum Mode
 #+begin_src emacs-lisp
@@ -2278,7 +2359,6 @@ Install straight
     :config 
     (winum-mode))
 #+end_src
-
 ** Ace Windows
 #+begin_src emacs-lisp
   (use-package ace-window
@@ -2384,8 +2464,10 @@ Install straight
 #+end_src
 ** Email Context
 #+begin_src emacs-lisp
+  ;; (add-hook 'mail-citation-hook 'sc-cite-original)
   (use-package mu4e
     :ensure nil
+    :defer 1
     :load-path "/usr/local/share/emacs/site-lisp/mu/mu4e"
     :config
     (setq mu4e-maildir "~/Mail"
@@ -2530,20 +2612,10 @@ Install straight
                     ))))
     (message "mu4e loaded"))
 #+end_src
-** MU4E Marker-Icons
-#+begin_src emacs-lisp
-  ;;(use-package mu4e-marker-icons
-  ;;  :defer 4
-  ;;  :after mu4e
-  ;;  :init
-  ;;  (mu4e-marker-icons-mode 1)
-  ;;  :config
-  ;;  (setq mu4e-marker-icons-use-unicode nil))
-#+end_src
+
 ** MU4E Alert
 #+begin_src emacs-lisp
   (use-package mu4e-alert
-    :after mu4e
     :custom((doom-modeline-mu4e t)
             (mu4e-alert-style 'notifier))
     :config
@@ -2624,85 +2696,27 @@ Install straight
             (diary-from-outlook-internal subject body)
             (message "Diary entry added"))))))
 #+end_src
-** Org MSG
-#+begin_src emacs-lisp
-  (use-package org-msg
-    :after mu4e
-    :ensure t
-    :hook (org-msg-mode lambda ()
-                        (flyspell-mode))
-
-    :config
-    (setq org-msg-options "tex:dvisvgm html-postamble:nil H:5 num:nil ^:{} toc:nil author:nil email:nil \\n:t"
-          org-msg-startup "hidestars indent inlineimages"
-          org-msg-greeting-name-limit 3
-          org-msg-default-alternatives '((new		. (text html))
-                                         (reply-to-html	. (text html))
-                                         (reply-to-text	. (text)))
-          org-msg-convert-citation t
-          org-msg-greeting-fmt "\nHi%s,\n\n"
-          org-msg-signature
-          "
-  Regards,
-
-  ,#+begin_signature
-  ---------------------------
-  ,*Ramus Jabee Lloyd Wilson*
-  ICT Consultant
-  Smile Technology LLC
-  /The simple act of paying attention can take you a long way/
-  ,#+end_signature")
-    (org-msg-mode))
-#+end_src
-
-** Mu4e Views
-#+begin_src emacs-lisp
-  ;;(use-package mu4e-views
-  ;;  ;; :disabled t
-  ;;  :after mu4e
-  ;;  :defer nil
-  ;;  :bind (:map mu4e-headers-mode-map
-  ;;              ;; select viewing method
-  ;;              ("v" . mu4e-views-mu4e-select-view-msg-method) 
-  ;;              ;; from headers window scroll the email view
-  ;;              ("M-n" . mu4e-views-cursor-msg-view-window-down) 
-  ;;              ;; from headers window scroll the email view
-  ;;              ("M-p" . mu4e-views-cursor-msg-view-window-up) 
-  ;;              ;; toggle opening messages automatically when moving in the headers view
-  ;;              ("f" . mu4e-views-toggle-auto-view-selected-message) 
-  ;;              ;; show currently selected email with all remote content
-  ;;              ("i" . mu4e-views-mu4e-view-as-nonblocked-html))
-  ;;  :config
-  ;;  ;; use vertico for completion
-  ;;  (setq mu4e-views-completion-method 'default) 
-  ;;  ;; make xwidgets default
-  ;;  (setq mu4e-views-default-view-method "text") 
-  ;;  ;; (setq mu4e-views-default-view-method "html") ; make xwidgets default
-  ;;  ;; select the default
-  ;;  (mu4e-views-mu4e-use-view-msg-method "text") 
-  ;;  ;; when pressing n and p stay in the current window
-  ;;  (setq mu4e-views-next-previous-message-behaviour 'stick-to-current-window) 
-  ;;  ;; automatically open messages when moving in the headers view
-  ;;  (setq mu4e-views-auto-view-selected-message t)) 
-#+end_src
-Straight Installation
-#+begin_src emacs-lisp
-  ;; (use-package mu4e-views
-  ;;   :straight (mu4e-views
-  ;;              :type git
-  ;;              :host github
-  ;;              :repo "lordpretzel/mu4e-views"
-  ;;              :branch "mu-1.7-support"))
-#+end_src
 * Org Mode
+** Org Evil
+#+begin_src emacs-lisp
+  (use-package evil-org
+    :after (evil org)
+    :config
+    (setq evil-want-C-i-jump nil)
+    (require 'evil-org-agenda)
+    (evil-org-agenda-set-keys)
+    (message "evil-org loaded"))
+#+end_src
 ** Custom function
 #+begin_src emacs-lisp
   ;; Org Mode Configuration ------------------------------------------------------
   (defun efs/org-mode-setup ()
+    (evil-org-mode)
     (org-indent-mode)
     (hl-todo-mode)
     (variable-pitch-mode 1)
-    (visual-line-mode 1))
+    ;; (visual-line-mode 1)
+    (toggle-truncate-lines))
 
   (defun efs/org-os-spefic()
     (pcase system-type
@@ -2714,8 +2728,8 @@ Straight Installation
     ;; Replace list hyphen with dot
     (font-lock-add-keywords 'org-mode
                             '(("^ *\\([-]\\) "
-                               (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "➣"))))))
-
+                               (0 (prog1 ()
+                                    (compose-region (match-beginning 1) (match-end 1) "➣"))))))
     ;; Set faces for heading levels
     (dolist (face '((org-level-1 . 1.2)
                     (org-level-2 . 1.1)
@@ -2921,9 +2935,10 @@ Straight Installation
   (use-package org-tempo
     :ensure nil
     :config (progn
-              (add-to-list 'org-structure-template-alist '("R" . "src R"))
-              (add-to-list 'org-structure-template-alist '("cl". "src C"))
-              (add-to-list 'org-structure-template-alist '("cp". "src C++"))
+              (add-to-list 'org-structure-template-alist '("R"  . "src R"))
+              (add-to-list 'org-structure-template-alist '("cl" . "src C"))
+              (add-to-list 'org-structure-template-alist '("cp" . "src C++"))
+              (add-to-list 'org-structure-template-alist '("gp" . "src gnuplot"))
               (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
               (add-to-list 'org-structure-template-alist '("jp" . "src jupyter-python"))
               (add-to-list 'org-structure-template-alist '("jr" . "src jupyter-r"))
@@ -2950,7 +2965,7 @@ Straight Installation
                  (julia . t)
                  (latex . t)
                  (python . t)
-                 ;; (ledger . t)        
+                 (gnuplot . t)
                  (plantuml . t)
                  (restclient . t)
                  (emacs-lisp . t)
@@ -2978,24 +2993,28 @@ Straight Installation
 #+begin_src emacs-lisp
   ;; Automatically tangle our Emacs.org config file when we save it
   (defun efs/org-babel-tangle-config ()
-    (when (string-equal (buffer-file-name)
-                        (expand-file-name "~/org/Emacs.org"))
-      ;; Dynamic scoping to the rescue
-      (let ((org-confirm-babel-evaluate nil))
-        (org-babel-tangle))))
+       (when (string-equal (buffer-file-name)
+                           (expand-file-name "~/org/Emacs.org"))
+         ;; Dynamic scoping to the rescue
+         (let ((org-confirm-babel-evaluate nil))
+           (org-babel-tangle))))
+
 
   (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
 #+end_src
-
 ** Ox Reveal
 #+begin_src emacs-lisp
   (use-package ox-reveal
-    :defer 3)
+    :defer 3
+    :config
+    (message "ox-reveal ready"))
 #+end_src
 ** Org Present
 #+begin_src emacs-lisp
   (use-package org-present
-    :defer 3)
+    :defer 3
+    :config
+    (message "org-present loaded"))
 #+end_src
 ** Org Alert
 #+begin_src emacs-lisp
@@ -3006,28 +3025,8 @@ Straight Installation
     :config
     (setq org-alert-interval 300
           org-alert-notification-title "Org Alert Reminder")
-    (org-alert-enable))
-#+end_src
-** Org Dired Attachment
-#+begin_src emacs-lisp
-  (add-hook 'dired-mode-hook
-            (lambda ()
-              (define-key dired-mode-map (kbd "C-c C-x c")
-                (lambda ()
-                  (interactive)
-                  (let ((org-attach-method 'cp))
-                    (call-interactively #'org-attach-dired-to-subtree))))))
-#+end_src
-** Org Evil
-#+begin_src emacs-lisp
-  (use-package evil-org
-    :ensure t
-    :after (org evil)
-    :hook (org-mode . (lambda () evil-org-mode))
-    :config
-    (setq evil-want-C-i-jump nil)
-    (require 'evil-org-agenda)
-    (evil-org-agenda-set-keys))
+    (org-alert-enable)
+    (message "org-alert loaded"))
 #+end_src
 ** Org remark
 #+begin_src emacs-lisp
@@ -3043,21 +3042,17 @@ Straight Installation
 ** Flash card
 #+begin_src emacs-lisp
   (use-package org-anki
-    :defer t)
-#+end_src
-** Org Table Color
-#+begin_src emacs-lisp
-  (use-package org-table-color
-    :after org-table)
-#+end_src
-** Org Plot
-#+begin_src emacs-lisp
-  (use-package gnuplot)
-  (use-package gnuplot-mode)
+    :disabled
+    :defer 5
+    :config
+    (message "org-anki"))
 #+end_src
 ** Org Transclusion
 #+begin_src emacs-lisp
-  (use-package org-transclusion)
+  (use-package org-transclusion
+    :defer 5
+    :config
+    (message "org-transclusion"))
 #+end_src
 * Pretty Symbols
 ** Org Symbols
@@ -3119,7 +3114,7 @@ Straight Installation
 ** Org Roam
 #+begin_src emacs-lisp
   (use-package org-roam
-    :ensure t
+    :defer 2
     :init
     (setq org-roam-v2-ack t)
     (setq org-roam-capture-templates '(("d" "default" plain "%?" :target
@@ -3138,7 +3133,6 @@ Straight Installation
            ("C-c n t" . org-roam-tag-add)
            ("C-c n l" . org-roam-buffer-toggle)
            ("C-c n a" . org-roam-alias-add)
-
            :map org-roam-dailies-map
            ("Y" . org-roam-dailies-capture-yesterday)
            ("T" . org-roam-dailies-capture-tomorrow))
@@ -3146,13 +3140,17 @@ Straight Installation
     ("C-c n d" . org-roam-dailies-map)
     :config
     (require 'org-roam-dailies) ;; Ensure the keymap is available
-    (org-roam-db-autosync-mode))
+    (org-roam-db-autosync-mode)
+    (message "org-roam loaded"))
 
   (use-package org-roam-ui
+    :defer 2
     :config
-    (setq org-roam-ui-browser-function #'xwidget-webkit-browse-url))
+    (setq org-roam-ui-browser-function #'xwidget-webkit-browse-url)
+    (message "org-roam-ui loaded"))
 
   (use-package consult-org-roam
+    :defer 2
     :init
     (require 'consult-org-roam)
     ;; Activate the minor-mode
@@ -3169,32 +3167,7 @@ Straight Installation
     ("C-c n b" . consult-org-roam-backlinks)
     ("C-c n r" . consult-org-roam-search))
 #+end_src
-** Obsidian
-#+begin_src emacs-lisp
-  (use-package obsidian
-    :ensure t
-    :demand t
-    :config
-    (obsidian-specify-path "~/MY_OBSIDIAN_FOLDER")
-    (global-obsidian-mode t)
-    :custom
-    ;; This directory will be used for `obsidian-capture' if set.
-    (obsidian-inbox-directory "Inbox")
-    :bind (:map obsidian-mode-map
-                ;; Replace C-c C-o with Obsidian.el's implementation. It's ok to use another key binding.
-                ("C-c C-o" . obsidian-follow-link-at-point)
-                ;; If you prefer you can use `obsidian-insert-wikilink'
-                ("C-c C-l" . obsidian-insert-wikilink)))
-#+end_src
 * Music
-** Function
-#+begin_src emacs-lisp
-  (defun mpd-start ()
-    (interactive)
-    (setq-local display-buffer-alist '("*Async Shell Command*" . (display-buffer-no-window . nil)) )
-    (async-shell-command "mpd"))
-  ;; (global-set-key (kbd "M-m") 'my-compile)
-#+end_src
 ** Vuiet  
 #+begin_src emacs-lisp
   (use-package  vuiet
@@ -3212,6 +3185,10 @@ Straight Installation
   (use-package mpc
     :defer 5
     :config
+    (defun mpd-start ()
+      (interactive)
+      (setq-local display-buffer-alist '("*Async Shell Command*" . (display-buffer-no-window . nil)) )
+      (async-shell-command "mpd"))
     (message "mpc ready"))
 #+end_src
 * Games
@@ -3244,9 +3221,13 @@ Straight Installation
     (setq newsticker-url-list '(("stackoverflow.com - emacs" "https://stackoverflow.com/feeds/tag?tagnames=emacs&sort=newest" nil nil nil)
                                 ("More Productive with Emacs" "https://lucidmanager.org/tags/emacs/index.xml" nil nil nil)
                                 ("Emacs on Reddit" "http://www.reddit.com/r/emacs/.rss" nil nil nil)
+                                ("Prog Memes on Reddit" "http://www.reddit.com/r/ProgrammerHumor/.rss" nil nil nil)
+                                
+                                ("Memes on Reddit" "http://www.reddit.com/r/memes/.rss" nil nil nil)
                                 ("CNN" "http://rss.cnn.com/rss/edition_world.rss" nil nil nil)
-                                ("TheHackerNews" "https://feeds.feedburner.com/TheHackersNews" nil nil nil))))
-
+                                ("TheHackerNews" "https://feeds.feedburner.com/TheHackersNews" nil nil nil)))
+    :config
+    (setq newsticker-retrieval-method #'intern))
 #+end_src
 * Misc
 #+begin_src emacs-lisp
@@ -3283,11 +3264,4 @@ Straight Installation
     :ensure nil
     :config)
 #+end_src
-
-#+end_src
-
-
-
-
-
 
