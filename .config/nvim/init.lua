@@ -15,14 +15,14 @@ opt.updatetime          = 250   -- Decrease update time
 -- opt.signcolumn          = "yes" -- Always show sign column
 -- opt.clipboard = "unnamedplus" -- Access system clipboard
 opt.showmatch           = true  -- highlight matching brackets
-opt.cursorline          = true  -- show cursor line
+-- opt.cursorline          = true  -- show cursor line
 -- opt.cursorcolumn        = true  -- show cursor column
 -- opt.joinspaces          = false -- No double spaces with join after a dot
 opt.list                = true  -- show space and tabs chars
 opt.sessionoptions      = { 'buffers', 'curdir','folds','help','tabpages','winsize','winpos','terminal' }
 opt.wildignore          = { '*/cache/*', '*/tmp/*', '*/node_modules/*' }
 
-opt.listchars           = {eol = '↲', tab = '▸ ', trail = '·'} -- make tab, etc visible
+opt.listchars           = { eol = '↲', tab = '▸ ', trail = '·' } -- make tab, etc visible
 
 vim.opt.background      = "dark"
 
@@ -84,3 +84,9 @@ cmd [[
 -- vim.v.count
 vim.o.foldmethod       = "expr"
 -- vim.o.foldexpr         = 'nvim_treesitter#foldexpr()'
+--
+--
+vim.api.nvim_create_autocmd("TermOpen", {
+  command = "silent! :setlocal nonumber norelativenumber",
+  group = Terminal,
+})
