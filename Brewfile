@@ -1,6 +1,7 @@
 tap "homebrew/services"
 tap "ngrok/ngrok"
 tap "opencode-ai/tap"
+tap "sst/tap"
 # Asciicast to GIF converter
 brew "agg"
 # Next-gen compiler infrastructure
@@ -215,7 +216,8 @@ brew "zoxide"
 brew "zsh-autosuggestions"
 # Fish shell like syntax highlighting for zsh
 brew "zsh-syntax-highlighting"
-brew "opencode-ai/tap/opencode"
+# The AI coding agent built for the terminal.
+brew "sst/tap/opencode"
 # Aria2 GUI
 cask "aria2d"
 cask "font-hack-nerd-font"
