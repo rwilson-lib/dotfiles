@@ -1,4 +1,27 @@
 # zmodload zsh/zprof
+
+### Added by Zinit's installer
+if [[ ! -f $HOME/.local/share/zinit/zinit.git/zinit.zsh ]]; then
+    print -P "%F{33} %F{220}Installing %F{33}ZDHARMA-CONTINUUM%F{220} Initiative Plugin Manager (%F{33}zdharma-continuum/zinit%F{220})…%f"
+    command mkdir -p "$HOME/.local/share/zinit" && command chmod g-rwX "$HOME/.local/share/zinit"
+    command git clone https://github.com/zdharma-continuum/zinit "$HOME/.local/share/zinit/zinit.git" && \
+        print -P "%F{33} %F{34}Installation successful.%f%b" || \
+        print -P "%F{160} The clone has failed.%f%b"
+fi
+
+source "$HOME/.local/share/zinit/zinit.git/zinit.zsh"
+autoload -Uz _zinit
+(( ${+_comps} )) && _comps[zinit]=_zinit
+
+# Load a few important annexes, without Turbo
+# (this is currently required for annexes)
+zinit light-mode for \
+    zdharma-continuum/zinit-annex-as-monitor \
+    zdharma-continuum/zinit-annex-bin-gem-node \
+    zdharma-continuum/zinit-annex-patch-dl \
+    zdharma-continuum/zinit-annex-rust
+
+### End of Zinit's installer chunk
  
 # starship
 eval "$(starship init zsh)"
@@ -21,12 +44,13 @@ export PKG_CONFIG_PATH="/opt/homebrew/opt/libpq/lib/pkgconfig"
 # Path to your Oh My Zsh installation.
 # export ZSH="$HOME/.oh-my-zsh"
 
+# replace cd with zoxide
 eval "$(zoxide init --cmd cd zsh)"
 
 # Set up fzf key bindings
 eval "$(fzf --zsh)"
 
-export FZF_CTRL_T_OPTS="--preview 'bat -n --color=always --line-range :500 {}'"
+export FZF_CTRL_T_OPTS="--preview 'bat -n --color=always --line-range :500 {}' --no-height"
 export FZF_ALT_C_OPTS="--preview 'eza --tree --color=always {} | head -200'"
 
 
@@ -175,13 +199,8 @@ export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
 # Source zsh completion system
 fpath=(~/.zfunc /opt/homebrew/share/zsh/site-functions $fpath)
 
-autoload -Uz compinit # z flag builds cache
-# Only run compaudit if .zcompdump is missing or outdated
-if [[ ! -f ~/.zcompdump ]] || [[ ~/.zcompdump -ot ~/.zshrc ]]; then
-  compinit -i  # run full init
-else
-  compinit -C  # use cache
-fi
+autoload -Uz compinit
+zinit wait lucid blockf atload"compinit -C" for zsh-users/zsh-completions
 
 alias zsh-rebuild-completions='rm -f ~/.zcompdump* && compinit -i'
 
@@ -238,8 +257,8 @@ if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
 
 eval "$(mise activate zsh)"
 #
-# zprof
 #
 # # Step 2: Create an alias for managing it easily
 alias dotfiles='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 
+# zprof
