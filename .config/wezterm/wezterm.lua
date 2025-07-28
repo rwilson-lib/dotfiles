@@ -7,6 +7,9 @@ local config = wezterm.config_builder()
 -- Set color scheme
 config.color_scheme = "Catppuccin Mocha"
 
+config.window_background_opacity = 0.85
+config.macos_window_background_blur = 20
+
 config.audible_bell = "Disabled"
 
 -- Window and tabs configuration
