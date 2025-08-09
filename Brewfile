@@ -1,4 +1,5 @@
 tap "homebrew/services"
+tap "nats-io/nats-tools"
 tap "ngrok/ngrok"
 tap "opencode-ai/tap"
 tap "sst/tap"
@@ -20,6 +21,8 @@ brew "automake"
 brew "bat"
 # Text-based personal organizer
 brew "calcurse"
+# Multi-shell multi-command argument completer
+brew "carapace"
 # Insanely fast image printing in your terminal
 brew "catimg"
 # C/C++/ObjC language server
@@ -56,6 +59,8 @@ brew "fnm"
 brew "fzf"
 # GNU debugger
 brew "gdb"
+# Grassroots DICOM library and utilities for medical files
+brew "gdcm"
 # GitHub command-line tool
 brew "gh"
 # Interpreter for PostScript and PDF
@@ -140,6 +145,8 @@ brew "ncdu"
 brew "ncmpcpp"
 # Ambitious Vim-fork focused on extensibility and agility
 brew "neovim"
+# Modern shell for the GitHub era
+brew "nushell"
 # Pinentry for GPG on Mac
 brew "pinentry-mac"
 # Execute binaries from Python packages in isolated environments
@@ -216,12 +223,16 @@ brew "zoxide"
 brew "zsh-autosuggestions"
 # Fish shell like syntax highlighting for zsh
 brew "zsh-syntax-highlighting"
+# NATS utility
+brew "nats-io/nats-tools/nats"
 # The AI coding agent built for the terminal.
 brew "sst/tap/opencode"
 # Aria2 GUI
 cask "aria2d"
 cask "font-hack-nerd-font"
 cask "font-meslo-lg-nerd-font"
+# Terminal emulator that uses platform-native UI and GPU acceleration
+cask "ghostty"
 # Free and open-source image editor
 cask "gimp"
 # Open-source video transcoder
@@ -232,6 +243,10 @@ cask "iterm2"
 cask "josm"
 # Password manager app
 cask "keepassxc"
+# Use Vim in input fields and non input fields
+cask "kindavim"
+# Open-source firewall to block unknown outgoing connections
+cask "lulu"
 # Adaptive brightness for external displays
 cask "lunar"
 # Administration and development platform for PostgreSQL
