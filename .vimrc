@@ -61,7 +61,7 @@ set timeoutlen=500        " Shorter delay for mapped sequences
 " ------------------------------
 " CLIPBOARD
 " ------------------------------
-set clipboard=unnamedplus " Use system clipboard
+" set clipboard=unnamedplus " Use system clipboard
 
 " ------------------------------
 " KEYBINDINGS
@@ -74,6 +74,6 @@ let mapleader = "<SPC>"
 syntax enable
 filetype plugin indent on
 set background=dark
-colorscheme desert
+" colorscheme desert
 
 autocmd TextYankPost * silent! lua vim.highlight.on_yank({higroup="IncSearch", timeout=200})
