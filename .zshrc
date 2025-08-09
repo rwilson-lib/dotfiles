@@ -196,12 +196,6 @@ bindkey '^n' history-search-forward
 
 export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
 
-# Source zsh completion system
-fpath=(~/.zfunc /opt/homebrew/share/zsh/site-functions $fpath)
-
-autoload -Uz compinit
-zinit wait lucid blockf atload"compinit -C" for zsh-users/zsh-completions
-
 alias zsh-rebuild-completions='rm -f ~/.zcompdump* && compinit -i'
 
 # brew install zsh-autosuggestions zsh-syntax-highlighting
@@ -261,8 +255,6 @@ eval "$(mise activate zsh)"
 # # Step 2: Create an alias for managing it easily
 alias dotfiles='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 
-# zprof
-
 # pnpm
 export PNPM_HOME="/Users/rwilson/Library/pnpm"
 case ":$PATH:" in
@@ -270,3 +262,21 @@ case ":$PATH:" in
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
 # pnpm end
+
+# Source zsh completion system
+fpath=(~/.zfunc /opt/homebrew/share/zsh/site-functions $fpath)
+
+
+# Setup completion system
+autoload -Uz compinit
+zinit wait lucid blockf atload"compinit -C" for \
+  zsh-users/zsh-completions \
+  zdharma-continuum/zinit-annex-patch-dl
+
+# Load Carapace completions AFTER compinit
+zinit ice wait lucid atinit"zstyle ':completion:*' format $'\e[2;37mCompleting %d\e[m'" \
+  atload'source <(carapace _carapace)'
+zinit light rsteube/carapace-bin
+
+# zprof
+
