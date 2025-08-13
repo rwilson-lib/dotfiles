@@ -5,8 +5,6 @@ tap "opencode-ai/tap"
 tap "sst/tap"
 # Asciicast to GIF converter
 brew "agg"
-# Next-gen compiler infrastructure
-brew "llvm"
 # Download with resuming and segmented downloading
 brew "aria2"
 # Record and share terminal sessions
@@ -25,6 +23,8 @@ brew "calcurse"
 brew "carapace"
 # Insanely fast image printing in your terminal
 brew "catimg"
+# Next-gen compiler infrastructure
+brew "llvm"
 # C/C++/ObjC language server
 brew "ccls"
 # High-performance, asynchronous messaging library
@@ -157,6 +157,8 @@ brew "pkgconf"
 brew "plantuml"
 # Tool for managing OCI containers and pods
 brew "podman"
+# Podman Terminal User Interface
+brew "podman-tui"
 # PDF rendering library (based on the xpdf-3.0 code base)
 brew "poppler"
 # Modern replacement for ps written in Rust
@@ -229,6 +231,8 @@ brew "nats-io/nats-tools/nats"
 brew "sst/tap/opencode"
 # Aria2 GUI
 cask "aria2d"
+# Create and run Linux containers using lightweight virtual machines
+cask "container"
 cask "font-hack-nerd-font"
 cask "font-meslo-lg-nerd-font"
 # Terminal emulator that uses platform-native UI and GPU acceleration
@@ -247,8 +251,6 @@ cask "keepassxc"
 cask "kindavim"
 # Open-source firewall to block unknown outgoing connections
 cask "lulu"
-# Adaptive brightness for external displays
-cask "lunar"
 # Administration and development platform for PostgreSQL
 cask "pgadmin4"
 # Environment for statistical computing and graphics
